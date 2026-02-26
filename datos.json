@@ -1,0 +1,499 @@
+[
+	{
+		"id": 1,
+		"nombre": "Aitor Guirao Rodriguez",
+		"altura": 151,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 2,
+		"nombre": "Cristo Fernando Abadía Lóp",
+		"altura": 149,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 3,
+		"nombre": "Miguel Ángel Amorós Rodríg",
+		"altura": 149,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 4,
+		"nombre": "Beatriz Jara Rodriguez",
+		"altura": 147,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 5,
+		"nombre": "Natalia Belmonte Bas",
+		"altura": 146,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 6,
+		"nombre": "Milagros Peñalver Lorenzo",
+		"altura": 146,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 7,
+		"nombre": "Pablo Martínez Pérez",
+		"altura": 139,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 8,
+		"nombre": "M Rosa García Cabrera",
+		"altura": 140,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 9,
+		"nombre": "M Dolores Rodriguez Lorente",
+		"altura": 144,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 10,
+		"nombre": "Cinthia Bernabé Donate",
+		"altura": 144,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 11,
+		"nombre": "Álvaro Sarmiento Caselles",
+		"altura": 145,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 12,
+		"nombre": "Moises Lorente Irles",
+		"altura": 146,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 13,
+		"nombre": "David Lorca Rodríguez",
+		"altura": 154,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 14,
+		"nombre": "Iván Fenoll Rodriguez",
+		"altura": 152,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 15,
+		"nombre": "Oscar Martinez Mora",
+		"altura": 150,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 16,
+		"nombre": "Ramón Escobedo Pérez",
+		"altura": 149,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 17,
+		"nombre": "Abraham Sarmiento Marín",
+		"altura": 149,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 18,
+		"nombre": "Daniel Mira Juan",
+		"altura": 147,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 19,
+		"nombre": "Jose Antonio Lidón Pérez",
+		"altura": 155,
+		"pref_hombro": "",
+		"puede_repetir": false
+	},
+	{
+		"id": 20,
+		"nombre": "Nuria Ortega Lidón",
+		"altura": 151,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 21,
+		"nombre": "Antonio Jesús Cabrera Ferránd",
+		"altura": 150,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 22,
+		"nombre": "Miguel Angel Espinosa Mula",
+		"altura": 149,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 23,
+		"nombre": "Raúl Donate Escudero",
+		"altura": 148,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 24,
+		"nombre": "Cristina Rubio Blanco",
+		"altura": 139,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 25,
+		"nombre": "Ana M Rodríguez Lorente",
+		"altura": 140,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 26,
+		"nombre": "Pilar de Lourdes Martínez P",
+		"altura": 142,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 27,
+		"nombre": "Carmen M Hernández Cáma",
+		"altura": 143,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 28,
+		"nombre": "Mariano Diaz Vélez",
+		"altura": 144,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 29,
+		"nombre": "Cristina Sánchez Moya",
+		"altura": 145,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 30,
+		"nombre": "Zenaida Carmen Vivancos Vivar",
+		"altura": 140,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 31,
+		"nombre": "Antonio Lidón Martínez",
+		"altura": 140,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 32,
+		"nombre": "Ana Isabel Martínez Javaloyes",
+		"altura": 143,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 33,
+		"nombre": "Monserrate Coll Mula",
+		"altura": 144,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 34,
+		"nombre": "M Jesús Tovar Cuenca",
+		"altura": 144,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 35,
+		"nombre": "Gelen Huertas Mateo",
+		"altura": 146,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 36,
+		"nombre": "Jose Ramón Escobedo Med",
+		"altura": 139,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 37,
+		"nombre": "Carla Fernández Ballesta",
+		"altura": 138,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 38,
+		"nombre": "Alicia Murcia Ros",
+		"altura": 137,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 39,
+		"nombre": "M Adela Ros Marín",
+		"altura": 136,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 40,
+		"nombre": "Blanca Rosa Medina Oltra",
+		"altura": 136,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 41,
+		"nombre": "Paula Marco Ruíz",
+		"altura": 136,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 42,
+		"nombre": "M José Sánchez Fernández",
+		"altura": 128,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 43,
+		"nombre": "Erika Navarro Zaragoza",
+		"altura": 129,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 44,
+		"nombre": "Nuria Laguía Martínez",
+		"altura": 131,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 45,
+		"nombre": "Carmen Bas Martí",
+		"altura": 132,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 46,
+		"nombre": "M Pilar Cerezo Palop",
+		"altura": 133,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 47,
+		"nombre": "M Dolores Zárate Chumillas",
+		"altura": 134,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 48,
+		"nombre": "Mónica Corbalán Navarro",
+		"altura": 139,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 49,
+		"nombre": "Iluminada M Cabrera Ferránd",
+		"altura": 138,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 50,
+		"nombre": "Leticia Padilla Cuerdo",
+		"altura": 138,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 51,
+		"nombre": "Lourdes Egio Pardines",
+		"altura": 136,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 52,
+		"nombre": "Lydia Espinosa Fenoll",
+		"altura": 136,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 53,
+		"nombre": "María Lorente Zárate",
+		"altura": 136,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 54,
+		"nombre": "Sofía Vinuesa Martínez",
+		"altura": 128,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 55,
+		"nombre": "Noemí García Bernabé",
+		"altura": 130,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 56,
+		"nombre": "Visi Díaz Hernández",
+		"altura": 132,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 57,
+		"nombre": "Esther Cano Bermúdez",
+		"altura": 133,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 58,
+		"nombre": "Pilar Ruíz Cerezo",
+		"altura": 134,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 59,
+		"nombre": "Paula Martinez Casanova",
+		"altura": 135,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 60,
+		"nombre": "Rosario Fructuoso Huertas",
+		"altura": 138,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 61,
+		"nombre": "Ángela Cerezo López",
+		"altura": 137,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 62,
+		"nombre": "Alba Sempere Martínez",
+		"altura": 136,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 63,
+		"nombre": "Sandra Merino Hernández",
+		"altura": 136,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 64,
+		"nombre": "Sofia Bas Martí",
+		"altura": 136,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 65,
+		"nombre": "Anabel Arce Pedrique",
+		"altura": 135,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 66,
+		"nombre": "Claudia Ruiz Caselles",
+		"altura": 129,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 67,
+		"nombre": "Inmaculada Andúgar Costa",
+		"altura": 130,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 68,
+		"nombre": "M del Mar García Grau",
+		"altura": 133,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 69,
+		"nombre": "Raquel Rodríguez Escudero",
+		"altura": 133,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 70,
+		"nombre": "Abigail García Botella",
+		"altura": 134,
+		"pref_hombro": "",
+		"puede_repetir": true
+	},
+	{
+		"id": 71,
+		"nombre": "Lola Bas Martí",
+		"altura": 134,
+		"pref_hombro": "",
+		"puede_repetir": true
+	}
+]
