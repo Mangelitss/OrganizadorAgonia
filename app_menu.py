@@ -2,9 +2,11 @@ import sys
 import os
 import datetime
 
+# Importamos las 4 lógicas independientes
 from logica_trono import cargar_datos, generar_turnos_base, generar_html_interactivo
 from logica_miercoles import cargar_datos_miercoles, generar_cuadrillas_miercoles, generar_html_miercoles
 from logica_viernes import cargar_datos_viernes, generar_cuadrillas_viernes, generar_html_viernes
+from logica_ensayos import generar_html_ensayo
 
 # ==========================================
 # VARIABLES GLOBALES
@@ -28,7 +30,7 @@ def menu_principal():
         print("==================================================")
         print("[1] 💻 Simulador Web (Prueba Libre)")
         print("[2] 🕯️ Gestión de Procesiones (Fechas Oficiales)")
-        print("[3] 📄 Crear Informe (Resumen Procesional)")
+        print("[3] 📋 Organizador de Ensayos (En vivo)")
         print("[0] ❌ Salir del Sistema")
         print("==================================================")
         
@@ -39,7 +41,7 @@ def menu_principal():
         elif opcion == '2':
             submenu_procesiones()
         elif opcion == '3':
-            modulo_en_construccion("Crear Informe Procesional")
+            gestion_ensayos()
         elif opcion == '0':
             print("\nCerrando sistema... ¡Buen ensayo!")
             sys.exit()
@@ -130,7 +132,6 @@ def gestion_viernes_santo():
     
     if not master_list:
         print("❌ Error: No hay personas marcadas para el Viernes Santo.")
-        print("Asegúrate de ejecutar 'actualizar_json_viernes.py' primero.")
         input("\nPulsa Enter para continuar...")
         return
         
@@ -151,6 +152,33 @@ def gestion_viernes_santo():
     
     print("\n✅ ¡LISTO! Visualizador del Viernes Santo generado.")
     print("Abre el archivo 'visualizador_viernes.html' en tu navegador.")
+    input("\nPulsa Enter para continuar...")
+
+def gestion_ensayos():
+    limpiar_pantalla()
+    print("==================================================")
+    print("📋 ORGANIZADOR DE ENSAYOS DINÁMICO")
+    print("==================================================")
+    val = input("¿Cuántos turnos (de 36 plazas) quieres crear para el ensayo?: ")
+    
+    if val.isdigit() and int(val) > 0:
+        num_turnos = int(val)
+        print("\nCargando censo general de costaleros...")
+        master_list = cargar_datos(CONFIG['archivo_datos'])
+        
+        if not master_list:
+            print("❌ Error: No se encontró el censo de datos.json.")
+            input("Pulsa Enter para volver...")
+            return
+            
+        print("Preparando el entorno interactivo...")
+        generar_html_ensayo(num_turnos, master_list, CONFIG['peso_trono_kg'], CONFIG['limite_peso_persona'])
+        print("\n✅ ¡MÓDULO DE ENSAYO CREADO!")
+        print("Abre el archivo 'visualizador_ensayos.html' en tu navegador.")
+        print("💡 Toda la gestión (añadir personas y auto-organizar) se hace en la web.")
+    else:
+        print("\n❌ Número no válido. Debes introducir un número (ej: 2).")
+        
     input("\nPulsa Enter para continuar...")
 
 def modulo_en_construccion(nombre_modulo):
