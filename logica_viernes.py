@@ -1,5 +1,4 @@
 import json
-import math
 
 def cargar_datos_viernes(archivo='datos.json'):
     try:
@@ -11,113 +10,63 @@ def cargar_datos_viernes(archivo='datos.json'):
         return []
 
 def generar_cuadrillas_viernes(costaleros):
+    # Reparto inicial inteligente
     pool = sorted(costaleros, key=lambda x: x['altura'], reverse=True)
     
-    # 1. TURNO A (Élite) -> No repiten
+    # 1. TURNO A 
     turno_a = pool[:36]
-    for p in turno_a: p['puede_repetir'] = False
     while len(turno_a) < 36: turno_a.append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
     
     # 2. TURNO B 
     turno_b = pool[36:72]
-    for p in turno_b: p['puede_repetir'] = True
     while len(turno_b) < 36: turno_b.append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
     
-    # 3. TURNO C (Completado con B)
+    # 3. TURNO C 
     turno_c = pool[72:108]
-    for p in turno_c: p['puede_repetir'] = True
-    
     if len(turno_c) < 36:
-        repetidores_b = [p for p in turno_b if p['altura'] > 0]
-        repetidores_b.sort(key=lambda x: x['altura']) # De menor a mayor
-        
+        repetidores_b = [p for p in turno_b if p['id'] != -1]
+        repetidores_b.sort(key=lambda x: x['altura']) 
         idx_rep = 0
         while len(turno_c) < 36:
             if idx_rep < len(repetidores_b):
-                p_rep = repetidores_b[idx_rep].copy()
-                p_rep["nombre"] += " (R)"
-                turno_c.append(p_rep)
+                turno_c.append(repetidores_b[idx_rep].copy())
                 idx_rep += 1
             else:
                 turno_c.append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
                 
-    # 4. LA CRUZ (4 Turnos x 8 Plazas = 32)
+    # 4. LA CRUZ
     cruz_turnos = [[], [], [], []]
-    
-    # Obtenemos los únicos del B y C para que no se dupliquen repetidores
-    b_c_list = [p for p in turno_b if p['altura'] > 0] + [p for p in turno_c if p['altura'] > 0 and not p.get('nombre', '').endswith('(R)')]
+    b_c_list = [p for p in turno_b if p['id'] != -1] + [p for p in turno_c if p['id'] != -1]
     uniques = {p['id']: p for p in b_c_list}
     disponibles_cruz = list(uniques.values())
     disponibles_cruz.sort(key=lambda x: x['altura'], reverse=True)
 
     def puede_coger_cruz(persona, cruz_tramo):
         tramos_cristo = []
-        if any(x['id'] == persona['id'] for x in turno_b if x['altura'] > 0): tramos_cristo.extend([2, 6])
-        if any(x['id'] == persona['id'] for x in turno_c if x['altura'] > 0): tramos_cristo.extend([4, 6])
+        if any(x['id'] == persona['id'] for x in turno_b if x['id'] != -1): tramos_cristo.extend([2, 6])
+        if any(x['id'] == persona['id'] for x in turno_c if x['id'] != -1): tramos_cristo.extend([4, 6])
         for tc in tramos_cristo:
-            if abs(tc - cruz_tramo) <= 1: return False # Regla estricta: Tramo adyacente bloqueado
+            if abs(tc - cruz_tramo) <= 1: return False
         return True
 
-    # PASADA 1: Asignación Estricta (Protegiendo el descanso)
+    # Pasada 1 (Intento seguro)
     for i in range(4):
         cruz_tramo = i + 1
         for p in disponibles_cruz:
             if len(cruz_turnos[i]) >= 8: break
-            ya_en_cruz = any(any(x.get('id') == p['id'] for x in turno) for turno in cruz_turnos)
-            
-            if not ya_en_cruz and puede_coger_cruz(p, cruz_tramo):
-                p_rep = p.copy()
-                p_rep["nombre"] += " (C)"
-                cruz_turnos[i].append(p_rep)
+            if not any(any(x.get('id') == p['id'] for x in t) for t in cruz_turnos) and puede_coger_cruz(p, cruz_tramo):
+                cruz_turnos[i].append(p.copy())
 
-    # PASADA 2: Protocolo de Emergencia (Si un turno queda vacío, ignoramos el descanso)
+    # Pasada 2 (Relleno de emergencia asumiendo doblete)
     for i in range(4):
         if len(cruz_turnos[i]) < 8:
             for p in disponibles_cruz:
                 if len(cruz_turnos[i]) >= 8: break
-                ya_en_cruz = any(any(x.get('id') == p['id'] for x in turno) for turno in cruz_turnos)
-                
-                if not ya_en_cruz:
-                    p_rep = p.copy()
-                    p_rep["nombre"] += " (C-Doble)" # Etiqueta de Doble Carga sin descanso
-                    cruz_turnos[i].append(p_rep)
+                if not any(any(x.get('id') == p['id'] for x in t) for t in cruz_turnos):
+                    cruz_turnos[i].append(p.copy())
 
-    # Rellenar con huecos libres si aún así falta gente
     for i in range(4):
-        while len(cruz_turnos[i]) < 8:
-            cruz_turnos[i].append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
-
-    # ==========================================
-    # 5. GENERADOR DE ITINERARIOS PARA BUSCADOR
-    # ==========================================
-    itinerarios = {}
-    for p in costaleros:
-        if p['altura'] == 0: continue
-        name = p['nombre']
-        
-        in_a = any(x['id'] == p['id'] for x in turno_a if x['altura'] > 0)
-        in_b = any(x['id'] == p['id'] for x in turno_b if x['altura'] > 0)
-        in_c = any(x['id'] == p['id'] for x in turno_c if x['altura'] > 0)
-        in_c1 = any(x['id'] == p['id'] for x in cruz_turnos[0] if x['altura'] > 0)
-        in_c2 = any(x['id'] == p['id'] for x in cruz_turnos[1] if x['altura'] > 0)
-        in_c3 = any(x['id'] == p['id'] for x in cruz_turnos[2] if x['altura'] > 0)
-        in_c4 = any(x['id'] == p['id'] for x in cruz_turnos[3] if x['altura'] > 0)
-
-        # Detectar si en la cruz hace doblete para avisarlo
-        txt_c1 = "✝️ Cruz (T1)" + (" ⚠️ SIN DESCANSO" if any(x['id'] == p['id'] and "Doble" in x['nombre'] for x in cruz_turnos[0]) else "")
-        txt_c2 = "✝️ Cruz (T2)" + (" ⚠️ SIN DESCANSO" if any(x['id'] == p['id'] and "Doble" in x['nombre'] for x in cruz_turnos[1]) else "")
-        txt_c3 = "✝️ Cruz (T3)" + (" ⚠️ SIN DESCANSO" if any(x['id'] == p['id'] and "Doble" in x['nombre'] for x in cruz_turnos[2]) else "")
-        txt_c4 = "✝️ Cruz (T4)" + (" ⚠️ SIN DESCANSO" if any(x['id'] == p['id'] and "Doble" in x['nombre'] for x in cruz_turnos[3]) else "")
-
-        itinerarios[name] = [
-            {"tramo": "1. Monserrate ➔ Ayto", "est": "🕍 Cristo (Turno A)" if in_a else (txt_c1 if in_c1 else "🕯️ Cirio")},
-            {"tramo": "2. Ayto ➔ As de Oros", "est": "🕍 Cristo (Turno B)" if in_b else (txt_c2 if in_c2 else "🕯️ Cirio")},
-            {"tramo": "3. As Oros ➔ Glorieta", "est": "🕍 Cristo (Turno A)" if in_a else (txt_c3 if in_c3 else "🕯️ Cirio")},
-            {"tramo": "4. Glorieta ➔ Turismo", "est": "🕍 Cristo (Turno C)" if in_c else (txt_c4 if in_c4 else "🕯️ Cirio")},
-            {"tramo": "5. Turismo ➔ Santiago", "est": "🕍 Cristo (Turno A)" if in_a else "🕯️ Cirio"},
-            {"tramo": "6. Santiago ➔ Gasolinera", "est": "🕍 Cristo (B + C)" if (in_b or in_c) else "🕯️ Cirio"},
-            {"tramo": "7. Gasolinera ➔ San Fco", "est": "🕍 Cristo (Turno A)" if in_a else "🕯️ Cirio"}
-        ]
+        while len(cruz_turnos[i]) < 8: cruz_turnos[i].append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
 
     def distribuir_trono(personas):
         varas = ["Izquierda", "Centro", "Derecha"]
@@ -144,17 +93,13 @@ def generar_cuadrillas_viernes(costaleros):
         return res
 
     return {
-        "cuadrillas": {
-            "Trono": {"Turno A": distribuir_trono(turno_a), "Turno B": distribuir_trono(turno_b), "Turno C": distribuir_trono(turno_c)},
-            "Cruz": {"Turno 1": distribuir_cruz(cruz_turnos[0]), "Turno 2": distribuir_cruz(cruz_turnos[1]), "Turno 3": distribuir_cruz(cruz_turnos[2]), "Turno 4": distribuir_cruz(cruz_turnos[3])}
-        },
-        "itinerarios": itinerarios
+        "Trono": {"Turno A": distribuir_trono(turno_a), "Turno B": distribuir_trono(turno_b), "Turno C": distribuir_trono(turno_c)},
+        "Cruz": {"Turno 1": distribuir_cruz(cruz_turnos[0]), "Turno 2": distribuir_cruz(cruz_turnos[1]), "Turno 3": distribuir_cruz(cruz_turnos[2]), "Turno 4": distribuir_cruz(cruz_turnos[3])}
     }
 
 
 def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono, peso_cruz, limite_peso):
-    turnos_json = json.dumps(datos_completos["cuadrillas"])
-    itinerarios_json = json.dumps(datos_completos["itinerarios"])
+    turnos_json = json.dumps(datos_completos)
     master_json = json.dumps(master_list)
 
     html = f"""
@@ -162,16 +107,24 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Viernes Santo - La Agonía</title>
+        <title>Viernes Santo - Simulador Vivo</title>
         <style>
             body {{ font-family: 'Segoe UI', sans-serif; background: #0c0209; color: #f8f0f5; padding: 20px; }}
             .controles {{ position: sticky; top: 0; background: #1a0514; padding: 15px; z-index: 100; border-bottom: 2px solid #d4af37; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }}
             
+            .alerta-box {{ background: #b30000; color: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 2px solid #ff4d4d; display: none; font-weight: bold; box-shadow: 0 0 15px rgba(255,0,0,0.5); }}
+            .alerta-box ul {{ margin: 10px 0 0 0; padding-left: 20px; font-weight: normal; }}
+
             .buscador-box {{ background: #23061b; padding: 20px; margin: 20px 0; border: 1px solid #d4af37; border-radius: 8px; }}
             .buscador-box input {{ width: 100%; padding: 12px; font-size: 16px; background: #0c0209; color: #d4af37; border: 1px solid #3d0c2e; border-radius: 5px; outline: none; }}
-            .itinerario-result {{ margin-top: 15px; padding: 15px; background: #160311; border-radius: 5px; border-left: 5px solid #d4af37; display: none; }}
-            .itinerario-result li {{ padding: 8px 0; border-bottom: 1px dashed #3d0c2e; font-size: 14px; list-style: none; }}
-            .itinerario-result li:last-child {{ border: none; }}
+            .itinerario-result {{ margin-top: 15px; display: none; }}
+            
+            .bloque-ruta {{ background: #160311; padding: 15px; border-radius: 5px; border-left: 5px solid #d4af37; margin-bottom: 10px; }}
+            .bloque-ruta h5 {{ margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }}
+            .bloque-ruta ul {{ margin: 0; padding: 0; list-style: none; }}
+            .bloque-ruta li {{ padding: 8px 0; border-bottom: 1px dashed #3d0c2e; font-size: 13px; display: flex; }}
+            .bloque-ruta li:last-child {{ border: none; }}
+            .tramo-label {{ width: 220px; color: #a37c95; flex-shrink: 0; }}
 
             .turno-container {{ background: #1a0514; padding: 20px; margin-bottom: 40px; border-radius: 15px; border: 1px solid #3d0c2e; box-shadow: 0 0 15px rgba(212, 175, 55, 0.05); }}
             .turno-container h2 {{ color: #d4af37; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #3d0c2e; padding-bottom: 10px; }}
@@ -180,19 +133,25 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
             .vara {{ background: #23061b; padding: 15px; border-radius: 10px; border-top: 5px solid #d4af37; }}
             .vara h3 {{ color: #e8d08c; margin-top: 0; font-size: 14px; text-align: center; }}
             .seccion {{ background: #160311; padding: 10px; margin: 10px 0; border-radius: 5px; min-height: 80px; border: 1px dashed #4a1038; }}
+            
             .costalero {{ background: #3d0c2e; border: 1px solid #571342; margin: 5px 0; padding: 8px; border-radius: 4px; cursor: move; display: flex; justify-content: space-between; align-items: center; font-size: 11px; transition: 0.3s; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }}
             .costalero.vacio {{ border: 1px dashed #571342; background: #0c0209; color: #884d72; cursor: default; flex-direction: column; align-items: stretch; text-shadow: none; }}
             .costalero.sobrepeso {{ border: 2px solid #ff4757; background: #6b0b1c; }}
             
-            /* ESTILOS DE REPETIDORES */
-            .costalero.repetidor-c {{ border: 1px solid #ffd700; box-shadow: inset 0 0 8px rgba(255, 215, 0, 0.2); }}
-            .nombre-repetidor-c {{ color: #ffd700; font-weight: bold; font-size: 11px; }}
+            /* CLASES DINÁMICAS INYECTADAS POR JS */
+            .costalero.dyn-rep-c {{ border: 1px solid #ffd700; box-shadow: inset 0 0 8px rgba(255, 215, 0, 0.2); }}
+            .dyn-text-c {{ color: #ffd700; font-weight: bold; font-size: 11px; }}
             
-            .costalero.repetidor-cruz {{ border: 1px solid #00d2ff; box-shadow: inset 0 0 8px rgba(0, 210, 255, 0.2); }}
-            .nombre-repetidor-cruz {{ color: #00d2ff; font-weight: bold; font-size: 11px; }}
+            .costalero.dyn-rep-cruz {{ border: 1px solid #00d2ff; box-shadow: inset 0 0 8px rgba(0, 210, 255, 0.2); }}
+            .dyn-text-cruz {{ color: #00d2ff; font-weight: bold; font-size: 11px; }}
 
-            .costalero.repetidor-cruz-doble {{ border: 2px solid #ff4757; box-shadow: inset 0 0 10px rgba(255, 71, 87, 0.4); }}
-            .nombre-repetidor-cruz-doble {{ color: #ff4757; font-weight: bold; font-size: 11px; }}
+            .costalero.dyn-rep-doble {{ border: 2px solid #ff4757; box-shadow: inset 0 0 10px rgba(255, 71, 87, 0.4); }}
+            .dyn-text-doble {{ color: #ff4757; font-weight: bold; font-size: 11px; }}
+
+            .costalero.dyn-conflicto {{ border: 2px dashed #ff0000; background: #4a0000; animation: parpadeo 1s infinite; }}
+            .dyn-text-conflicto {{ color: #fff; font-weight: bold; font-size: 12px; text-shadow: none; }}
+
+            @keyframes parpadeo {{ 50% {{ opacity: 0.5; }} }}
 
             .btn-control {{ background: #3d0c2e; color: #f8f0f5; border: 1px solid #d4af37; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 12px; text-transform: uppercase; }}
             .btn-control:hover {{ background: #571342; box-shadow: 0 0 8px rgba(212, 175, 55, 0.4); }}
@@ -206,26 +165,32 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
     <body>
         <div class="controles">
             <div>
-                <div style="font-size:18px; font-weight:bold; color:#d4af37;">VIERNES SANTO - ORDEN PROCESIONAL</div>
-                <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Regla estricta de descanso aplicada (Obligación de Cirio entre cargas)</div>
+                <div style="font-size:18px; font-weight:bold; color:#d4af37;">VIERNES SANTO - MOTOR DINÁMICO</div>
+                <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Regla de descanso estricta | Cálculos y Alertas en Tiempo Real</div>
             </div>
             <div>
                 <button id="btn-heatmap" class="btn-control" onclick="toggleHeatmap()">🧊 Mapa Peso: OFF</button>
             </div>
         </div>
 
+        <div id="panel-alertas" class="alerta-box">
+            ⚠️ ¡ALERTA CRÍTICA! Imposibilidad física detectada:
+            <ul id="lista-alertas"></ul>
+        </div>
+
         <div class="buscador-box">
-            <h3 style="margin-top:0; color:#d4af37;">🔍 BUSCADOR DE ITINERARIO PERSONAL</h3>
-            <p style="font-size:12px; color:#a37c95; margin-top:-10px;">Comprueba los tramos de descanso y carga de cualquier costalero/a. Si hay falta de personal, el programa asume doble carga de emergencia.</p>
-            <input type="text" placeholder="Escribe el nombre de un costalero/a..." onkeyup="buscarItinerario(event)">
+            <h3 style="margin-top:0; color:#d4af37;">🔍 BUSCADOR EN TIEMPO REAL</h3>
+            <p style="font-size:12px; color:#a37c95; margin-top:-10px;">Comprueba el itinerario vivo de cualquier persona. (Actualizado instantáneamente si mueves huecos).</p>
+            <input type="text" id="input-buscador" placeholder="Escribe el nombre de un costalero/a..." onkeyup="actualizarBuscador()">
             <div id="resultado-itinerario" class="itinerario-result"></div>
         </div>
         
         <div style="margin-top:10px; padding:15px; border:1px dashed #3d0c2e; font-size:13px; background:#160311;">
-            <b style="color:#e8d08c;">LEYENDA DE COLORES:</b><br><br>
-            <span style="color:#ffd700; margin-right:20px; font-weight:bold;">■ Amarillo: Repite en Turno C (Viene del B)</span>
-            <span style="color:#00d2ff; margin-right:20px; font-weight:bold;">■ Azul: Repite en la Cruz (Viene del B o C)</span>
-            <span style="color:#ff4757; font-weight:bold;">■ Rojo (C-Doble): Carga consecutiva de Emergencia (Sin descanso)</span>
+            <b style="color:#e8d08c;">LEYENDA AUTOMÁTICA (Calculada al instante):</b><br><br>
+            <span style="color:#ffd700; margin-right:20px; font-weight:bold;">■ Amarillo: Dobla Cristo (Turno B + Turno C)</span>
+            <span style="color:#00d2ff; margin-right:20px; font-weight:bold;">■ Azul: Hace Cruz y Cristo (Descanso garantizado)</span>
+            <span style="color:#ff4757; margin-right:20px; font-weight:bold;">■ Rojo: Sin Descanso (Carga tramos seguidos)</span>
+            <span style="color:#ffffff; background:#b30000; padding:2px 5px; font-weight:bold; border:1px dashed white;">■ ROJO PARPADEANTE: Imposible (Mismo tramo)</span>
         </div>
 
         <div id="app"></div>
@@ -233,43 +198,185 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
         <script>
             let datos = {turnos_json};
             const MASTER_LIST = {master_json};
-            const ITINERARIOS = {itinerarios_json};
             const PESO_TRONO = {peso_trono};
             const PESO_CRUZ = {peso_cruz};
             const MAX_KG = {limite_peso};
             let heatmapActivo = false;
+            
+            // Constantes Matemáticas de Tramos
+            const TRAMOS = {{
+                "Trono": {{
+                    "Turno A": [1, 3, 5, 7],
+                    "Turno B": [2, 6],
+                    "Turno C": [4, 6]
+                }},
+                "Cruz": {{
+                    "Turno 1": [1],
+                    "Turno 2": [2],
+                    "Turno 3": [3],
+                    "Turno 4": [4]
+                }}
+            }};
 
-            // Motor del Buscador de Itinerarios
-            function buscarItinerario(ev) {{
-                const val = ev.target.value.toLowerCase();
-                const resDiv = document.getElementById('resultado-itinerario');
-                if (val.length < 3) {{ resDiv.style.display = 'none'; return; }}
+            let estadoGlobal = {{}};
 
-                let found = null;
-                for (let name of Object.keys(ITINERARIOS)) {{
-                    if (name.toLowerCase().includes(val)) {{
-                        found = {{ name, data: ITINERARIOS[name] }};
-                        break;
+            // FUNCIÓN CEREBRO: Cruza los datos en tiempo real
+            function analizarEstado() {{
+                let stats = {{}};
+                let alertasCriticas = [];
+
+                // 1. Rastrear en qué turnos está cada ID
+                for (let tipo of ["Trono", "Cruz"]) {{
+                    for (let t of Object.keys(datos[tipo])) {{
+                        for (let v of Object.keys(datos[tipo][t])) {{
+                            for (let sec of ["Delante", "Detras"]) {{
+                                datos[tipo][t][v][sec].forEach(p => {{
+                                    if (p.id && p.id !== -1) {{
+                                        if (!stats[p.id]) stats[p.id] = {{ nombre: p.nombre, cristo: [], cruz: [] }};
+                                        if (tipo === "Trono") stats[p.id].cristo.push(t);
+                                        if (tipo === "Cruz") stats[p.id].cruz.push(t);
+                                    }}
+                                }});
+                            }}
+                        }}
                     }}
                 }}
 
-                if (found) {{
+                // 2. Procesar cruces matemáticos de Tramos
+                for (let id in stats) {{
+                    let s = stats[id];
+                    s.estadoStr = "normal";
+                    
+                    let cristoArr = [];
+                    s.cristo.forEach(t => cristoArr.push(...TRAMOS.Trono[t]));
+                    let cristoUniq = [...new Set(cristoArr)]; // Evita duplicar tramos si está en B y C (ej. tramo 6)
+                    
+                    let cruzArr = [];
+                    s.cruz.forEach(t => cruzArr.push(...TRAMOS.Cruz[t]));
+                    let cruzUniq = [...new Set(cruzArr)];
+                    
+                    let allTramos = [...new Set([...cristoUniq, ...cruzUniq])].sort((a,b) => a - b);
+                    s.tramos = allTramos; // Se guarda para el buscador
+
+                    let tieneConflicto = false;
+                    let tieneDoble = false;
+
+                    // Validar si un humano ha metido a la misma persona 2 veces en el MISMO turno (ej: clonado en Turno A)
+                    let cristoTurnosUnicos = [...new Set(s.cristo)];
+                    let cruzTurnosUnicos = [...new Set(s.cruz)];
+                    
+                    if (s.cristo.length > cristoTurnosUnicos.length || s.cruz.length > cruzTurnosUnicos.length) {{
+                        tieneConflicto = true;
+                        alertasCriticas.push(`<b>${{s.nombre}}</b> está duplicado/a dentro de un mismo turno manualmente.`);
+                    }}
+
+                    // Si coincide un tramo de Cristo y de Cruz, es FÍSICAMENTE IMPOSIBLE
+                    let interseccion = cristoUniq.filter(t => cruzUniq.includes(t));
+                    if (interseccion.length > 0) {{
+                        tieneConflicto = true;
+                        alertasCriticas.push(`<b>${{s.nombre}}</b> está asignado/a al Trono y a la Cruz en el <b>Tramo ${{interseccion.join(', ')}}</b> a la vez.`);
+                    }}
+
+                    // Si hay tramos adyacentes (ej: 2 y 3) significa que NO descansa
+                    for (let i = 0; i < allTramos.length - 1; i++) {{
+                        if (allTramos[i+1] - allTramos[i] === 1) tieneDoble = true;
+                    }}
+
+                    // Asignación final de estado visual
+                    if (tieneConflicto) {{
+                        s.estadoStr = "conflicto";
+                    }} else if (cruzUniq.length > 0 && cristoUniq.length > 0) {{
+                        s.estadoStr = tieneDoble ? "doble" : "repCruz";
+                    }} else if (cristoTurnosUnicos.length >= 2) {{
+                        // CORRECCIÓN: Miramos los "TURNOS" únicos (Turno B y C), en vez de los tramos totales del A.
+                        s.estadoStr = tieneDoble ? "doble" : "repC";
+                    }}
+                }}
+
+                estadoGlobal = stats;
+
+                // Pintar Panel Rojo si hay catástrofe
+                let panel = document.getElementById("panel-alertas");
+                let lista = document.getElementById("lista-alertas");
+                if (alertasCriticas.length > 0) {{
+                    lista.innerHTML = alertasCriticas.map(e => `<li>- ${{e}}</li>`).join("");
+                    panel.style.display = "block";
+                }} else {{
+                    panel.style.display = "none";
+                }}
+            }}
+
+            function actualizarBuscador() {{
+                const val = document.getElementById('input-buscador').value.toLowerCase();
+                const resDiv = document.getElementById('resultado-itinerario');
+                if (val.length < 3) {{ resDiv.style.display = 'none'; return; }}
+
+                let idFound = null;
+                for (let id in estadoGlobal) {{
+                    if (estadoGlobal[id].nombre.toLowerCase().includes(val)) {{
+                        idFound = id; break;
+                    }}
+                }}
+
+                if (idFound) {{
+                    let st = estadoGlobal[idFound];
+                    let tOcupados = st.tramos;
+                    
                     resDiv.style.display = 'block';
-                    let html = `<h4 style="color:#d4af37; margin-bottom:10px; font-size:16px;">📋 Hoja de Ruta: ${{found.name}}</h4><ul style="margin:0; padding:0;">`;
-                    found.data.forEach(t => {{
-                        let isWarning = t.est.includes("SIN DESCANSO");
-                        let color = t.est.includes("Cristo") ? "#e8d08c" : (t.est.includes("Cruz") ? (isWarning ? "#ff4757" : "#00d2ff") : "#884d72");
-                        let icono = t.est.includes("Cirio") ? "🚶‍♂️" : "💪";
-                        html += `<li>
-                                    <span style="display:inline-block; width:220px; color:#a37c95;">${{t.tramo}}</span>
-                                    ${{icono}} <strong style="color:${{color}}">${{t.est}}</strong>
-                                 </li>`;
-                    }});
-                    html += `</ul>`;
+                    let html = `<h4 style="color:#d4af37; margin-bottom:10px; font-size:16px;">📋 Hoja de Ruta Viva: ${{st.nombre}}</h4>`;
+                    
+                    // ==========================================
+                    // BLOQUE 1: PROCESIÓN (Tramos 1 al 4)
+                    // ==========================================
+                    html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN (Trono y Cruz)</h5><ul>`;
+                    [
+                        {{ num: 1, txt: "1. Monserrate ➔ Ayto" }},
+                        {{ num: 2, txt: "2. Ayto ➔ As de Oros" }},
+                        {{ num: 3, txt: "3. As Oros ➔ Glorieta" }},
+                        {{ num: 4, txt: "4. Glorieta ➔ Turismo" }}
+                    ].forEach(tr => {{ html += generarFilaTramo(tr, st, tOcupados); }});
+                    html += `</ul></div>`;
+
+                    // ==========================================
+                    // BLOQUE 2: REGRESO (Tramos 5 al 7) - SIN CRUZ
+                    // ==========================================
+                    html += `<div class="bloque-ruta"><h5>🏠 REGRESO (Solo Trono Principal)</h5><ul>`;
+                    [
+                        {{ num: 5, txt: "5. Turismo ➔ Santiago" }},
+                        {{ num: 6, txt: "6. Santiago ➔ Gasolinera" }},
+                        {{ num: 7, txt: "7. Gasolinera ➔ San Fco" }}
+                    ].forEach(tr => {{ html += generarFilaTramo(tr, st, tOcupados); }});
+                    html += `</ul></div>`;
+
                     resDiv.innerHTML = html;
                 }} else {{
                     resDiv.style.display = 'none';
                 }}
+            }}
+
+            function generarFilaTramo(tr, st, tOcupados) {{
+                let label = "🕯️ <strong style='color:#884d72'>Cirio (Descanso)</strong>";
+                
+                let enCristo = [];
+                st.cristo.forEach(t => {{ if(TRAMOS.Trono[t].includes(tr.num)) enCristo.push(t); }});
+                
+                let enCruz = [];
+                st.cruz.forEach(t => {{ if(TRAMOS.Cruz[t].includes(tr.num)) enCruz.push(t); }});
+
+                if (enCristo.length > 0 && enCruz.length > 0) {{
+                    label = `💥 <strong style='color:#ff0000; animation: parpadeo 1s infinite;'>¡IMPOSIBLE! (${{enCristo.join('+')}} y ${{enCruz.join('+')}})</strong>`;
+                }} else if (enCristo.length > 0) {{
+                    let nombres = enCristo.join(" + ");
+                    label = `💪 <strong style='color:#e8d08c'>🕍 Trono (${{nombres}})</strong>`;
+                }} else if (enCruz.length > 0) {{
+                    let sinDescanso = tOcupados.includes(tr.num - 1) || tOcupados.includes(tr.num + 1);
+                    if (sinDescanso) {{
+                        label = `⚠️ <strong style='color:#ff4757'>✝️ Cruz (${{enCruz.join('+')}}) [SIN DESCANSO]</strong>`;
+                    }} else {{
+                        label = `💪 <strong style='color:#00d2ff'>✝️ Cruz (${{enCruz.join('+')}})</strong>`;
+                    }}
+                }}
+                return `<li><span class="tramo-label">${{tr.txt}}</span> ${{label}}</li>`;
             }}
 
             function toggleHeatmap() {{
@@ -295,6 +402,9 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
             }}
 
             function render() {{
+                analizarEstado(); // El cerebro actualiza el mapa global
+                actualizarBuscador(); // Actualiza visualmente el buscador si está abierto
+
                 const app = document.getElementById('app');
                 app.innerHTML = '';
                 
@@ -328,16 +438,25 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                                     const esVacio = p.altura === 0;
                                     const esSobrepeso = p.peso >= MAX_KG;
                                     
-                                    // Comprobadores de colores para repetidores
-                                    const esRepC = p.nombre && p.nombre.includes("(R)");
-                                    const esRepCruz = p.nombre && p.nombre.includes("(C)");
-                                    const esRepCruzDoble = p.nombre && p.nombre.includes("(C-Doble)");
-                                    
+                                    // INYECCIÓN DE CLASES DINÁMICAS
                                     let clExtra = '';
                                     let nExtra = '';
-                                    if (esRepC && !heatmapActivo) {{ clExtra = 'repetidor-c'; nExtra = 'nombre-repetidor-c'; }}
-                                    if (esRepCruz && !esRepCruzDoble && !heatmapActivo) {{ clExtra = 'repetidor-cruz'; nExtra = 'nombre-repetidor-cruz'; }}
-                                    if (esRepCruzDoble && !heatmapActivo) {{ clExtra = 'repetidor-cruz-doble'; nExtra = 'nombre-repetidor-cruz-doble'; }}
+                                    let tagFinal = '';
+
+                                    if (!esVacio && estadoGlobal[p.id]) {{
+                                        let est = estadoGlobal[p.id].estadoStr;
+                                        if (est === "conflicto") {{
+                                            clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [¡CRÍTICO!]';
+                                        }} else if (est === "doble") {{
+                                            clExtra = 'dyn-rep-doble'; nExtra = 'dyn-text-doble'; tagFinal = ' (Doble)';
+                                        }} else if (est === "repCruz") {{
+                                            clExtra = 'dyn-rep-cruz'; nExtra = 'dyn-text-cruz'; tagFinal = ' (Cruz)';
+                                        }} else if (est === "repC") {{
+                                            clExtra = 'dyn-rep-c'; nExtra = 'dyn-text-c'; tagFinal = ' (Turno C)';
+                                        }}
+                                    }}
+                                    
+                                    if (heatmapActivo) {{ clExtra = ''; tagFinal = ''; }}
                                     
                                     let bgStyle = '';
                                     if (heatmapActivo && !esVacio) {{
@@ -353,7 +472,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                                                  <div id="sug-${{tipo}}-${{idT}}-${{vNom}}-${{sec}}-${{i}}" class="sugerencias" style="display:none"></div>` :
                                                 `<span>
                                                     <button style="background:none; border:none; color:#ff4757; cursor:pointer; padding:0 5px 0 0;" onclick="eliminar('${{tipo}}','${{idT}}','${{vNom}}','${{sec}}',${{i}})">🗑️</button>
-                                                    <span class="${{nExtra}}">${{p.nombre}}</span>
+                                                    <span class="${{nExtra}}">${{p.nombre}} ${{tagFinal}}</span>
                                                 </span>
                                                 <span>
                                                     <span style="color:${{heatmapActivo ? '#fff' : '#d4af37'}}">${{p.altura}}cm</span> 
@@ -416,14 +535,13 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 let orig = datos[dragging.tipo][dragging.t][dragging.v][dragging.s][dragging.i];
                 datos[dragging.tipo][dragging.t][dragging.v][dragging.s][dragging.i] = datos[tipo][t][v][s][i];
                 datos[tipo][t][v][s][i] = orig;
-                render();
+                render(); // Recalcula estado y colores al soltar
             }}
             
             function eliminar(tipo, t, v, s, i) {{
-                const persona = datos[tipo][t][v][s][i].nombre;
-                if (confirm(`¿Estás seguro de que quieres quitar a ${{persona}} de este hueco?`)) {{
-                    datos[tipo][t][v][s][i] = {{"nombre": "HUECO LIBRE", "altura": 0}};
-                    render();
+                if (confirm(`¿Estás seguro de quitar a esta persona?`)) {{
+                    datos[tipo][t][v][s][i] = {{"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1}};
+                    render(); // Recalcula estado y apaga colores si ya no dobla
                 }}
             }}
             
