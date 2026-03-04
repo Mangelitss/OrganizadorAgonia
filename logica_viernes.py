@@ -87,28 +87,118 @@ def generar_cuadrillas_viernes(costaleros):
             if p['id'] in ids_cruz_doble: p['nombre'] += " (C-Doble)"
             elif p['id'] in ids_cruz_normal: p['nombre'] += " (C)"
 
+    # ==========================================
+    # DISTRIBUCIÓN AVANZADA: ALTURA + HOMBRO
+    # ==========================================
     def distribuir_trono(personas):
         varas = ["Izquierda", "Centro", "Derecha"]
         res = {v: {"Delante": [], "Detras": []} for v in varas}
-        ps = personas.copy()
-        ps.sort(key=lambda x: (x['altura'] == 0, -x['altura']))
+        
+        reales = [p for p in personas if p['altura'] > 0]
+        huecos = [p for p in personas if p['altura'] == 0]
+        
+        # --- DELANTE (Más altos primero) ---
+        reales.sort(key=lambda x: x['altura'], reverse=True)
+        
         for _ in range(6):
-            for v in varas: res[v]["Delante"].append(ps.pop(0))
-        ps.sort(key=lambda x: (x['altura'] == 0, x['altura']))
+            fila = []
+            for _ in range(3):
+                fila.append(reales.pop(0) if reales else huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
+            
+            asig = {"Izquierda": None, "Centro": None, "Derecha": None}
+            libres = []
+            
+            # Asignación Lógica: Hombro Derecho -> Vara Izquierda | Hombro Izquierdo -> Vara Derecha
+            for p in fila:
+                pref = str(p.get('pref_hombro', '')).lower()
+                if 'derech' in pref and asig["Izquierda"] is None: 
+                    asig["Izquierda"] = p
+                elif 'izquierd' in pref and asig["Derecha"] is None: 
+                    asig["Derecha"] = p
+                elif 'ambos' in pref and asig["Centro"] is None: 
+                    asig["Centro"] = p
+                else: 
+                    libres.append(p)
+            
+            for v in varas:
+                if asig[v] is None and libres:
+                    asig[v] = libres.pop(0)
+                    
+            for v in varas: res[v]["Delante"].append(asig[v])
+            
+        # --- DETRÁS (Más bajos primero, para hacer V-invertida) ---
+        reales.sort(key=lambda x: x['altura'])
+        
         for _ in range(6):
-            for v in varas: res[v]["Detras"].append(ps.pop(0))
+            fila = []
+            for _ in range(3):
+                fila.append(reales.pop(0) if reales else huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
+            
+            asig = {"Izquierda": None, "Centro": None, "Derecha": None}
+            libres = []
+            
+            for p in fila:
+                pref = str(p.get('pref_hombro', '')).lower()
+                if 'derech' in pref and asig["Izquierda"] is None: 
+                    asig["Izquierda"] = p
+                elif 'izquierd' in pref and asig["Derecha"] is None: 
+                    asig["Derecha"] = p
+                elif 'ambos' in pref and asig["Centro"] is None: 
+                    asig["Centro"] = p
+                else: 
+                    libres.append(p)
+            
+            for v in varas:
+                if asig[v] is None and libres:
+                    asig[v] = libres.pop(0)
+                    
+            for v in varas: res[v]["Detras"].append(asig[v])
+
         return res
 
     def distribuir_cruz(personas):
         varas = ["Izquierda", "Derecha"]
         res = {v: {"Delante": [], "Detras": []} for v in varas}
-        ps = personas.copy()
-        ps.sort(key=lambda x: (x['altura'] == 0, -x['altura']))
+        
+        reales = [p for p in personas if p['altura'] > 0]
+        huecos = [p for p in personas if p['altura'] == 0]
+        
+        # --- DELANTE ---
+        reales.sort(key=lambda x: x['altura'], reverse=True)
         for _ in range(2):
-            for v in varas: res[v]["Delante"].append(ps.pop(0))
-        ps.sort(key=lambda x: (x['altura'] == 0, x['altura']))
+            fila = []
+            for _ in range(2): fila.append(reales.pop(0) if reales else huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
+            
+            asig = {"Izquierda": None, "Derecha": None}
+            libres = []
+            for p in fila:
+                pref = str(p.get('pref_hombro', '')).lower()
+                if 'derech' in pref and asig["Izquierda"] is None: asig["Izquierda"] = p
+                elif 'izquierd' in pref and asig["Derecha"] is None: asig["Derecha"] = p
+                else: libres.append(p)
+                
+            for v in varas:
+                if asig[v] is None and libres: asig[v] = libres.pop(0)
+            for v in varas: res[v]["Delante"].append(asig[v])
+            
+        # --- DETRÁS ---
+        reales.sort(key=lambda x: x['altura'])
         for _ in range(2):
-            for v in varas: res[v]["Detras"].append(ps.pop(0))
+            fila = []
+            for _ in range(2): fila.append(reales.pop(0) if reales else huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
+            
+            asig = {"Izquierda": None, "Derecha": None}
+            libres = []
+            for p in fila:
+                pref = str(p.get('pref_hombro', '')).lower()
+                if 'derech' in pref and asig["Izquierda"] is None: asig["Izquierda"] = p
+                elif 'izquierd' in pref and asig["Derecha"] is None: asig["Derecha"] = p
+                else: libres.append(p)
+                
+            for v in varas:
+                if asig[v] is None and libres: asig[v] = libres.pop(0)
+            for v in varas: res[v]["Detras"].append(asig[v])
+            
         return res
 
     return {
@@ -196,7 +286,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
         <div class="controles">
             <div>
                 <div style="font-size:18px; font-weight:bold; color:#d4af37;">VIERNES SANTO - MOTOR DINÁMICO (Autoguardado 🟢)</div>
-                <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Los cambios se guardan solos. Exporta los datos para hacer el Excel final.</div>
+                <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Control de Hombro: ✅ Correcto | ❌ Incorrecto</div>
             </div>
             <div>
                 <button id="btn-heatmap" class="btn-control" onclick="toggleHeatmap()">🧊 Mapa Peso: OFF</button>
@@ -359,7 +449,6 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 }}
             }}
 
-            // LÓGICA DEL POP-UP MODAL (INFO RÁPIDA)
             function abrirInfoModal(id) {{
                 let st = estadoGlobal[id];
                 if (!st) return;
@@ -400,7 +489,6 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 }}
             }}
 
-            // BUSCADOR TRADICIONAL SUPERIOR
             function actualizarBuscador() {{
                 const val = document.getElementById('input-buscador').value.toLowerCase();
                 const resDiv = document.getElementById('resultado-itinerario');
@@ -537,17 +625,35 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                                     let clExtra = '';
                                     let nExtra = '';
                                     let tagFinal = '';
+                                    let tickHombro = '';
 
-                                    if (!esVacio && estadoGlobal[p.id]) {{
-                                        let est = estadoGlobal[p.id].estadoStr;
-                                        if (est === "conflicto") {{
-                                            clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [¡CRÍTICO!]';
-                                        }} else if (est === "doble") {{
-                                            clExtra = 'dyn-rep-doble'; nExtra = 'dyn-text-doble'; tagFinal = ' (Sobrecarga)';
-                                        }} else if (est === "repCruz") {{
-                                            clExtra = 'dyn-rep-cruz'; nExtra = 'dyn-text-cruz'; tagFinal = ' (Cruz)';
-                                        }} else if (est === "repC") {{
-                                            clExtra = 'dyn-rep-c'; nExtra = 'dyn-text-c'; tagFinal = ' (Turno C)';
+                                    if (!esVacio) {{
+                                        // 1. Verificación Estricta del Hombro
+                                        let pref = (p.pref_hombro || "").toLowerCase().trim();
+                                        if (pref !== "") {{
+                                            if (pref.includes("derech")) {{
+                                                if (vNom === "Izquierda") tickHombro = ' <span title="Hombro correcto" style="font-size:12px; margin-left:3px; text-shadow:none;">✅</span>';
+                                                else tickHombro = ' <span title="Hombro INCORRECTO (Prefiere Derecho)" style="font-size:12px; margin-left:3px; text-shadow:none;">❌</span>';
+                                            }} else if (pref.includes("izquierd")) {{
+                                                if (vNom === "Derecha") tickHombro = ' <span title="Hombro correcto" style="font-size:12px; margin-left:3px; text-shadow:none;">✅</span>';
+                                                else tickHombro = ' <span title="Hombro INCORRECTO (Prefiere Izquierdo)" style="font-size:12px; margin-left:3px; text-shadow:none;">❌</span>';
+                                            }} else if (pref.includes("ambos")) {{
+                                                tickHombro = ' <span title="Hombro correcto (Ambos)" style="font-size:12px; margin-left:3px; text-shadow:none;">✅</span>';
+                                            }}
+                                        }}
+
+                                        // 2. Colores de Repetición
+                                        if (estadoGlobal[p.id]) {{
+                                            let est = estadoGlobal[p.id].estadoStr;
+                                            if (est === "conflicto") {{
+                                                clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [¡CRÍTICO!]';
+                                            }} else if (est === "doble") {{
+                                                clExtra = 'dyn-rep-doble'; nExtra = 'dyn-text-doble'; tagFinal = ' (Sobrecarga)';
+                                            }} else if (est === "repCruz") {{
+                                                clExtra = 'dyn-rep-cruz'; nExtra = 'dyn-text-cruz'; tagFinal = ' (Cruz)';
+                                            }} else if (est === "repC") {{
+                                                clExtra = 'dyn-rep-c'; nExtra = 'dyn-text-c'; tagFinal = ' (Turno C)';
+                                            }}
                                         }}
                                     }}
                                     
@@ -560,7 +666,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
 
                                     html += `
                                         <div class="costalero ${{esVacio ? 'vacio' : ''}} ${{esSobrepeso && !heatmapActivo ? 'sobrepeso' : ''}} ${{clExtra}}" 
-                                             style="${{bgStyle}}"
+                                             style="${{bgStyle}}" title="Preferencia de hombro: ${{p.pref_hombro || 'Indiferente'}}"
                                              draggable="${{!esVacio}}" ondragstart="drag(event, '${{tipo}}', '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})" ondrop="drop(event, '${{tipo}}', '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})">
                                             ${{esVacio ? 
                                                 `<input type="text" class="search-p" placeholder="Escribir nombre..." onkeyup="buscarMini(event, '${{tipo}}','${{idT}}','${{vNom}}','${{sec}}',${{i}})">
@@ -568,7 +674,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                                                 `<span>
                                                     <button style="background:none; border:none; color:#00d2ff; cursor:pointer; padding:0 5px 0 0; font-size:14px;" onclick="abrirInfoModal(${{p.id}}); event.stopPropagation();" title="Ver itinerario">ℹ️</button>
                                                     <button style="background:none; border:none; color:#ff4757; cursor:pointer; padding:0 5px 0 0;" onclick="eliminar('${{tipo}}','${{idT}}','${{vNom}}','${{sec}}',${{i}})" title="Quitar">🗑️</button>
-                                                    <span class="${{nExtra}}">${{p.nombre}} ${{tagFinal}}</span>
+                                                    <span class="${{nExtra}}">${{p.nombre}} ${{tickHombro}} ${{tagFinal}}</span>
                                                 </span>
                                                 <span>
                                                     <span style="color:${{heatmapActivo ? '#fff' : '#d4af37'}}">${{p.altura}}cm</span> 
