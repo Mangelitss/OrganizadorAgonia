@@ -1,7 +1,7 @@
 [
     {
         "id": 1,
-        "nombre": "Aitor Guirao Rodriguez",
+        "nombre": "Aitor Guiraoo Rodriguez",
         "altura": 151,
         "pref_hombro": "Izquierdo",
         "puede_repetir": true,
@@ -828,15 +828,6 @@
         "viernes_santo": true
     },
     {
-        "id": 93,
-        "nombre": "Ángeles Zaragoza Lucas",
-        "altura": 128,
-        "pref_hombro": "",
-        "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
-    },
-    {
         "id": 94,
         "nombre": "Almudena Mula Abadía",
         "altura": 129,
@@ -921,6 +912,15 @@
         "id": 103,
         "nombre": "Mariola Plaza Aniorte",
         "altura": 137,
+        "pref_hombro": "",
+        "puede_repetir": true,
+        "miercoles_santo": true,
+        "viernes_santo": true
+    },
+    {
+        "id": 104,
+        "nombre": "AAAA",
+        "altura": 200,
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
