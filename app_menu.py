@@ -264,7 +264,7 @@ def gestion_miercoles_santo():
     master_list = cargar_datos_miercoles(CONFIG['archivo_datos'])
     if not master_list: return
         
-    datos_cuadrillas = generar_cuadrillas_miercoles(master_list)
+    datos_cuadrillas = generar_cuadrillas_miercoles(master_list, (anio_manual % 2 == 0))
     generar_html_miercoles(datos_cuadrillas, master_list, anio_manual, (anio_manual % 2 == 0), CONFIG['peso_trono_kg'], CONFIG['peso_cruz_kg'], CONFIG['limite_peso_persona'])
     
     print("\n✅ Visualizador del Miércoles Santo generado en 'visualizador_miercoles.html'")

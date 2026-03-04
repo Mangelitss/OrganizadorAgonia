@@ -10,7 +10,7 @@ def crear_html_informe(tipo, archivo_json):
 
     fecha = datetime.datetime.now().strftime("%d/%m/%Y")
     
-    # 1. SOLUCIÓN BUG AMARILLO: Rastrear IDs del Turno C para marcarlos en el Turno B
+    # 1. RASTREO DE IDS (Para pintar el fondo de amarillo en los que repiten Trono)
     ids_en_turno_c = set()
     if "Trono" in datos and "Turno C" in datos["Trono"]:
         for varal in datos["Trono"]["Turno C"].values():
@@ -19,10 +19,154 @@ def crear_html_informe(tipo, archivo_json):
                     if p.get("id", -1) != -1:
                         ids_en_turno_c.add(p["id"])
 
-    def generar_li_costalero(p):
-        """Procesa la celda aplicando los colores correctos. Prioridad: Rojo > Azul > Amarillo"""
-        nombre_original = p.get('nombre', 'HUECO LIBRE')
+    # 2. DEFINICIÓN DINÁMICA DE TEXTOS Y LÓGICA SEGÚN PROCESIÓN
+    if "Viernes" in tipo:
+        # ==========================================
+        # TEXTOS: VIERNES SANTO
+        # ==========================================
+        bloque_itinerario = """
+        <div class="seccion-texto">
+            <h3>📍 Orden e Itinerario Oficial (Viernes Santo)</h3>
+            <ul class="lista-tramos">
+                <li><b>Tramo 1 (Turno A):</b> Monserrate ➔ Plaza del Carmen (Ayuntamiento)</li>
+                <li><b>Tramo 2 (Turno B):</b> Plaza del Carmen ➔ As de Oros (Plaza Nueva)</li>
+                <li><b>Tramo 3 (Turno A):</b> As de Oros ➔ Glorieta</li>
+                <li><b>Tramo 4 (Turno C):</b> Glorieta ➔ Oficina de Turismo</li>
+                <li><b>Regreso (Turno A):</b> Oficina de Turismo ➔ Santiago</li>
+                <li><b>Regreso (Turno B+C):</b> Santiago ➔ Gasolinera</li>
+                <li><b>Regreso (Turno A):</b> Gasolinera ➔ San Francisco</li>
+            </ul>
+        </div>
+        """
         
+        # 🟢 AQUÍ PUEDES MODIFICAR LAS INDICACIONES DEL VIERNES:
+        bloque_indicaciones = """
+        <div class="seccion-texto">
+            <h3>⚠️ Indicaciones Específicas para los Tramos</h3>
+            <p><b>Tramo 1:</b> Atención especial a la salida de Monserrate. Movimientos muy suaves y coordinados para salvar la puerta.</p>
+            <p><b>Tramo 2:</b> Cuidado con el giro de entrada a la Plaza Nueva y evitar los tirones en las arrancadas.</p>
+            <p><b>Tramo 3:</b> Mantener el paso firme, especial precaución con el cruce de cables en la Glorieta.</p>
+            <p><b>Tramo 4:</b> Respetar los tiempos de relevo marcados por el capataz, la calle se estrecha en los últimos metros.</p>
+        </div>
+        """
+        
+        js_tramos_obj = """
+            const TRAMOS = {
+                "Trono": { "Turno A": [1, 3, 5, 7], "Turno B": [2, 6], "Turno C": [4, 6] },
+                "Cruz": { "Turno 1": [1], "Turno 2": [2], "Turno 3": [3], "Turno 4": [4] }
+            };
+        """
+        js_estado_doble = """
+            for (let i = 0; i < allTramos.length - 1; i++) {
+                if (allTramos[i+1] - allTramos[i] === 1) tieneDoble = true;
+            }
+            if (allTramos.filter(t => t <= 4).length > 2) tieneDoble = true;
+        """
+        js_html_rutas = """
+            let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px; border-bottom:1px solid #3d0c2e; padding-bottom:10px;">📋 Hoja de Ruta: ${st.nombre}</h4>`;
+            html += `<div style="background:#160311; padding:15px; border-radius:5px; border-left:5px solid #d4af37; margin-bottom:10px;">
+                        <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🌟 PROCESIÓN (Trono y Cruz)</h5>
+                        <ul style="list-style:none; padding:0; margin:0;">`;
+            [
+                { num: 1, txt: "1. Monserrate ➔ Ayto" },
+                { num: 2, txt: "2. Ayto ➔ As de Oros" },
+                { num: 3, txt: "3. As Oros ➔ Glorieta" },
+                { num: 4, txt: "4. Glorieta ➔ Turismo" }
+            ].forEach(tr => { html += generarFilaTramo(tr, st, tOcupados); });
+            html += `</ul></div>`;
+
+            html += `<div style="background:#160311; padding:15px; border-radius:5px; border-left:5px solid #d4af37;">
+                        <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🏠 REGRESO (Solo Trono)</h5>
+                        <ul style="list-style:none; padding:0; margin:0;">`;
+            [
+                { num: 5, txt: "5. Turismo ➔ Santiago" },
+                { num: 6, txt: "6. Santiago ➔ Gasolinera" },
+                { num: 7, txt: "7. Gasolinera ➔ San Fco" }
+            ].forEach(tr => { html += generarFilaTramo(tr, st, tOcupados); });
+            html += `</ul></div>`;
+            return html;
+        """
+        js_fila_tramo = """
+            if (enCristo.length > 0 && enCruz.length > 0) {
+                label = `💥 <strong style='color:#ff0000'>¡IMPOSIBLE! (${enCristo.join('+')} y ${enCruz.join('+')})</strong>`;
+            } else if (enCristo.length > 0) {
+                label = `💪 <strong style='color:#e8d08c'>🕍 Trono (${enCristo.join(" + ")})</strong>`;
+            } else if (enCruz.length > 0) {
+                let sinDescanso = tOcupados.includes(tr.num - 1) || tOcupados.includes(tr.num + 1);
+                let sobrecarga = tOcupados.filter(t => t <= 4).length > 2;
+                if (sinDescanso || sobrecarga) {
+                    label = `⚠️ <strong style='color:#ff4757'>✝️ Cruz (${enCruz.join('+')}) [SOBREESFUERZO]</strong>`;
+                } else {
+                    label = `💪 <strong style='color:#00d2ff'>✝️ Cruz (${enCruz.join('+')})</strong>`;
+                }
+            }
+        """
+    else:
+        # ==========================================
+        # TEXTOS Y LÓGICA: MIÉRCOLES SANTO
+        # ==========================================
+        anio = datetime.datetime.now().year
+        es_par = (anio % 2 == 0)
+        txt_trono_1 = "Turno B" if es_par else "Turno A"
+        txt_trono_2 = "Turno A" if es_par else "Turno B"
+        t_a = "[2]" if es_par else "[1]"
+        t_b = "[1]" if es_par else "[2]"
+
+        bloque_itinerario = f"""
+        <div class="seccion-texto">
+            <h3>📍 Orden e Itinerario Oficial (Miércoles Santo)</h3>
+            <ul class="lista-tramos">
+                <li><b>Tramo 1 (S. Francisco ➔ Gasolinera):</b> Carga el Trono el <b>{txt_trono_1}</b>, y la Cruz el <b>Turno 1</b>.</li>
+                <li><b>Tramo 2 (Gasolinera ➔ Monserrate):</b> Carga el Trono el <b>{txt_trono_2}</b>, y la Cruz el <b>Turno 2</b>.</li>
+            </ul>
+        </div>
+        """
+        
+        # 🟢 AQUÍ PUEDES MODIFICAR LAS INDICACIONES DEL MIÉRCOLES:
+        bloque_indicaciones = """
+        <div class="seccion-texto">
+            <h3>⚠️ Indicaciones Específicas para los Tramos</h3>
+            <p><b>Tramo 1 (San Francisco a Gasolinera):</b> Cuidado extremo en la salida por la puerta de San Francisco. Movimientos suaves al girar a la calle principal y mantener siempre la cadencia del tambor.</p>
+            <p><b>Tramo 2 (Gasolinera a Monserrate):</b> Tramo de esfuerzo y subida hacia el Santuario de Monserrate. Administrar las fuerzas y hacer caso estricto a las indicaciones del Capataz en la rampa de llegada.</p>
+        </div>
+        """
+
+        js_tramos_obj = f"""
+            const TRAMOS = {{
+                "Trono": {{ "Turno A": {t_a}, "Turno B": {t_b} }},
+                "Cruz": {{ "Turno 1": [1], "Turno 2": [2] }}
+            }};
+        """
+        js_estado_doble = """
+            if (allTramos.length > 1) tieneDoble = true;
+        """
+        js_html_rutas = """
+            let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px; border-bottom:1px solid #3d0c2e; padding-bottom:10px;">📋 Hoja de Ruta: ${st.nombre}</h4>`;
+            html += `<div style="background:#160311; padding:15px; border-radius:5px; border-left:5px solid #d4af37; margin-bottom:10px;">
+                        <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🌟 PROCESIÓN (Ida)</h5>
+                        <ul style="list-style:none; padding:0; margin:0;">`;
+            [
+                { num: 1, txt: "1. S.Francisco ➔ Gasolinera" },
+                { num: 2, txt: "2. Gasolinera ➔ Monserrate" }
+            ].forEach(tr => { html += generarFilaTramo(tr, st, tOcupados); });
+            html += `</ul></div>`;
+            return html;
+        """
+        js_fila_tramo = """
+            if (enCristo.length > 0 && enCruz.length > 0) {
+                label = `💥 <strong style='color:#ff0000'>¡IMPOSIBLE! (${enCristo.join('+')} y ${enCruz.join('+')})</strong>`;
+            } else if (enCristo.length > 0) {
+                label = `💪 <strong style='color:#e8d08c'>🕍 Trono (${enCristo.join(" + ")})</strong>`;
+            } else if (enCruz.length > 0) {
+                label = `💪 <strong style='color:#00d2ff'>✝️ Cruz (${enCruz.join('+')})</strong>`;
+            }
+            if(tOcupados.length === 2 && (enCristo.length > 0 || enCruz.length > 0)) {
+                label = label.replace("💪", "⚠️").replace("#e8d08c", "#ff4757").replace("#00d2ff", "#ff4757") + " [SOBREESFUERZO]";
+            }
+        """
+
+    def generar_li_costalero(p):
+        nombre_original = p.get('nombre', 'HUECO LIBRE')
         if nombre_original == "HUECO LIBRE" or p.get('id', -1) == -1:
             return "<li class='hueco-libre'>-- Hueco Libre --</li>"
         
@@ -52,35 +196,9 @@ def crear_html_informe(tipo, archivo_json):
         </li>
         """
 
-    # 2. SECCIONES DE TEXTO PERSONALIZADAS SEGÚN LA PROCESIÓN
-    bloque_itinerario = ""
-    if "Viernes" in tipo:
-        bloque_itinerario = """
-        <div class="seccion-texto">
-            <h3>📍 Orden e Itinerario Oficial (Viernes Santo)</h3>
-            <ul class="lista-tramos">
-                <li><b>Tramo 1 (Turno A):</b> Monserrate ➔ Plaza del Carmen (Ayuntamiento)</li>
-                <li><b>Tramo 2 (Turno B):</b> Plaza del Carmen ➔ As de Oros (Plaza Nueva)</li>
-                <li><b>Tramo 3 (Turno A):</b> As de Oros ➔ Glorieta</li>
-                <li><b>Tramo 4 (Turno C):</b> Glorieta ➔ Oficina de Turismo</li>
-                <li><b>Regreso (Turno A):</b> Oficina de Turismo ➔ Santiago</li>
-                <li><b>Regreso (Turno B+C):</b> Santiago ➔ Gasolinera</li>
-                <li><b>Regreso (Turno A):</b> Gasolinera ➔ San Francisco</li>
-            </ul>
-        </div>
-        """
-    else:
-        bloque_itinerario = """
-        <div class="seccion-texto">
-            <h3>📍 Orden e Itinerario Oficial</h3>
-            <ul class="lista-tramos">
-                <li><b>Tramo 1:</b> Salida ➔ Relevo Intermedio</li>
-                <li><b>Tramo 2:</b> Relevo Intermedio ➔ Encierro</li>
-            </ul>
-        </div>
-        """
-
-    # 3. HTML COMPLETO
+    # ==========================================
+    # 3. HTML COMPLETO MAQUETADO
+    # ==========================================
     html = f"""
     <!DOCTYPE html>
     <html lang="es">
@@ -113,7 +231,7 @@ def crear_html_informe(tipo, archivo_json):
             .header p {{ color: #666; font-size: 12px; margin: 5px 0 0 0; font-weight: bold; }}
             
             /* LEYENDA */
-            .leyenda {{ display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; font-size: 11px; font-weight: bold; background: #fafafa; padding: 10px; border-radius: 5px; border: 1px solid #eee; }}
+            .leyenda {{ display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; font-size: 11px; font-weight: bold; background: #fafafa; padding: 10px; border-radius: 5px; border: 1px solid #eee; flex-wrap: wrap; }}
             .leyenda-item {{ display: flex; align-items: center; gap: 5px; }}
             .caja {{ width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,0.2); }}
             
@@ -165,7 +283,6 @@ def crear_html_informe(tipo, archivo_json):
                 .container {{ box-shadow: none; border-top: none; padding: 0; }}
                 .turno-box {{ border: 1px solid #000; }}
                 .turno-title {{ background: #eee !important; color: #000 !important; border-bottom: 1px solid #000; -webkit-print-color-adjust: exact; }}
-                /* Para que se impriman los colores de fondo en Chrome/Safari */
                 .bg-amarillo, .bg-azul, .bg-rojo, .seccion-mid, .caja {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
             }}
         </style>
@@ -196,9 +313,9 @@ def crear_html_informe(tipo, archivo_json):
             </div>
             
             <div class="leyenda">
-                <div class="leyenda-item"><span class="caja bg-amarillo"></span> Dobla Trono (Turno B y C)</div>
+                <div class="leyenda-item"><span class="caja bg-amarillo"></span> Dobla Trono (Turnos seguidos)</div>
                 <div class="leyenda-item"><span class="caja bg-azul"></span> Carga Alterna (Trono y Cruz)</div>
-                <div class="leyenda-item"><span class="caja bg-rojo"></span> Sobreesfuerzo (Carga Doble)</div>
+                <div class="leyenda-item"><span class="caja bg-rojo"></span> Sobreesfuerzo Crítico (Carga doble seguida)</div>
             </div>
     """
 
@@ -218,8 +335,6 @@ def crear_html_informe(tipo, archivo_json):
                     <div class="varal">
                         <h4 class="varal-title">VARA {nombre_varal}</h4>
                 """
-                
-                # --- BLOQUE DELANTE ---
                 if "Delante" in secciones:
                     html += "<div class='seccion-top'>▲ DELANTE ▲</div>"
                     html += "<ul class='lista-costaleros'>"
@@ -227,10 +342,8 @@ def crear_html_informe(tipo, archivo_json):
                         html += generar_li_costalero(p)
                     html += "</ul>"
                 
-                # --- SEPARADOR CENTRAL TRONO ---
-                html += "<div class='seccion-mid'>▼ TRONO ▼</div>"
+                html += "<div class='seccion-mid'> TRONO </div>"
                 
-                # --- BLOQUE DETRÁS ---
                 if "Detras" in secciones:
                     html += "<ul class='lista-costaleros'>"
                     for p in secciones["Detras"]:
@@ -238,28 +351,20 @@ def crear_html_informe(tipo, archivo_json):
                     html += "</ul>"
                     html += "<div class='seccion-bot'>▼ DETRÁS ▼</div>"
                 
-                html += "</div>" # Fin del varal
-            html += "</div></div>" # Fin del grid y del turno
+                html += "</div>"
+            html += "</div></div>"
 
-    # 4. AÑADIR SECCIONES FINALES
+    # INSERTAMOS LOS TEXTOS ESPECÍFICOS DE LA PROCESIÓN (Itinerario + Indicaciones)
     html += bloque_itinerario
+    html += bloque_indicaciones
     
     html += """
-        <div class="seccion-texto">
-            <h3>⚠️ Indicaciones Específicas para los Tramos</h3>
-            <p><b>Tramo 1:</b> Atención especial a la salida de Monserrate. Movimientos muy suaves y coordinados para salvar la puerta.</p>
-            <p><b>Tramo 2:</b> Cuidado con el giro de entrada a la Plaza Nueva y evitar los tirones en las arrancadas.</p>
-            <p><b>Tramo 3:</b> Mantener el paso firme, especial precaución con el cruce de cables en la Glorieta.</p>
-            <p><b>Tramo 4 / Regreso:</b> Respetar los tiempos de relevo marcados por el capataz, la calle se estrecha en los últimos metros.</p>
-        </div>
-
         <div class="seccion-texto">
             <h3>📜 Normativa de la Cuadrilla</h3>
             <p><i>(Reservado para las normas oficiales de la Mayordomía que se adjuntarán próximamente).</i></p>
         </div>
     """
 
-    # SCRIPTS PARA BUSCADOR Y PDF
     turnos_json_str = json.dumps(datos)
     html += f"""
             <div style="text-align: center; margin-top: 40px; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 10px;">
@@ -268,14 +373,10 @@ def crear_html_informe(tipo, archivo_json):
         </div>
         
         <script>
-            // Lógica JS inyectada para el Buscador Interactivo en el Reporte
             let datos = {turnos_json_str};
             let estadoGlobal = {{}};
             
-            const TRAMOS = {{
-                "Trono": {{ "Turno A": [1, 3, 5, 7], "Turno B": [2, 6], "Turno C": [4, 6] }},
-                "Cruz": {{ "Turno 1": [1], "Turno 2": [2], "Turno 3": [3], "Turno 4": [4] }}
-            }};
+            {js_tramos_obj}
 
             function analizarEstado() {{
                 let stats = {{}};
@@ -301,7 +402,9 @@ def crear_html_informe(tipo, archivo_json):
                     s.cristo.forEach(t => cristoArr.push(...(TRAMOS.Trono[t] || [])));
                     let cruzArr = [];
                     s.cruz.forEach(t => cruzArr.push(...(TRAMOS.Cruz[t] || [])));
-                    s.tramos = [...new Set([...cristoArr, ...cruzArr])].sort((a,b) => a - b);
+                    
+                    let allTramos = [...new Set([...cristoArr, ...cruzArr])].sort((a,b) => a - b);
+                    s.tramos = allTramos;
                 }}
                 estadoGlobal = stats;
             }}
@@ -313,47 +416,14 @@ def crear_html_informe(tipo, archivo_json):
                 let enCruz = [];
                 st.cruz.forEach(t => {{ if((TRAMOS.Cruz[t]||[]).includes(tr.num)) enCruz.push(t); }});
 
-                if (enCristo.length > 0 && enCruz.length > 0) {{
-                    label = `💥 <strong style='color:#ff0000'>¡IMPOSIBLE! (${{enCristo.join('+')}} y ${{enCruz.join('+')}})</strong>`;
-                }} else if (enCristo.length > 0) {{
-                    label = `💪 <strong style='color:#e8d08c'>🕍 Trono (${{enCristo.join(" + ")}})</strong>`;
-                }} else if (enCruz.length > 0) {{
-                    let sinDescanso = tOcupados.includes(tr.num - 1) || tOcupados.includes(tr.num + 1);
-                    let sobrecarga = tOcupados.filter(t => t <= 4).length > 2;
-                    if (sinDescanso || sobrecarga) {{
-                        label = `⚠️ <strong style='color:#ff4757'>✝️ Cruz (${{enCruz.join('+')}}) [SOBREESFUERZO]</strong>`;
-                    }} else {{
-                        label = `💪 <strong style='color:#00d2ff'>✝️ Cruz (${{enCruz.join('+')}})</strong>`;
-                    }}
-                }}
+                {js_fila_tramo}
+                
                 return `<li style="color:#f8f0f5;"><span class="tramo-label" style="color:#a37c95;">${{tr.txt}}</span> ${{label}}</li>`;
             }}
 
             function construirHTMLItinerario(st) {{
                 let tOcupados = st.tramos;
-                let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px; border-bottom:1px solid #3d0c2e; padding-bottom:10px;">📋 Hoja de Ruta: ${{st.nombre}}</h4>`;
-                
-                html += `<div style="background:#160311; padding:15px; border-radius:5px; border-left:5px solid #d4af37; margin-bottom:10px;">
-                            <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🌟 PROCESIÓN</h5>
-                            <ul style="list-style:none; padding:0; margin:0;">`;
-                [
-                    {{ num: 1, txt: "1. Monserrate ➔ Ayto" }},
-                    {{ num: 2, txt: "2. Ayto ➔ As de Oros" }},
-                    {{ num: 3, txt: "3. As Oros ➔ Glorieta" }},
-                    {{ num: 4, txt: "4. Glorieta ➔ Turismo" }}
-                ].forEach(tr => {{ html += generarFilaTramo(tr, st, tOcupados); }});
-                html += `</ul></div>`;
-
-                html += `<div style="background:#160311; padding:15px; border-radius:5px; border-left:5px solid #d4af37;">
-                            <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🏠 REGRESO</h5>
-                            <ul style="list-style:none; padding:0; margin:0;">`;
-                [
-                    {{ num: 5, txt: "5. Turismo ➔ Santiago" }},
-                    {{ num: 6, txt: "6. Santiago ➔ Gasolinera" }},
-                    {{ num: 7, txt: "7. Gasolinera ➔ San Fco" }}
-                ].forEach(tr => {{ html += generarFilaTramo(tr, st, tOcupados); }});
-                html += `</ul></div>`;
-                return html;
+                {js_html_rutas}
             }}
 
             function actualizarBuscador() {{
@@ -389,7 +459,6 @@ def crear_html_informe(tipo, archivo_json):
 
             window.onload = () => {{ analizarEstado(); }};
 
-            // GENERACIÓN DE PDF
             function generarPDF() {{
                 const element = document.getElementById('informe-content');
                 const btn = document.querySelector('.btn-pdf');
@@ -404,7 +473,7 @@ def crear_html_informe(tipo, archivo_json):
                 }};
                 
                 html2pdf().set(opt).from(element).save().then(() => {{
-                    btn.innerText = "📥 DESCARGAR PDF OFICIAL";
+                    btn.innerText = "📥 DESCARGAR PDF PARA WHATSAPP";
                 }});
             }}
         </script>

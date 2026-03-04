@@ -274,6 +274,8 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
             .btn-control:hover {{ background: #571342; box-shadow: 0 0 8px rgba(212, 175, 55, 0.4); }}
             .btn-export {{ background: #d4af37; color: #000; border-color: #b5952f; }}
             .btn-export:hover {{ background: #b5952f; box-shadow: 0 0 10px rgba(212, 175, 55, 0.6); color:#000; }}
+            .btn-load {{ background: #17517e; border-color: #2980b9; }}
+            .btn-load:hover {{ background: #1f6b9c; box-shadow: 0 0 10px rgba(41, 128, 185, 0.6); }}
             
             .stats-box {{ background: #0c0209; padding: 8px; border-radius: 4px; font-size: 10px; color: #d4af37; margin-top: 5px; border-left: 3px solid #d4af37; }}
             input.search-p {{ background: #0c0209; border: 1px solid #3d0c2e; color: #d4af37; padding: 5px; width: 100%; font-size: 10px; border-radius: 3px; outline: none; }}
@@ -289,6 +291,9 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Control de Hombro: ✅ Correcto | ❌ Incorrecto</div>
             </div>
             <div>
+                <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
+                
+                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR JSON</button>
                 <button id="btn-heatmap" class="btn-control" onclick="toggleHeatmap()">🧊 Mapa Peso: OFF</button>
                 <button class="btn-control btn-export" onclick="descargarDatosJSON()">💾 DESCARGAR DATOS</button>
             </div>
@@ -367,6 +372,31 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 document.body.appendChild(dlAnchorElem);
                 dlAnchorElem.click();
                 dlAnchorElem.remove();
+            }}
+
+            // NUEVA FUNCIÓN: CARGAR JSON DESDE EL ORDENADOR
+            function cargarJSON(event) {{
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {{
+                    try {{
+                        const loadedData = JSON.parse(e.target.result);
+                        if(loadedData.Trono && loadedData.Cruz) {{
+                            datos = loadedData;
+                            guardarMemoria();
+                            render();
+                            alert("✅ Configuración cargada correctamente.");
+                        }} else {{
+                            alert("❌ El archivo seleccionado no tiene el formato correcto para una procesión.");
+                        }}
+                    }} catch (error) {{
+                        alert("❌ Error al leer el archivo JSON. Asegúrate de que no esté corrupto.");
+                    }}
+                    event.target.value = '';
+                }};
+                reader.readAsText(file);
             }}
 
             function analizarEstado() {{
@@ -454,13 +484,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 if (!st) return;
                 
                 let tOcupados = st.tramos;
-                let tramosProc = tOcupados.filter(t => t <= 4);
-                let badge = "";
-                if (st.estadoStr === "repCruz" && tramosProc.length === 2) {{
-                    badge = `<span style="background:#00d2ff; color:#000; padding:3px 8px; border-radius:5px; font-size:11px; margin-left:15px; vertical-align:middle; text-shadow:none;">✨ PATRÓN ÓPTIMO</span>`;
-                }}
-
-                let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px; border-bottom:1px solid #3d0c2e; padding-bottom:10px; display:flex; align-items:center;">📋 Hoja de Ruta: ${{st.nombre}} ${{badge}}</h4>`;
+                let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px; border-bottom:1px solid #3d0c2e; padding-bottom:10px; display:flex; align-items:center;">📋 Hoja de Ruta: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
                 
                 html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN (Trono y Cruz)</h5><ul>`;
                 [
@@ -505,14 +529,8 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                     let st = estadoGlobal[idFound];
                     let tOcupados = st.tramos;
                     
-                    let tramosProc = tOcupados.filter(t => t <= 4);
-                    let badge = "";
-                    if (st.estadoStr === "repCruz" && tramosProc.length === 2) {{
-                        badge = `<span style="background:#00d2ff; color:#000; padding:3px 8px; border-radius:5px; font-size:11px; margin-left:15px; vertical-align:middle;">✨ PATRÓN ÓPTIMO (Carga Alterna)</span>`;
-                    }}
-
                     resDiv.style.display = 'block';
-                    let html = `<h4 style="color:#d4af37; margin-bottom:10px; font-size:16px; display:flex; align-items:center;">📋 Hoja de Ruta Viva: ${{st.nombre}} ${{badge}}</h4>`;
+                    let html = `<h4 style="color:#d4af37; margin-bottom:10px; font-size:16px; display:flex; align-items:center;">📋 Hoja de Ruta Viva: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
                     
                     html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN (Trono y Cruz)</h5><ul>`;
                     [
@@ -628,21 +646,20 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                                     let tickHombro = '';
 
                                     if (!esVacio) {{
-                                        // 1. Verificación Estricta del Hombro
+                                        // Validación Estricta de Hombro
                                         let pref = (p.pref_hombro || "").toLowerCase().trim();
                                         if (pref !== "") {{
                                             if (pref.includes("derech")) {{
                                                 if (vNom === "Izquierda") tickHombro = ' <span title="Hombro correcto" style="font-size:12px; margin-left:3px; text-shadow:none;">✅</span>';
-                                                else tickHombro = ' <span title="Hombro INCORRECTO (Prefiere Derecho)" style="font-size:12px; margin-left:3px; text-shadow:none;">❌</span>';
+                                                else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:12px; margin-left:3px; text-shadow:none;">❌</span>';
                                             }} else if (pref.includes("izquierd")) {{
                                                 if (vNom === "Derecha") tickHombro = ' <span title="Hombro correcto" style="font-size:12px; margin-left:3px; text-shadow:none;">✅</span>';
-                                                else tickHombro = ' <span title="Hombro INCORRECTO (Prefiere Izquierdo)" style="font-size:12px; margin-left:3px; text-shadow:none;">❌</span>';
+                                                else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:12px; margin-left:3px; text-shadow:none;">❌</span>';
                                             }} else if (pref.includes("ambos")) {{
-                                                tickHombro = ' <span title="Hombro correcto (Ambos)" style="font-size:12px; margin-left:3px; text-shadow:none;">✅</span>';
+                                                tickHombro = ' <span title="Hombro correcto" style="font-size:12px; margin-left:3px; text-shadow:none;">✅</span>';
                                             }}
                                         }}
 
-                                        // 2. Colores de Repetición
                                         if (estadoGlobal[p.id]) {{
                                             let est = estadoGlobal[p.id].estadoStr;
                                             if (est === "conflicto") {{
@@ -652,7 +669,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                                             }} else if (est === "repCruz") {{
                                                 clExtra = 'dyn-rep-cruz'; nExtra = 'dyn-text-cruz'; tagFinal = ' (Cruz)';
                                             }} else if (est === "repC") {{
-                                                clExtra = 'dyn-rep-c'; nExtra = 'dyn-text-c'; tagFinal = ' (Turno C)';
+                                                clExtra = 'dyn-rep-c'; nExtra = 'dyn-text-c'; tagFinal = ' (Doble)';
                                             }}
                                         }}
                                     }}

@@ -3,7 +3,7 @@
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Informe Oficial - Viernes Santo</title>
+        <title>Informe Oficial - Miércoles Santo</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Open+Sans:wght@400;600;800&display=swap');
@@ -30,7 +30,7 @@
             .header p { color: #666; font-size: 12px; margin: 5px 0 0 0; font-weight: bold; }
             
             /* LEYENDA */
-            .leyenda { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; font-size: 11px; font-weight: bold; background: #fafafa; padding: 10px; border-radius: 5px; border: 1px solid #eee; }
+            .leyenda { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; font-size: 11px; font-weight: bold; background: #fafafa; padding: 10px; border-radius: 5px; border: 1px solid #eee; flex-wrap: wrap; }
             .leyenda-item { display: flex; align-items: center; gap: 5px; }
             .caja { width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,0.2); }
             
@@ -82,7 +82,6 @@
                 .container { box-shadow: none; border-top: none; padding: 0; }
                 .turno-box { border: 1px solid #000; }
                 .turno-title { background: #eee !important; color: #000 !important; border-bottom: 1px solid #000; -webkit-print-color-adjust: exact; }
-                /* Para que se impriman los colores de fondo en Chrome/Safari */
                 .bg-amarillo, .bg-azul, .bg-rojo, .seccion-mid, .caja { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             }
         </style>
@@ -108,14 +107,14 @@
             <div class="header">
                 <img src="bandera_tercio_npj.jpg" alt="Escudo Mayordomía" class="logo-img" onerror="this.style.display='none'">
                 <h1>OFS Muy Ilustre Mayordomía de Nuestro Padre Jesús Nazareno</h1>
-                <h2>Orden Procesional - Viernes Santo</h2>
+                <h2>Orden Procesional - Miércoles Santo</h2>
                 <p>Emitido: 04/03/2026</p>
             </div>
             
             <div class="leyenda">
-                <div class="leyenda-item"><span class="caja bg-amarillo"></span> Dobla Trono (Turno B y C)</div>
+                <div class="leyenda-item"><span class="caja bg-amarillo"></span> Dobla Trono (Turnos seguidos)</div>
                 <div class="leyenda-item"><span class="caja bg-azul"></span> Carga Alterna (Trono y Cruz)</div>
-                <div class="leyenda-item"><span class="caja bg-rojo"></span> Sobreesfuerzo (Carga Doble)</div>
+                <div class="leyenda-item"><span class="caja bg-rojo"></span> Sobreesfuerzo Crítico (Carga doble seguida)</div>
             </div>
     <h2 style='color:#5c164e; border-bottom: 2px solid #5c164e; padding-bottom:5px; margin-top:30px; font-size:18px;'>ESTRUCTURA: TRONO</h2>
             <div class="turno-box">
@@ -124,105 +123,6 @@
             
                     <div class="varal">
                         <h4 class="varal-title">VARA Izquierda</h4>
-                <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(75)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Oscar Martinez Martinez</span>
-            </div>
-            <span class='meta'>157cm</span>
-        </li>
-        
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(76)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Fernándo Mas Pérez</span>
-            </div>
-            <span class='meta'>153cm</span>
-        </li>
-        
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(15)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Oscar Martinez Mora</span>
-            </div>
-            <span class='meta'>150cm</span>
-        </li>
-        
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(21)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Antonio Jesús Cabrera Ferránd</span>
-            </div>
-            <span class='meta'>150cm</span>
-        </li>
-        
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(17)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Abraham Sarmiento Marín</span>
-            </div>
-            <span class='meta'>149cm</span>
-        </li>
-        
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(4)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Beatriz Jara Rodriguez</span>
-            </div>
-            <span class='meta'>147cm</span>
-        </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(27)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Carmen M Hernández Cáma</span>
-            </div>
-            <span class='meta'>143cm</span>
-        </li>
-        
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(10)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Cinthia Bernabé Donate</span>
-            </div>
-            <span class='meta'>144cm</span>
-        </li>
-        
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(34)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Jesús Tovar Cuenca</span>
-            </div>
-            <span class='meta'>144cm</span>
-        </li>
-        
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(29)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Cristina Sánchez Moya</span>
-            </div>
-            <span class='meta'>145cm</span>
-        </li>
-        
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(6)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Milagros Peñalver Lorenzo</span>
-            </div>
-            <span class='meta'>146cm</span>
-        </li>
-        
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(86)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Gisela Mora Samper</span>
-            </div>
-            <span class='meta'>146cm</span>
-        </li>
-        </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div>
-                    <div class="varal">
-                        <h4 class="varal-title">VARA Centro</h4>
                 <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
         <li class='costalero-cell '>
             <div class="c-info">
@@ -242,8 +142,8 @@
         
         <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(1)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Aitor Guirao Rodriguez</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(20)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Nuria Ortega Lidón</span>
             </div>
             <span class='meta'>151cm</span>
         </li>
@@ -271,13 +171,112 @@
             </div>
             <span class='meta'>148cm</span>
         </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
+        </ul><div class='seccion-mid'> TRONO </div><ul class='lista-costaleros'>
         <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(9)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Dolores Rodriguez Lorente</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(27)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Carmen M Hernández Cáma</span>
+            </div>
+            <span class='meta'>143cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(10)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Cinthia Bernabé Donate</span>
             </div>
             <span class='meta'>144cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(34)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>M Jesús Tovar Cuenca</span>
+            </div>
+            <span class='meta'>144cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(82)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Alicia Bas Munuera</span>
+            </div>
+            <span class='meta'>145cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(6)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Milagros Peñalver Lorenzo</span>
+            </div>
+            <span class='meta'>146cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(86)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Gisela Mora Samper</span>
+            </div>
+            <span class='meta'>146cm</span>
+        </li>
+        </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div>
+                    <div class="varal">
+                        <h4 class="varal-title">VARA Centro</h4>
+                <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(75)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Oscar Martinez Martinez</span>
+            </div>
+            <span class='meta'>157cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(76)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Fernándo Mas Pérez</span>
+            </div>
+            <span class='meta'>153cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(15)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Oscar Martinez Mora</span>
+            </div>
+            <span class='meta'>150cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(3)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Miguel Ángel Amorós Rodríg</span>
+            </div>
+            <span class='meta'>149cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(17)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Abraham Sarmiento Marín</span>
+            </div>
+            <span class='meta'>149cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(72)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Noelia Grao López</span>
+            </div>
+            <span class='meta'>148cm</span>
+        </li>
+        </ul><div class='seccion-mid'> TRONO </div><ul class='lista-costaleros'>
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(32)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Ana Isabel Martínez Javaloyes</span>
+            </div>
+            <span class='meta'>143cm</span>
         </li>
         
         <li class='costalero-cell '>
@@ -290,10 +289,10 @@
         
         <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(11)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Álvaro Sarmiento Caselles</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(81)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Loli Martí Rocamora</span>
             </div>
-            <span class='meta'>145cm</span>
+            <span class='meta'>144cm</span>
         </li>
         
         <li class='costalero-cell '>
@@ -306,16 +305,16 @@
         
         <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(35)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Gelen Huertas Mateo</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(12)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Moises Lorente Irles</span>
             </div>
             <span class='meta'>146cm</span>
         </li>
         
         <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(73)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Alejandro Gea Martí</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(18)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Daniel Mira Juan</span>
             </div>
             <span class='meta'>147cm</span>
         </li>
@@ -341,18 +340,18 @@
         
         <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(20)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Nuria Ortega Lidón</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(1)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Aitor Guirao Rodriguez</span>
             </div>
             <span class='meta'>151cm</span>
         </li>
         
         <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(3)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Miguel Ángel Amorós Rodríg</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(21)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Antonio Jesús Cabrera Ferránd</span>
             </div>
-            <span class='meta'>149cm</span>
+            <span class='meta'>150cm</span>
         </li>
         
         <li class='costalero-cell '>
@@ -365,18 +364,18 @@
         
         <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(72)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Noelia Grao López</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(4)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Beatriz Jara Rodriguez</span>
             </div>
-            <span class='meta'>148cm</span>
+            <span class='meta'>147cm</span>
         </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
+        </ul><div class='seccion-mid'> TRONO </div><ul class='lista-costaleros'>
         <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(32)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Ana Isabel Martínez Javaloyes</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(9)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>M Dolores Rodriguez Lorente</span>
             </div>
-            <span class='meta'>143cm</span>
+            <span class='meta'>144cm</span>
         </li>
         
         <li class='costalero-cell '>
@@ -389,32 +388,32 @@
         
         <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(81)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Loli Martí Rocamora</span>
-            </div>
-            <span class='meta'>144cm</span>
-        </li>
-        
-        <li class='costalero-cell '>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(82)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Alicia Bas Munuera</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(11)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Álvaro Sarmiento Caselles</span>
             </div>
             <span class='meta'>145cm</span>
         </li>
         
         <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(12)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Moises Lorente Irles</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(29)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Cristina Sánchez Moya</span>
+            </div>
+            <span class='meta'>145cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(35)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Gelen Huertas Mateo</span>
             </div>
             <span class='meta'>146cm</span>
         </li>
         
         <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(18)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Daniel Mira Juan</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(73)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Alejandro Gea Martí</span>
             </div>
             <span class='meta'>147cm</span>
         </li>
@@ -426,7 +425,7 @@
                     <div class="varal">
                         <h4 class="varal-title">VARA Izquierda</h4>
                 <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(80)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Lucía Cerezo López</span>
@@ -434,7 +433,7 @@
             <span class='meta'>143cm</span>
         </li>
         
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(26)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Pilar de Lourdes Martínez P</span>
@@ -442,7 +441,7 @@
             <span class='meta'>142cm</span>
         </li>
         
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(8)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>M Rosa García Cabrera</span>
@@ -450,7 +449,7 @@
             <span class='meta'>140cm</span>
         </li>
         
-        <li class='costalero-cell bg-rojo'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(31)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Antonio Lidón Martínez</span>
@@ -473,8 +472,8 @@
             </div>
             <span class='meta'>139cm</span>
         </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-amarillo'>
+        </ul><div class='seccion-mid'> TRONO </div><ul class='lista-costaleros'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(39)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>M Adela Ros Marín</span>
@@ -482,7 +481,7 @@
             <span class='meta'>136cm</span>
         </li>
         
-        <li class='costalero-cell bg-amarillo'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(51)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Lourdes Egio Pardines</span>
@@ -525,7 +524,7 @@
                     <div class="varal">
                         <h4 class="varal-title">VARA Centro</h4>
                 <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(85)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Carla López Rodríguez</span>
@@ -533,15 +532,15 @@
             <span class='meta'>143cm</span>
         </li>
         
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(78)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Vero Soto / Vero Rabasco</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(79)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>M Jesús Aledo Beltrán</span>
             </div>
             <span class='meta'>141cm</span>
         </li>
         
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(25)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Ana M Rodríguez Lorente</span>
@@ -549,7 +548,7 @@
             <span class='meta'>140cm</span>
         </li>
         
-        <li class='costalero-cell bg-rojo'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(83)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Andrea Fernández Zaragoza</span>
@@ -572,8 +571,8 @@
             </div>
             <span class='meta'>139cm</span>
         </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-amarillo'>
+        </ul><div class='seccion-mid'> TRONO </div><ul class='lista-costaleros'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(40)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Blanca Rosa Medina Oltra</span>
@@ -581,7 +580,7 @@
             <span class='meta'>136cm</span>
         </li>
         
-        <li class='costalero-cell bg-amarillo'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(52)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Lydia Espinosa Fenoll</span>
@@ -624,7 +623,7 @@
                     <div class="varal">
                         <h4 class="varal-title">VARA Derecha</h4>
                 <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(87)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Natalia Vinuesa Martínez</span>
@@ -632,15 +631,15 @@
             <span class='meta'>143cm</span>
         </li>
         
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(79)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Jesús Aledo Beltrán</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(78)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Vero Soto / Vero Rabasco</span>
             </div>
             <span class='meta'>141cm</span>
         </li>
         
-        <li class='costalero-cell bg-rojo'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(30)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Zenaida Carmen Vivancos Vivar</span>
@@ -648,7 +647,7 @@
             <span class='meta'>140cm</span>
         </li>
         
-        <li class='costalero-cell bg-rojo'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(84)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Zenaida Vivancos Vivancos</span>
@@ -671,8 +670,8 @@
             </div>
             <span class='meta'>138cm</span>
         </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-amarillo'>
+        </ul><div class='seccion-mid'> TRONO </div><ul class='lista-costaleros'>
+        <li class='costalero-cell '>
             <div class="c-info">
                 <button class="btn-info no-print" onclick="abrirInfoModal(41)" title="Ver itinerario">ℹ️</button>
                 <span class='nombre'>Paula Marco Ruíz</span>
@@ -719,307 +718,6 @@
             </div>
             <span class='meta'>138cm</span>
         </li>
-        </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div></div></div>
-            <div class="turno-box">
-                <h3 class="turno-title">Turno C</h3>
-                <div class="grid-varales">
-            
-                    <div class="varal">
-                        <h4 class="varal-title">VARA Izquierda</h4>
-                <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(88)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Karima Calvo Espinosa</span>
-            </div>
-            <span class='meta'>136cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(41)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Paula Marco Ruíz</span>
-            </div>
-            <span class='meta'>136cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(59)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Paula Martinez Casanova</span>
-            </div>
-            <span class='meta'>135cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(47)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Dolores Zárate Chumillas</span>
-            </div>
-            <span class='meta'>134cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(71)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Lola Bas Martí</span>
-            </div>
-            <span class='meta'>134cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(46)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Pilar Cerezo Palop</span>
-            </div>
-            <span class='meta'>133cm</span>
-        </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(42)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M José Sánchez Fernández</span>
-            </div>
-            <span class='meta'>128cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(43)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Erika Navarro Zaragoza</span>
-            </div>
-            <span class='meta'>129cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(97)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>María Rabasco Arce</span>
-            </div>
-            <span class='meta'>129cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(92)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Ariadna Martinez Marti</span>
-            </div>
-            <span class='meta'>130cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(45)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Carmen Bas Martí</span>
-            </div>
-            <span class='meta'>132cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-rojo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(99)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Brenda Martinez Sampere</span>
-            </div>
-            <span class='meta'>132cm</span>
-        </li>
-        </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div>
-                    <div class="varal">
-                        <h4 class="varal-title">VARA Centro</h4>
-                <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(39)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Adela Ros Marín</span>
-            </div>
-            <span class='meta'>136cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(51)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Lourdes Egio Pardines</span>
-            </div>
-            <span class='meta'>136cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(65)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Anabel Arce Pedrique</span>
-            </div>
-            <span class='meta'>135cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(58)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Pilar Ruíz Cerezo</span>
-            </div>
-            <span class='meta'>134cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(96)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M del Carmen Fernández Bel</span>
-            </div>
-            <span class='meta'>134cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(57)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Esther Cano Bermúdez</span>
-            </div>
-            <span class='meta'>133cm</span>
-        </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(54)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Sofía Vinuesa Martínez</span>
-            </div>
-            <span class='meta'>128cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(66)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Claudia Ruiz Caselles</span>
-            </div>
-            <span class='meta'>129cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(55)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Noemí García Bernabé</span>
-            </div>
-            <span class='meta'>130cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-rojo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(44)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Nuria Laguía Martínez</span>
-            </div>
-            <span class='meta'>131cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(56)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Visi Díaz Hernández</span>
-            </div>
-            <span class='meta'>132cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-rojo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(100)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Manoli Martínez Lizón</span>
-            </div>
-            <span class='meta'>132cm</span>
-        </li>
-        </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div>
-                    <div class="varal">
-                        <h4 class="varal-title">VARA Derecha</h4>
-                <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(40)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Blanca Rosa Medina Oltra</span>
-            </div>
-            <span class='meta'>136cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(52)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Lydia Espinosa Fenoll</span>
-            </div>
-            <span class='meta'>136cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(91)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Anabel Rabasco Arce</span>
-            </div>
-            <span class='meta'>135cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(70)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Abigail García Botella</span>
-            </div>
-            <span class='meta'>134cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(101)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Ángeles López Cerezo</span>
-            </div>
-            <span class='meta'>134cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(68)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M del Mar García Grau</span>
-            </div>
-            <span class='meta'>133cm</span>
-        </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(93)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Ángeles Zaragoza Lucas</span>
-            </div>
-            <span class='meta'>128cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(94)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Almudena Mula Abadía</span>
-            </div>
-            <span class='meta'>129cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(67)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Inmaculada Andúgar Costa</span>
-            </div>
-            <span class='meta'>130cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-amarillo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(98)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Lucia Sánchez Vázquez</span>
-            </div>
-            <span class='meta'>131cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-rojo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(95)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Belén Mula Gómez</span>
-            </div>
-            <span class='meta'>132cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(69)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Raquel Rodríguez Escudero</span>
-            </div>
-            <span class='meta'>133cm</span>
-        </li>
         </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div></div></div><h2 style='color:#5c164e; border-bottom: 2px solid #5c164e; padding-bottom:5px; margin-top:30px; font-size:18px;'>ESTRUCTURA: CRUZ</h2>
             <div class="turno-box">
                 <h3 class="turno-title">Turno 1</h3>
@@ -1028,71 +726,71 @@
                     <div class="varal">
                         <h4 class="varal-title">VARA Izquierda</h4>
                 <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(96)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M del Carmen Fernández Bel</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(88)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Karima Calvo Espinosa</span>
+            </div>
+            <span class='meta'>136cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(65)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Anabel Arce Pedrique</span>
+            </div>
+            <span class='meta'>135cm</span>
+        </li>
+        </ul><div class='seccion-mid'> TRONO </div><ul class='lista-costaleros'>
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(47)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>M Dolores Zárate Chumillas</span>
             </div>
             <span class='meta'>134cm</span>
         </li>
         
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(46)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Pilar Cerezo Palop</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(70)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Abigail García Botella</span>
             </div>
-            <span class='meta'>133cm</span>
-        </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(45)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Carmen Bas Martí</span>
-            </div>
-            <span class='meta'>132cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(68)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M del Mar García Grau</span>
-            </div>
-            <span class='meta'>133cm</span>
+            <span class='meta'>134cm</span>
         </li>
         </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div>
                     <div class="varal">
                         <h4 class="varal-title">VARA Derecha</h4>
                 <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(101)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Ángeles López Cerezo</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(59)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Paula Martinez Casanova</span>
+            </div>
+            <span class='meta'>135cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(91)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Anabel Rabasco Arce</span>
+            </div>
+            <span class='meta'>135cm</span>
+        </li>
+        </ul><div class='seccion-mid'> TRONO </div><ul class='lista-costaleros'>
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(58)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Pilar Ruíz Cerezo</span>
             </div>
             <span class='meta'>134cm</span>
         </li>
         
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(57)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Esther Cano Bermúdez</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(71)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Lola Bas Martí</span>
             </div>
-            <span class='meta'>133cm</span>
-        </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(56)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Visi Díaz Hernández</span>
-            </div>
-            <span class='meta'>132cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(69)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Raquel Rodríguez Escudero</span>
-            </div>
-            <span class='meta'>133cm</span>
+            <span class='meta'>134cm</span>
         </li>
         </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div></div></div>
             <div class="turno-box">
@@ -1102,242 +800,87 @@
                     <div class="varal">
                         <h4 class="varal-title">VARA Izquierda</h4>
                 <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(88)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Karima Calvo Espinosa</span>
-            </div>
-            <span class='meta'>136cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(65)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Anabel Arce Pedrique</span>
-            </div>
-            <span class='meta'>135cm</span>
-        </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(47)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Dolores Zárate Chumillas</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(101)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>M Ángeles López Cerezo</span>
             </div>
             <span class='meta'>134cm</span>
         </li>
         
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(70)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Abigail García Botella</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(46)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>M Pilar Cerezo Palop</span>
             </div>
-            <span class='meta'>134cm</span>
+            <span class='meta'>133cm</span>
+        </li>
+        </ul><div class='seccion-mid'> TRONO </div><ul class='lista-costaleros'>
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(45)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Carmen Bas Martí</span>
+            </div>
+            <span class='meta'>132cm</span>
+        </li>
+        
+        <li class='costalero-cell '>
+            <div class="c-info">
+                <button class="btn-info no-print" onclick="abrirInfoModal(68)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>M del Mar García Grau</span>
+            </div>
+            <span class='meta'>133cm</span>
         </li>
         </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div>
                     <div class="varal">
                         <h4 class="varal-title">VARA Derecha</h4>
                 <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(59)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Paula Martinez Casanova</span>
-            </div>
-            <span class='meta'>135cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(91)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Anabel Rabasco Arce</span>
-            </div>
-            <span class='meta'>135cm</span>
-        </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(58)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Pilar Ruíz Cerezo</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(96)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>M del Carmen Fernández Bel</span>
             </div>
             <span class='meta'>134cm</span>
         </li>
         
-        <li class='costalero-cell bg-azul'>
+        <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(71)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Lola Bas Martí</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(57)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Esther Cano Bermúdez</span>
             </div>
-            <span class='meta'>134cm</span>
+            <span class='meta'>133cm</span>
         </li>
-        </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div></div></div>
-            <div class="turno-box">
-                <h3 class="turno-title">Turno 3</h3>
-                <div class="grid-varales">
-            
-                    <div class="varal">
-                        <h4 class="varal-title">VARA Izquierda</h4>
-                <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-rojo'>
+        </ul><div class='seccion-mid'> TRONO </div><ul class='lista-costaleros'>
+        <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(30)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Zenaida Carmen Vivancos Vivar</span>
-            </div>
-            <span class='meta'>140cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-rojo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(83)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Andrea Fernández Zaragoza</span>
-            </div>
-            <span class='meta'>140cm</span>
-        </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-rojo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(44)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Nuria Laguía Martínez</span>
-            </div>
-            <span class='meta'>131cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-rojo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(99)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Brenda Martinez Sampere</span>
-            </div>
-            <span class='meta'>132cm</span>
-        </li>
-        </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div>
-                    <div class="varal">
-                        <h4 class="varal-title">VARA Derecha</h4>
-                <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-rojo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(31)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Antonio Lidón Martínez</span>
-            </div>
-            <span class='meta'>140cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-rojo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(84)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Zenaida Vivancos Vivancos</span>
-            </div>
-            <span class='meta'>140cm</span>
-        </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-rojo'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(95)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Belén Mula Gómez</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(56)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Visi Díaz Hernández</span>
             </div>
             <span class='meta'>132cm</span>
         </li>
         
-        <li class='costalero-cell bg-rojo'>
+        <li class='costalero-cell '>
             <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(100)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Manoli Martínez Lizón</span>
+                <button class="btn-info no-print" onclick="abrirInfoModal(69)" title="Ver itinerario">ℹ️</button>
+                <span class='nombre'>Raquel Rodríguez Escudero</span>
             </div>
-            <span class='meta'>132cm</span>
-        </li>
-        </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div></div></div>
-            <div class="turno-box">
-                <h3 class="turno-title">Turno 4</h3>
-                <div class="grid-varales">
-            
-                    <div class="varal">
-                        <h4 class="varal-title">VARA Izquierda</h4>
-                <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(80)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Lucía Cerezo López</span>
-            </div>
-            <span class='meta'>143cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(87)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Natalia Vinuesa Martínez</span>
-            </div>
-            <span class='meta'>143cm</span>
-        </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(8)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Rosa García Cabrera</span>
-            </div>
-            <span class='meta'>140cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(78)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Vero Soto / Vero Rabasco</span>
-            </div>
-            <span class='meta'>141cm</span>
-        </li>
-        </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div>
-                    <div class="varal">
-                        <h4 class="varal-title">VARA Derecha</h4>
-                <div class='seccion-top'>▲ DELANTE ▲</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(85)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Carla López Rodríguez</span>
-            </div>
-            <span class='meta'>143cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(26)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Pilar de Lourdes Martínez P</span>
-            </div>
-            <span class='meta'>142cm</span>
-        </li>
-        </ul><div class='seccion-mid'>▼ TRONO ▼</div><ul class='lista-costaleros'>
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(25)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>Ana M Rodríguez Lorente</span>
-            </div>
-            <span class='meta'>140cm</span>
-        </li>
-        
-        <li class='costalero-cell bg-azul'>
-            <div class="c-info">
-                <button class="btn-info no-print" onclick="abrirInfoModal(79)" title="Ver itinerario">ℹ️</button>
-                <span class='nombre'>M Jesús Aledo Beltrán</span>
-            </div>
-            <span class='meta'>141cm</span>
+            <span class='meta'>133cm</span>
         </li>
         </ul><div class='seccion-bot'>▼ DETRÁS ▼</div></div></div></div>
         <div class="seccion-texto">
-            <h3>📍 Orden e Itinerario Oficial (Viernes Santo)</h3>
+            <h3>📍 Orden e Itinerario Oficial (Miércoles Santo)</h3>
             <ul class="lista-tramos">
-                <li><b>Tramo 1 (Turno A):</b> Monserrate ➔ Plaza del Carmen (Ayuntamiento)</li>
-                <li><b>Tramo 2 (Turno B):</b> Plaza del Carmen ➔ As de Oros (Plaza Nueva)</li>
-                <li><b>Tramo 3 (Turno A):</b> As de Oros ➔ Glorieta</li>
-                <li><b>Tramo 4 (Turno C):</b> Glorieta ➔ Oficina de Turismo</li>
-                <li><b>Regreso (Turno A):</b> Oficina de Turismo ➔ Santiago</li>
-                <li><b>Regreso (Turno B+C):</b> Santiago ➔ Gasolinera</li>
-                <li><b>Regreso (Turno A):</b> Gasolinera ➔ San Francisco</li>
+                <li><b>Tramo 1 (S. Francisco ➔ Gasolinera):</b> Carga el Trono el <b>Turno B</b>, y la Cruz el <b>Turno 1</b>.</li>
+                <li><b>Tramo 2 (Gasolinera ➔ Monserrate):</b> Carga el Trono el <b>Turno A</b>, y la Cruz el <b>Turno 2</b>.</li>
             </ul>
         </div>
         
         <div class="seccion-texto">
             <h3>⚠️ Indicaciones Específicas para los Tramos</h3>
-            <p><b>Tramo 1:</b> Atención especial a la salida de Monserrate. Movimientos muy suaves y coordinados para salvar la puerta.</p>
-            <p><b>Tramo 2:</b> Cuidado con el giro de entrada a la Plaza Nueva y evitar los tirones en las arrancadas.</p>
-            <p><b>Tramo 3:</b> Mantener el paso firme, especial precaución con el cruce de cables en la Glorieta.</p>
-            <p><b>Tramo 4 / Regreso:</b> Respetar los tiempos de relevo marcados por el capataz, la calle se estrecha en los últimos metros.</p>
+            <p><b>Tramo 1 (San Francisco a Gasolinera):</b> Cuidado extremo en la salida por la puerta de San Francisco. Movimientos suaves al girar a la calle principal y mantener siempre la cadencia del tambor.</p>
+            <p><b>Tramo 2 (Gasolinera a Monserrate):</b> Tramo de esfuerzo y subida hacia el Santuario de Monserrate. Administrar las fuerzas y hacer caso estricto a las indicaciones del Capataz en la rampa de llegada.</p>
         </div>
-
+        
         <div class="seccion-texto">
             <h3>📜 Normativa de la Cuadrilla</h3>
             <p><i>(Reservado para las normas oficiales de la Mayordomía que se adjuntarán próximamente).</i></p>
@@ -1349,14 +892,15 @@
         </div>
         
         <script>
-            // Lógica JS inyectada para el Buscador Interactivo en el Reporte
-            let datos = {"Trono": {"Turno A": {"Izquierda": {"Delante": [{"id": 75, "nombre": "Oscar Martinez Martinez", "altura": 157, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 72.22222222222223}, {"id": 76, "nombre": "Fern\u00e1ndo Mas P\u00e9rez", "altura": 153, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 61.111111111111114}, {"id": 15, "nombre": "Oscar Martinez Mora", "altura": 150, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.77777777777778}, {"id": 21, "nombre": "Antonio Jes\u00fas Cabrera Ferr\u00e1nd", "altura": 150, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.77777777777778}, {"id": 17, "nombre": "Abraham Sarmiento Mar\u00edn", "altura": 149, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50}, {"id": 4, "nombre": "Beatriz Jara Rodriguez", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 44.44444444444444}], "Detras": [{"id": 27, "nombre": "Carmen M Hern\u00e1ndez C\u00e1ma", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50.92592592592595}, {"id": 10, "nombre": "Cinthia Bernab\u00e9 Donate", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 34, "nombre": "M Jes\u00fas Tovar Cuenca", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 29, "nombre": "Cristina S\u00e1nchez Moya", "altura": 145, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.48148148148151}, {"id": 6, "nombre": "Milagros Pe\u00f1alver Lorenzo", "altura": 146, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}, {"id": 86, "nombre": "Gisela Mora Samper", "altura": 146, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}]}, "Centro": {"Delante": [{"id": 74, "nombre": "Andr\u00e9s Garc\u00eda Mart\u00ed", "altura": 162, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 82.87037037037041}, {"id": 13, "nombre": "David Lorca Rodr\u00edguez", "altura": 154, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 60.648148148148174}, {"id": 1, "nombre": "Aitor Guirao Rodriguez", "altura": 151, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.314814814814845}, {"id": 2, "nombre": "Cristo Fernando Abad\u00eda L\u00f3p", "altura": 149, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 46.75925925925929}, {"id": 16, "nombre": "Ram\u00f3n Escobedo P\u00e9rez", "altura": 149, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 46.75925925925929}, {"id": 23, "nombre": "Ra\u00fal Donate Escudero", "altura": 148, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 43.98148148148151}], "Detras": [{"id": 9, "nombre": "M Dolores Rodriguez Lorente", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 51.851851851851826}, {"id": 28, "nombre": "Mariano Diaz V\u00e9lez", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 51.851851851851826}, {"id": 11, "nombre": "\u00c1lvaro Sarmiento Caselles", "altura": 145, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 54.629629629629605}, {"id": 5, "nombre": "Natalia Belmonte Bas", "altura": 146, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 57.40740740740738}, {"id": 35, "nombre": "Gelen Huertas Mateo", "altura": 146, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 57.40740740740738}, {"id": 73, "nombre": "Alejandro Gea Mart\u00ed", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 60.18518518518516}]}, "Derecha": {"Delante": [{"id": 19, "nombre": "Jose Antonio Lid\u00f3n P\u00e9rez", "altura": 155, "pref_hombro": "", "puede_repetir": false, "miercoles_santo": true, "viernes_santo": true, "peso": 67.59259259259262}, {"id": 14, "nombre": "Iv\u00e1n Fenoll Rodriguez", "altura": 152, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}, {"id": 20, "nombre": "Nuria Ortega Lid\u00f3n", "altura": 151, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.48148148148151}, {"id": 3, "nombre": "Miguel \u00c1ngel Amor\u00f3s Rodr\u00edg", "altura": 149, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50.92592592592595}, {"id": 22, "nombre": "Miguel Angel Espinosa Mula", "altura": 149, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50.92592592592595}, {"id": 72, "nombre": "Noelia Grao L\u00f3pez", "altura": 148, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 48.148148148148174}], "Detras": [{"id": 32, "nombre": "Ana Isabel Mart\u00ednez Javaloyes", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50.46296296296294}, {"id": 33, "nombre": "Monserrate Coll Mula", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 81, "nombre": "Loli Mart\u00ed Rocamora", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 82, "nombre": "Alicia Bas Munuera", "altura": 145, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.01851851851849}, {"id": 12, "nombre": "Moises Lorente Irles", "altura": 146, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 58.79629629629627}, {"id": 18, "nombre": "Daniel Mira Juan", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 61.57407407407405}]}}, "Turno B": {"Izquierda": {"Delante": [{"id": 80, "nombre": "Luc\u00eda Cerezo L\u00f3pez (C)", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 62.5}, {"id": 26, "nombre": "Pilar de Lourdes Mart\u00ednez P (C)", "altura": 142, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.72222222222222}, {"id": 8, "nombre": "M Rosa Garc\u00eda Cabrera (C)", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 54.16666666666667}, {"id": 31, "nombre": "Antonio Lid\u00f3n Mart\u00ednez (C-Doble)", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 54.16666666666667}, {"id": 7, "nombre": "Pablo Mart\u00ednez P\u00e9rez", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 51.38888888888889}, {"id": 48, "nombre": "M\u00f3nica Corbal\u00e1n Navarro", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 51.38888888888889}], "Detras": [{"id": 39, "nombre": "M Adela Ros Mar\u00edn", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 51, "nombre": "Lourdes Egio Pardines", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 62, "nombre": "Alba Sempere Mart\u00ednez", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 38, "nombre": "Alicia Murcia Ros", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.48148148148151}, {"id": 103, "nombre": "Mariola Plaza Aniorte", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.48148148148151}, {"id": 60, "nombre": "Rosario Fructuoso Huertas", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}]}, "Centro": {"Delante": [{"id": 85, "nombre": "Carla L\u00f3pez Rodr\u00edguez (C)", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 62.96296296296294}, {"id": 78, "nombre": "Vero Soto / Vero Rabasco (C)", "altura": 141, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 57.40740740740738}, {"id": 25, "nombre": "Ana M Rodr\u00edguez Lorente (C)", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 54.629629629629605}, {"id": 83, "nombre": "Andrea Fern\u00e1ndez Zaragoza (C-Doble)", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 54.629629629629605}, {"id": 24, "nombre": "Cristina Rubio Blanco", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 51.851851851851826}, {"id": 77, "nombre": "Sandra Ca\u00f1ete Murcia", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 51.851851851851826}], "Detras": [{"id": 40, "nombre": "Blanca Rosa Medina Oltra", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 52, "nombre": "Lydia Espinosa Fenoll", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 63, "nombre": "Sandra Merino Hern\u00e1ndez", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 61, "nombre": "\u00c1ngela Cerezo L\u00f3pez", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.01851851851849}, {"id": 49, "nombre": "Iluminada M Cabrera Ferr\u00e1nd", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 58.79629629629627}, {"id": 89, "nombre": "Mireia Larr\u00f3s G\u00f3mez", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 58.79629629629627}]}, "Derecha": {"Delante": [{"id": 87, "nombre": "Natalia Vinuesa Mart\u00ednez (C)", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 63.42592592592595}, {"id": 79, "nombre": "M Jes\u00fas Aledo Beltr\u00e1n (C)", "altura": 141, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 57.870370370370395}, {"id": 30, "nombre": "Zenaida Carmen Vivancos Vivar (C-Doble)", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 55.092592592592624}, {"id": 84, "nombre": "Zenaida Vivancos Vivancos (C-Doble)", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 55.092592592592624}, {"id": 36, "nombre": "Jose Ram\u00f3n Escobedo Med", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.314814814814845}, {"id": 37, "nombre": "Carla Fern\u00e1ndez Ballesta", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 49.53703703703707}], "Detras": [{"id": 41, "nombre": "Paula Marco Ru\u00edz", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 53, "nombre": "Mar\u00eda Lorente Z\u00e1rate", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 64, "nombre": "Sofia Bas Mart\u00ed", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 90, "nombre": "\u00c1ngela Fern\u00e1ndez Zaragoza", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.01851851851849}, {"id": 50, "nombre": "Leticia Padilla Cuerdo", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 58.79629629629627}, {"id": 102, "nombre": "Elisa Pardines Ferr\u00e1ndez", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 58.79629629629627}]}}, "Turno C": {"Izquierda": {"Delante": [{"id": 88, "nombre": "Karima Calvo Espinosa (C)", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}, {"id": 41, "nombre": "Paula Marco Ru\u00edz (R)", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}, {"id": 59, "nombre": "Paula Martinez Casanova (C)", "altura": 135, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.48148148148151}, {"id": 47, "nombre": "M Dolores Z\u00e1rate Chumillas (C)", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 71, "nombre": "Lola Bas Mart\u00ed (C)", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 46, "nombre": "M Pilar Cerezo Palop (C)", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50.92592592592595}], "Detras": [{"id": 42, "nombre": "M Jos\u00e9 S\u00e1nchez Fern\u00e1ndez", "altura": 128, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50}, {"id": 43, "nombre": "Erika Navarro Zaragoza", "altura": 129, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.77777777777778}, {"id": 97, "nombre": "Mar\u00eda Rabasco Arce", "altura": 129, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.77777777777778}, {"id": 92, "nombre": "Ariadna Martinez Marti", "altura": 130, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 55.55555555555556}, {"id": 45, "nombre": "Carmen Bas Mart\u00ed (C)", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 61.111111111111114}, {"id": 99, "nombre": "Brenda Martinez Sampere (C-Doble)", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 61.111111111111114}]}, "Centro": {"Delante": [{"id": 39, "nombre": "M Adela Ros Mar\u00edn (R)", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}, {"id": 51, "nombre": "Lourdes Egio Pardines (R)", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}, {"id": 65, "nombre": "Anabel Arce Pedrique (C)", "altura": 135, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.48148148148151}, {"id": 58, "nombre": "Pilar Ru\u00edz Cerezo (C)", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 96, "nombre": "M del Carmen Fern\u00e1ndez Bel (C)", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 57, "nombre": "Esther Cano Berm\u00fadez (C)", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50.92592592592595}], "Detras": [{"id": 54, "nombre": "Sof\u00eda Vinuesa Mart\u00ednez", "altura": 128, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 49.07407407407405}, {"id": 66, "nombre": "Claudia Ruiz Caselles", "altura": 129, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 51.851851851851826}, {"id": 55, "nombre": "Noem\u00ed Garc\u00eda Bernab\u00e9", "altura": 130, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 54.629629629629605}, {"id": 44, "nombre": "Nuria Lagu\u00eda Mart\u00ednez (C-Doble)", "altura": 131, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 57.40740740740738}, {"id": 56, "nombre": "Visi D\u00edaz Hern\u00e1ndez (C)", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 60.18518518518516}, {"id": 100, "nombre": "Manoli Mart\u00ednez Liz\u00f3n (C-Doble)", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 60.18518518518516}]}, "Derecha": {"Delante": [{"id": 40, "nombre": "Blanca Rosa Medina Oltra (R)", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}, {"id": 52, "nombre": "Lydia Espinosa Fenoll (R)", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}, {"id": 91, "nombre": "Anabel Rabasco Arce (C)", "altura": 135, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.48148148148151}, {"id": 70, "nombre": "Abigail Garc\u00eda Botella (C)", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 101, "nombre": "M \u00c1ngeles L\u00f3pez Cerezo (C)", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 68, "nombre": "M del Mar Garc\u00eda Grau (C)", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50.92592592592595}], "Detras": [{"id": 93, "nombre": "\u00c1ngeles Zaragoza Lucas", "altura": 128, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 48.611111111111114}, {"id": 94, "nombre": "Almudena Mula Abad\u00eda", "altura": 129, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 51.38888888888889}, {"id": 67, "nombre": "Inmaculada And\u00fagar Costa", "altura": 130, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 54.16666666666667}, {"id": 98, "nombre": "Lucia S\u00e1nchez V\u00e1zquez", "altura": 131, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.94444444444444}, {"id": 95, "nombre": "M Bel\u00e9n Mula G\u00f3mez (C-Doble)", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.72222222222222}, {"id": 69, "nombre": "Raquel Rodr\u00edguez Escudero (C)", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 62.5}]}}}, "Cruz": {"Turno 1": {"Izquierda": {"Delante": [{"id": 96, "nombre": "M del Carmen Fern\u00e1ndez Bel (C)", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}, {"id": 46, "nombre": "M Pilar Cerezo Palop (C)", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}], "Detras": [{"id": 45, "nombre": "Carmen Bas Mart\u00ed (C)", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}, {"id": 68, "nombre": "M del Mar Garc\u00eda Grau (C)", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}]}, "Derecha": {"Delante": [{"id": 101, "nombre": "M \u00c1ngeles L\u00f3pez Cerezo (C)", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}, {"id": 57, "nombre": "Esther Cano Berm\u00fadez (C)", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}], "Detras": [{"id": 56, "nombre": "Visi D\u00edaz Hern\u00e1ndez (C)", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}, {"id": 69, "nombre": "Raquel Rodr\u00edguez Escudero (C)", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}]}}, "Turno 2": {"Izquierda": {"Delante": [{"id": 88, "nombre": "Karima Calvo Espinosa (C)", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}, {"id": 65, "nombre": "Anabel Arce Pedrique (C)", "altura": 135, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}], "Detras": [{"id": 47, "nombre": "M Dolores Z\u00e1rate Chumillas (C)", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}, {"id": 70, "nombre": "Abigail Garc\u00eda Botella (C)", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}]}, "Derecha": {"Delante": [{"id": 59, "nombre": "Paula Martinez Casanova (C)", "altura": 135, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}, {"id": 91, "nombre": "Anabel Rabasco Arce (C)", "altura": 135, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}], "Detras": [{"id": 58, "nombre": "Pilar Ru\u00edz Cerezo (C)", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}, {"id": 71, "nombre": "Lola Bas Mart\u00ed (C)", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}]}}, "Turno 3": {"Izquierda": {"Delante": [{"id": 30, "nombre": "Zenaida Carmen Vivancos Vivar (C-Doble)", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}, {"id": 83, "nombre": "Andrea Fern\u00e1ndez Zaragoza (C-Doble)", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}], "Detras": [{"id": 44, "nombre": "Nuria Lagu\u00eda Mart\u00ednez (C-Doble)", "altura": 131, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}, {"id": 99, "nombre": "Brenda Martinez Sampere (C-Doble)", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}]}, "Derecha": {"Delante": [{"id": 31, "nombre": "Antonio Lid\u00f3n Mart\u00ednez (C-Doble)", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}, {"id": 84, "nombre": "Zenaida Vivancos Vivancos (C-Doble)", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}], "Detras": [{"id": 95, "nombre": "M Bel\u00e9n Mula G\u00f3mez (C-Doble)", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}, {"id": 100, "nombre": "Manoli Mart\u00ednez Liz\u00f3n (C-Doble)", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}]}}, "Turno 4": {"Izquierda": {"Delante": [{"id": 80, "nombre": "Luc\u00eda Cerezo L\u00f3pez (C)", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}, {"id": 87, "nombre": "Natalia Vinuesa Mart\u00ednez (C)", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}], "Detras": [{"id": 8, "nombre": "M Rosa Garc\u00eda Cabrera (C)", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}, {"id": 78, "nombre": "Vero Soto / Vero Rabasco (C)", "altura": 141, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}]}, "Derecha": {"Delante": [{"id": 85, "nombre": "Carla L\u00f3pez Rodr\u00edguez (C)", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}, {"id": 26, "nombre": "Pilar de Lourdes Mart\u00ednez P (C)", "altura": 142, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}], "Detras": [{"id": 25, "nombre": "Ana M Rodr\u00edguez Lorente (C)", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}, {"id": 79, "nombre": "M Jes\u00fas Aledo Beltr\u00e1n (C)", "altura": 141, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}]}}}};
+            let datos = {"Trono": {"Turno A": {"Izquierda": {"Delante": [{"id": 74, "nombre": "Andr\u00e9s Garc\u00eda Mart\u00ed", "altura": 162, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 82.87037037037041}, {"id": 13, "nombre": "David Lorca Rodr\u00edguez", "altura": 154, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 60.648148148148174}, {"id": 20, "nombre": "Nuria Ortega Lid\u00f3n", "altura": 151, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.314814814814845}, {"id": 2, "nombre": "Cristo Fernando Abad\u00eda L\u00f3p", "altura": 149, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 46.75925925925929}, {"id": 16, "nombre": "Ram\u00f3n Escobedo P\u00e9rez", "altura": 149, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 46.75925925925929}, {"id": 23, "nombre": "Ra\u00fal Donate Escudero", "altura": 148, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 43.98148148148151}], "Detras": [{"id": 27, "nombre": "Carmen M Hern\u00e1ndez C\u00e1ma", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50.92592592592595}, {"id": 10, "nombre": "Cinthia Bernab\u00e9 Donate", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 34, "nombre": "M Jes\u00fas Tovar Cuenca", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 82, "nombre": "Alicia Bas Munuera", "altura": 145, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.48148148148151}, {"id": 6, "nombre": "Milagros Pe\u00f1alver Lorenzo", "altura": 146, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}, {"id": 86, "nombre": "Gisela Mora Samper", "altura": 146, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}]}, "Centro": {"Delante": [{"id": 75, "nombre": "Oscar Martinez Martinez", "altura": 157, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 72.22222222222223}, {"id": 76, "nombre": "Fern\u00e1ndo Mas P\u00e9rez", "altura": 153, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 61.111111111111114}, {"id": 15, "nombre": "Oscar Martinez Mora", "altura": 150, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.77777777777778}, {"id": 3, "nombre": "Miguel \u00c1ngel Amor\u00f3s Rodr\u00edg", "altura": 149, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50}, {"id": 17, "nombre": "Abraham Sarmiento Mar\u00edn", "altura": 149, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50}, {"id": 72, "nombre": "Noelia Grao L\u00f3pez", "altura": 148, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 47.22222222222222}], "Detras": [{"id": 32, "nombre": "Ana Isabel Mart\u00ednez Javaloyes", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50}, {"id": 28, "nombre": "Mariano Diaz V\u00e9lez", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.77777777777778}, {"id": 81, "nombre": "Loli Mart\u00ed Rocamora", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.77777777777778}, {"id": 5, "nombre": "Natalia Belmonte Bas", "altura": 146, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 58.333333333333336}, {"id": 12, "nombre": "Moises Lorente Irles", "altura": 146, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 58.333333333333336}, {"id": 18, "nombre": "Daniel Mira Juan", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 61.111111111111114}]}, "Derecha": {"Delante": [{"id": 19, "nombre": "Jose Antonio Lid\u00f3n P\u00e9rez", "altura": 155, "pref_hombro": "", "puede_repetir": false, "miercoles_santo": true, "viernes_santo": true, "peso": 67.59259259259262}, {"id": 14, "nombre": "Iv\u00e1n Fenoll Rodriguez", "altura": 152, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}, {"id": 1, "nombre": "Aitor Guirao Rodriguez", "altura": 151, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.48148148148151}, {"id": 21, "nombre": "Antonio Jes\u00fas Cabrera Ferr\u00e1nd", "altura": 150, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 22, "nombre": "Miguel Angel Espinosa Mula", "altura": 149, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 50.92592592592595}, {"id": 4, "nombre": "Beatriz Jara Rodriguez", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 45.370370370370395}], "Detras": [{"id": 9, "nombre": "M Dolores Rodriguez Lorente", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.314814814814845}, {"id": 33, "nombre": "Monserrate Coll Mula", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.314814814814845}, {"id": 11, "nombre": "\u00c1lvaro Sarmiento Caselles", "altura": 145, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 55.092592592592624}, {"id": 29, "nombre": "Cristina S\u00e1nchez Moya", "altura": 145, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 55.092592592592624}, {"id": 35, "nombre": "Gelen Huertas Mateo", "altura": 146, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 57.870370370370395}, {"id": 73, "nombre": "Alejandro Gea Mart\u00ed", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 60.648148148148174}]}}, "Turno B": {"Izquierda": {"Delante": [{"id": 80, "nombre": "Luc\u00eda Cerezo L\u00f3pez", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 62.5}, {"id": 26, "nombre": "Pilar de Lourdes Mart\u00ednez P", "altura": 142, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.72222222222222}, {"id": 8, "nombre": "M Rosa Garc\u00eda Cabrera", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 54.16666666666667}, {"id": 31, "nombre": "Antonio Lid\u00f3n Mart\u00ednez", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 54.16666666666667}, {"id": 7, "nombre": "Pablo Mart\u00ednez P\u00e9rez", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 51.38888888888889}, {"id": 48, "nombre": "M\u00f3nica Corbal\u00e1n Navarro", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 51.38888888888889}], "Detras": [{"id": 39, "nombre": "M Adela Ros Mar\u00edn", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 51, "nombre": "Lourdes Egio Pardines", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 62, "nombre": "Alba Sempere Mart\u00ednez", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.70370370370373}, {"id": 38, "nombre": "Alicia Murcia Ros", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.48148148148151}, {"id": 103, "nombre": "Mariola Plaza Aniorte", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.48148148148151}, {"id": 60, "nombre": "Rosario Fructuoso Huertas", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 59.25925925925929}]}, "Centro": {"Delante": [{"id": 85, "nombre": "Carla L\u00f3pez Rodr\u00edguez", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 62.96296296296294}, {"id": 79, "nombre": "M Jes\u00fas Aledo Beltr\u00e1n", "altura": 141, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 57.40740740740738}, {"id": 25, "nombre": "Ana M Rodr\u00edguez Lorente", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 54.629629629629605}, {"id": 83, "nombre": "Andrea Fern\u00e1ndez Zaragoza", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 54.629629629629605}, {"id": 24, "nombre": "Cristina Rubio Blanco", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 51.851851851851826}, {"id": 77, "nombre": "Sandra Ca\u00f1ete Murcia", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 51.851851851851826}], "Detras": [{"id": 40, "nombre": "Blanca Rosa Medina Oltra", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 52, "nombre": "Lydia Espinosa Fenoll", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 63, "nombre": "Sandra Merino Hern\u00e1ndez", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 61, "nombre": "\u00c1ngela Cerezo L\u00f3pez", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.01851851851849}, {"id": 49, "nombre": "Iluminada M Cabrera Ferr\u00e1nd", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 58.79629629629627}, {"id": 89, "nombre": "Mireia Larr\u00f3s G\u00f3mez", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 58.79629629629627}]}, "Derecha": {"Delante": [{"id": 87, "nombre": "Natalia Vinuesa Mart\u00ednez", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 63.42592592592595}, {"id": 78, "nombre": "Vero Soto / Vero Rabasco", "altura": 141, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 57.870370370370395}, {"id": 30, "nombre": "Zenaida Carmen Vivancos Vivar", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 55.092592592592624}, {"id": 84, "nombre": "Zenaida Vivancos Vivancos", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 55.092592592592624}, {"id": 36, "nombre": "Jose Ram\u00f3n Escobedo Med", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 52.314814814814845}, {"id": 37, "nombre": "Carla Fern\u00e1ndez Ballesta", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 49.53703703703707}], "Detras": [{"id": 41, "nombre": "Paula Marco Ru\u00edz", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 53, "nombre": "Mar\u00eda Lorente Z\u00e1rate", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 64, "nombre": "Sofia Bas Mart\u00ed", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 53.24074074074072}, {"id": 90, "nombre": "\u00c1ngela Fern\u00e1ndez Zaragoza", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 56.01851851851849}, {"id": 50, "nombre": "Leticia Padilla Cuerdo", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 58.79629629629627}, {"id": 102, "nombre": "Elisa Pardines Ferr\u00e1ndez", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 58.79629629629627}]}}}, "Cruz": {"Turno 1": {"Izquierda": {"Delante": [{"id": 88, "nombre": "Karima Calvo Espinosa", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}, {"id": 65, "nombre": "Anabel Arce Pedrique", "altura": 135, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}], "Detras": [{"id": 47, "nombre": "M Dolores Z\u00e1rate Chumillas", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}, {"id": 70, "nombre": "Abigail Garc\u00eda Botella", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}]}, "Derecha": {"Delante": [{"id": 59, "nombre": "Paula Martinez Casanova", "altura": 135, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}, {"id": 91, "nombre": "Anabel Rabasco Arce", "altura": 135, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}], "Detras": [{"id": 58, "nombre": "Pilar Ru\u00edz Cerezo", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}, {"id": 71, "nombre": "Lola Bas Mart\u00ed", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25}]}}, "Turno 2": {"Izquierda": {"Delante": [{"id": 101, "nombre": "M \u00c1ngeles L\u00f3pez Cerezo", "altura": 134, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}, {"id": 46, "nombre": "M Pilar Cerezo Palop", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}], "Detras": [{"id": 45, "nombre": "Carmen Bas Mart\u00ed", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}, {"id": 68, "nombre": "M del Mar Garc\u00eda Grau", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}]}, "Derecha": {"Delante": [{"id": 96, "nombre": "M del Carmen Fern\u00e1ndez Bel", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}, {"id": 57, "nombre": "Esther Cano Berm\u00fadez", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}], "Detras": [{"id": 56, "nombre": "Visi D\u00edaz Hern\u00e1ndez", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 24.375}, {"id": 69, "nombre": "Raquel Rodr\u00edguez Escudero", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true, "peso": 25.625}]}}}};
             let estadoGlobal = {};
             
+            
             const TRAMOS = {
-                "Trono": { "Turno A": [1, 3, 5, 7], "Turno B": [2, 6], "Turno C": [4, 6] },
-                "Cruz": { "Turno 1": [1], "Turno 2": [2], "Turno 3": [3], "Turno 4": [4] }
+                "Trono": { "Turno A": [2], "Turno B": [1] },
+                "Cruz": { "Turno 1": [1], "Turno 2": [2] }
             };
+        
 
             function analizarEstado() {
                 let stats = {};
@@ -1382,7 +926,9 @@
                     s.cristo.forEach(t => cristoArr.push(...(TRAMOS.Trono[t] || [])));
                     let cruzArr = [];
                     s.cruz.forEach(t => cruzArr.push(...(TRAMOS.Cruz[t] || [])));
-                    s.tramos = [...new Set([...cristoArr, ...cruzArr])].sort((a,b) => a - b);
+                    
+                    let allTramos = [...new Set([...cristoArr, ...cruzArr])].sort((a,b) => a - b);
+                    s.tramos = allTramos;
                 }
                 estadoGlobal = stats;
             }
@@ -1394,47 +940,36 @@
                 let enCruz = [];
                 st.cruz.forEach(t => { if((TRAMOS.Cruz[t]||[]).includes(tr.num)) enCruz.push(t); });
 
-                if (enCristo.length > 0 && enCruz.length > 0) {
-                    label = `💥 <strong style='color:#ff0000'>¡IMPOSIBLE! (${enCristo.join('+')} y ${enCruz.join('+')})</strong>`;
-                } else if (enCristo.length > 0) {
-                    label = `💪 <strong style='color:#e8d08c'>🕍 Trono (${enCristo.join(" + ")})</strong>`;
-                } else if (enCruz.length > 0) {
-                    let sinDescanso = tOcupados.includes(tr.num - 1) || tOcupados.includes(tr.num + 1);
-                    let sobrecarga = tOcupados.filter(t => t <= 4).length > 2;
-                    if (sinDescanso || sobrecarga) {
-                        label = `⚠️ <strong style='color:#ff4757'>✝️ Cruz (${enCruz.join('+')}) [SOBREESFUERZO]</strong>`;
-                    } else {
-                        label = `💪 <strong style='color:#00d2ff'>✝️ Cruz (${enCruz.join('+')})</strong>`;
-                    }
-                }
+                
+            if (enCristo.length > 0 && enCruz.length > 0) {
+                label = `💥 <strong style='color:#ff0000'>¡IMPOSIBLE! (${enCristo.join('+')} y ${enCruz.join('+')})</strong>`;
+            } else if (enCristo.length > 0) {
+                label = `💪 <strong style='color:#e8d08c'>🕍 Trono (${enCristo.join(" + ")})</strong>`;
+            } else if (enCruz.length > 0) {
+                label = `💪 <strong style='color:#00d2ff'>✝️ Cruz (${enCruz.join('+')})</strong>`;
+            }
+            if(tOcupados.length === 2 && (enCristo.length > 0 || enCruz.length > 0)) {
+                label = label.replace("💪", "⚠️").replace("#e8d08c", "#ff4757").replace("#00d2ff", "#ff4757") + " [SOBREESFUERZO]";
+            }
+        
+                
                 return `<li style="color:#f8f0f5;"><span class="tramo-label" style="color:#a37c95;">${tr.txt}</span> ${label}</li>`;
             }
 
             function construirHTMLItinerario(st) {
                 let tOcupados = st.tramos;
-                let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px; border-bottom:1px solid #3d0c2e; padding-bottom:10px;">📋 Hoja de Ruta: ${st.nombre}</h4>`;
                 
-                html += `<div style="background:#160311; padding:15px; border-radius:5px; border-left:5px solid #d4af37; margin-bottom:10px;">
-                            <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🌟 PROCESIÓN</h5>
-                            <ul style="list-style:none; padding:0; margin:0;">`;
-                [
-                    { num: 1, txt: "1. Monserrate ➔ Ayto" },
-                    { num: 2, txt: "2. Ayto ➔ As de Oros" },
-                    { num: 3, txt: "3. As Oros ➔ Glorieta" },
-                    { num: 4, txt: "4. Glorieta ➔ Turismo" }
-                ].forEach(tr => { html += generarFilaTramo(tr, st, tOcupados); });
-                html += `</ul></div>`;
-
-                html += `<div style="background:#160311; padding:15px; border-radius:5px; border-left:5px solid #d4af37;">
-                            <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🏠 REGRESO</h5>
-                            <ul style="list-style:none; padding:0; margin:0;">`;
-                [
-                    { num: 5, txt: "5. Turismo ➔ Santiago" },
-                    { num: 6, txt: "6. Santiago ➔ Gasolinera" },
-                    { num: 7, txt: "7. Gasolinera ➔ San Fco" }
-                ].forEach(tr => { html += generarFilaTramo(tr, st, tOcupados); });
-                html += `</ul></div>`;
-                return html;
+            let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px; border-bottom:1px solid #3d0c2e; padding-bottom:10px;">📋 Hoja de Ruta: ${st.nombre}</h4>`;
+            html += `<div style="background:#160311; padding:15px; border-radius:5px; border-left:5px solid #d4af37; margin-bottom:10px;">
+                        <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🌟 PROCESIÓN (Ida)</h5>
+                        <ul style="list-style:none; padding:0; margin:0;">`;
+            [
+                { num: 1, txt: "1. S.Francisco ➔ Gasolinera" },
+                { num: 2, txt: "2. Gasolinera ➔ Monserrate" }
+            ].forEach(tr => { html += generarFilaTramo(tr, st, tOcupados); });
+            html += `</ul></div>`;
+            return html;
+        
             }
 
             function actualizarBuscador() {
@@ -1470,7 +1005,6 @@
 
             window.onload = () => { analizarEstado(); };
 
-            // GENERACIÓN DE PDF
             function generarPDF() {
                 const element = document.getElementById('informe-content');
                 const btn = document.querySelector('.btn-pdf');
@@ -1478,14 +1012,14 @@
                 
                 const opt = {
                     margin:       [10, 10, 10, 10], 
-                    filename:     'Orden_Procesional_Agonia_Viernes_Santo.pdf',
+                    filename:     'Orden_Procesional_Agonia_Miércoles_Santo.pdf',
                     image:        { type: 'jpeg', quality: 0.98 },
                     html2canvas:  { scale: 2, useCORS: true },
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
                 
                 html2pdf().set(opt).from(element).save().then(() => {
-                    btn.innerText = "📥 DESCARGAR PDF OFICIAL";
+                    btn.innerText = "📥 DESCARGAR PDF PARA WHATSAPP";
                 });
             }
         </script>

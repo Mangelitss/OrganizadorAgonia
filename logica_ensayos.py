@@ -11,12 +11,11 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
         <title>Organizador de Ensayos - La Agonía</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
         <style>
-            /* PALETA CLARA - MAYORDOMÍA NAZARENO (Granate y Oro) */
+            /* PALETA CLARA - MAYORDOMÍA */
             :root {{
                 --bg-main: #f4f6f8;
                 --bg-panel: #ffffff;
-                --color-granate: #9e2a2b; /* Color túnica Nazareno */
-                --color-granate-claro: #9e2a4b;
+                --color-granate: #5c164e; /* Morado Nazareno */
                 --color-oro: #d4af37;
                 --color-oro-oscuro: #b5952f;
                 --text-dark: #333333;
@@ -31,17 +30,23 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             .header-info h1 {{ margin: 0; font-size: 20px; color: var(--color-granate); text-transform: uppercase; letter-spacing: 1px; }}
             .header-info p {{ margin: 3px 0 0 0; font-size: 12px; color: var(--text-muted); font-weight: 500; }}
             
-            .controles-btn {{ display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }}
+            .controles-btn {{ display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }}
             .fecha-input {{ background: #fff; border: 1px solid var(--border-color); color: var(--text-dark); padding: 8px; border-radius: 5px; outline: none; font-family: inherit; }}
             
-            .btn-control {{ background: #fff; color: var(--color-granate); border: 1px solid var(--color-granate); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 12px; text-transform: uppercase; }}
-            .btn-control:hover {{ background: var(--color-granate); color: #fff; box-shadow: 0 4px 8px rgba(122, 27, 56, 0.2); }}
+            .btn-control {{ background: #fff; color: var(--color-granate); border: 1px solid var(--color-granate); padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 11px; text-transform: uppercase; }}
+            .btn-control:hover {{ background: var(--color-granate); color: #fff; box-shadow: 0 4px 8px rgba(92, 22, 78, 0.2); }}
             
             .btn-accion {{ background: var(--color-oro); color: #fff; border-color: var(--color-oro-oscuro); }}
             .btn-accion:hover {{ background: var(--color-oro-oscuro); color: #fff; box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3); border-color: var(--color-oro-oscuro); }}
             
             .btn-peligro {{ background: #fff; border-color: #ff4757; color: #ff4757; }}
             .btn-peligro:hover {{ background: #ff4757; color: #fff; }}
+            
+            .btn-load {{ background: #17517e; border-color: #2980b9; color: #fff; }}
+            .btn-load:hover {{ background: #1f6b9c; color: #fff; box-shadow: 0 0 10px rgba(41, 128, 185, 0.6); border-color: #2980b9; }}
+            
+            .btn-pdf {{ background: #5c164e; color: #fff; border-color: #5c164e; }}
+            .btn-pdf:hover {{ background: #7a1b67; color: #fff; }}
 
             /* MAIN LAYOUT */
             .main-container {{ display: flex; flex-grow: 1; overflow: hidden; }}
@@ -77,7 +82,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             .turno-container {{ background: var(--bg-panel); padding: 25px; margin-bottom: 40px; border-radius: 15px; border: 1px solid var(--border-color); box-shadow: 0 8px 20px rgba(0,0,0,0.04); }}
             .turno-container h2 {{ color: var(--color-granate); text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid var(--color-oro); padding-bottom: 10px; margin-top: 0; }}
             .grid-trono {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }}
-            .vara {{ background: #fafafa; padding: 15px; border-radius: 8px; border-top: 5px solid var(--color-granate); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }}
+            .vara {{ background: #fafafa; padding: 15px; border-radius: 8px; border-top: 5px solid var(--color-granate); border: left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }}
             .vara h3 {{ color: var(--color-granate); margin: 0 0 15px 0; font-size: 14px; text-align: center; font-weight: 800; }}
             .seccion {{ background: #ffffff; padding: 10px; margin: 10px 0; border-radius: 5px; min-height: 60px; border: 1px dashed #b0b0b0; }}
             .stats-box {{ background: #fdfdfd; padding: 8px; border-radius: 4px; font-size: 11px; color: var(--color-granate); margin-bottom: 8px; border-left: 3px solid var(--color-oro); border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee; }}
@@ -95,26 +100,30 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
         
         <div class="header">
             <div class="header-info">
-                <h1>📋 GESTIÓN DE ENSAYOS (Autoguardado 🟢)</h1>
-                <p>Se guarda automáticamente. Si cierras la pestaña por error, no perderás nada.</p>
+                <h1>📋 GESTIÓN DE ENSAYOS</h1>
+                <p>Modo interactivo y generación de actas PDF</p>
             </div>
             <div class="controles-btn">
                 <input type="date" id="fecha-ensayo" class="fecha-input" onchange="guardarEstado()">
-                <button class="btn-control" onclick="toggleMenu()">↔️ Mostrar Menú</button>
-                <button class="btn-control btn-peligro" onclick="resetearEnsayo()">🗑️ NUEVO ENSAYO</button>
+                
+                <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
+                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR JSON</button>
+                <button class="btn-control btn-accion" onclick="descargarDatosJSON()">💾 DESCARGAR JSON</button>
+                
+                <button class="btn-control btn-peligro" onclick="resetearEnsayo()">🗑️ VACIAR ENSAYO</button>
+                <button class="btn-control" onclick="toggleMenu()">↔️ OCULTAR MENÚ</button>
                 <button class="btn-control btn-accion" onclick="distribuirAsistentes()">⚡ AUTO-DISTRIBUIR</button>
-                <button class="btn-control" onclick="exportarAsistenciaPDF()" style="background:#a32020; color:#fff; border-color:#ff4d4d;">📄 GUARDAR ASISTENCIA</button>
+                <button class="btn-control btn-pdf" id="btn-generar-pdf" onclick="exportarAsistenciaPDF()">📄 EXPORTAR ACTA PDF</button>
             </div>
         </div>
 
         <div class="main-container">
-            <div class="zona-tronos" id="grid-app">
-                </div>
+            <div class="zona-tronos" id="grid-app"></div>
 
             <div class="zona-menu" id="panel-lateral">
                 <div class="panel-buscador">
-                    <h3>➕ Añadir Asistente al Ensayo</h3>
-                    <input type="text" id="input-busqueda" class="buscador-input" placeholder="Buscar por nombre..." onkeyup="buscarEnCenso()">
+                    <h3>➕ Pasar Lista (Añadir)</h3>
+                    <input type="text" id="input-busqueda" class="buscador-input" placeholder="Buscar por nombre o altura..." onkeyup="buscarEnCenso()">
                     <div id="resultados-busqueda" class="resultados-busqueda"></div>
                 </div>
                 
@@ -123,11 +132,12 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                         Lista de Asistencia
                         <span class="contador-asist" id="contador-asistentes">0</span>
                     </h3>
-                    <ul class="lista-asistentes" id="lista-asistentes-ui">
-                        </ul>
+                    <ul class="lista-asistentes" id="lista-asistentes-ui"></ul>
                 </div>
             </div>
         </div>
+
+        <div id="pdf-container" style="display:none;"></div>
 
         <script>
             const MASTER_LIST = {master_json};
@@ -137,9 +147,10 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             
             let asistentes = []; 
             let turnosData = {{}};  
+            let heatmapActivo = false;
 
             // ==========================================
-            // SISTEMA DE AUTOGUARDADO (LocalStorage)
+            // SISTEMA DE AUTOGUARDADO Y ARCHIVOS JSON
             // ==========================================
             function guardarEstado() {{
                 localStorage.setItem('ensayo_asistentes_agonia', JSON.stringify(asistentes));
@@ -164,8 +175,53 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 return false;
             }}
 
+            function descargarDatosJSON() {{
+                let exportData = {{
+                    fecha: document.getElementById('fecha-ensayo').value,
+                    asistentes: asistentes,
+                    turnosData: turnosData
+                }};
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+                const dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href", dataStr);
+                
+                let fechaFormateada = exportData.fecha ? exportData.fecha : "SinFecha";
+                dlAnchorElem.setAttribute("download", `Configuracion_Ensayo_${{fechaFormateada}}.json`);
+                document.body.appendChild(dlAnchorElem);
+                dlAnchorElem.click();
+                dlAnchorElem.remove();
+            }}
+
+            function cargarJSON(event) {{
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {{
+                    try {{
+                        const data = JSON.parse(e.target.result);
+                        if(data.turnosData && data.asistentes) {{
+                            turnosData = data.turnosData;
+                            asistentes = data.asistentes;
+                            if(data.fecha) document.getElementById('fecha-ensayo').value = data.fecha;
+                            
+                            guardarEstado();
+                            renderPanelAsistentes();
+                            renderGrid();
+                            alert("✅ Configuración de ensayo cargada correctamente.");
+                        }} else {{
+                            alert("❌ El archivo no parece ser un ensayo válido.");
+                        }}
+                    }} catch (error) {{
+                        alert("❌ Error al leer el archivo JSON.");
+                    }}
+                    event.target.value = '';
+                }};
+                reader.readAsText(file);
+            }}
+
             function resetearEnsayo() {{
-                if (confirm("⚠️ ¿Estás seguro de que quieres borrar el ensayo actual y empezar de cero? Perderás toda la lista de asistencia.")) {{
+                if (confirm("⚠️ ¿Estás seguro de vaciar el ensayo? Perderás la lista actual si no has descargado el JSON.")) {{
                     localStorage.removeItem('ensayo_asistentes_agonia');
                     localStorage.removeItem('ensayo_turnos_agonia');
                     localStorage.removeItem('ensayo_fecha_agonia');
@@ -178,7 +234,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             }}
 
             // ==========================================
-            // LÓGICA DE TURNOS
+            // LÓGICA CORE DEL ENSAYO
             // ==========================================
             function inicializarTurnos() {{
                 let letras = ["A", "B", "C", "D", "E", "F"];
@@ -194,20 +250,16 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 guardarEstado();
             }}
 
-            function hueco() {{
-                return {{nombre: "HUECO LIBRE", altura: 0, peso: 0, id: -1}};
-            }}
+            function hueco() {{ return {{nombre: "HUECO LIBRE", altura: 0, peso: 0, id: -1}}; }}
 
-            function toggleMenu() {{
-                document.getElementById('panel-lateral').classList.toggle('oculto');
-            }}
+            function toggleMenu() {{ document.getElementById('panel-lateral').classList.toggle('oculto'); }}
 
             function buscarEnCenso() {{
                 const val = document.getElementById('input-busqueda').value.toLowerCase();
                 const resDiv = document.getElementById('resultados-busqueda');
                 if (val.length < 2) {{ resDiv.innerHTML = ''; return; }}
 
-                const matches = MASTER_LIST.filter(p => p.nombre.toLowerCase().includes(val));
+                const matches = MASTER_LIST.filter(p => p.nombre.toLowerCase().includes(val) || p.altura.toString().includes(val));
                 
                 let html = '';
                 matches.forEach(m => {{
@@ -215,7 +267,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                     if(!yaEsta) {{
                         html += `
                         <div class="resultado-item">
-                            <span>${{m.nombre}} <b style="color:#d4af37">(${{m.altura}}cm)</b></span>
+                            <span>${{m.nombre}} <b style="color:var(--color-granate)">(${{m.altura}}cm)</b></span>
                             <button class="btn-add" onclick='añadirAsistente(${{JSON.stringify(m)}})'>AÑADIR</button>
                         </div>`;
                     }}
@@ -228,12 +280,11 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 document.getElementById('input-busqueda').value = '';
                 document.getElementById('resultados-busqueda').innerHTML = '';
                 renderPanelAsistentes();
-                guardarEstado(); // AUTO-GUARDADO
+                guardarEstado(); 
             }}
 
             function quitarAsistente(id) {{
                 asistentes = asistentes.filter(a => a.id !== id);
-                
                 for (let t in turnosData) {{
                     for (let v in turnosData[t]) {{
                         for (let sec in turnosData[t][v]) {{
@@ -246,18 +297,17 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 }}
                 renderPanelAsistentes();
                 renderGrid();
-                guardarEstado(); // AUTO-GUARDADO
+                guardarEstado();
             }}
 
             function renderPanelAsistentes() {{
                 asistentes.sort((a,b) => b.altura - a.altura);
-                
                 document.getElementById('contador-asistentes').innerText = asistentes.length;
                 let html = '';
                 asistentes.forEach(a => {{
                     html += `
                     <li class="asistente-item">
-                        <span>${{a.nombre}} <b style="color:#e8d08c">(${{a.altura}}cm)</b></span>
+                        <span><b>${{a.nombre}}</b> <span style="color:var(--text-muted)">(${{a.altura}}cm)</span></span>
                         <button class="btn-remove" onclick="quitarAsistente(${{a.id}})">X</button>
                     </li>`;
                 }});
@@ -266,7 +316,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
 
             function distribuirAsistentes() {{
                 if (asistentes.length === 0) {{
-                    alert("No hay asistentes añadidos. Búscalos en el panel lateral y añádelos primero.");
+                    alert("No hay asistentes. Pasa lista primero.");
                     return;
                 }}
 
@@ -295,7 +345,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 }});
                 
                 renderGrid();
-                guardarEstado(); // AUTO-GUARDADO
+                guardarEstado();
             }}
 
             function renderGrid() {{
@@ -313,7 +363,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                             const statsSec = calcularStats(vData[sec]);
                             
                             if (sec === "Delante") html += `<div class="stats-box"><b>${{sec.toUpperCase()}}:</b> ${{statsSec.media.toFixed(1)}}cm | ${{statsSec.totalVara.toFixed(1)}}kg</div>`;
-                            if (sec === "Detras") html += `<div style="text-align:center; padding-top: 10px; margin-bottom: 5px; color:#e8d08c; font-size:12px; font-weight:bold; letter-spacing:2px; border-top: 1px dashed #3d0c2e;">▼ TRONO ▼</div>`;
+                            if (sec === "Detras") html += `<div style="text-align:center; padding-top: 15px; margin-bottom: 10px; color:var(--color-granate); font-size:12px; font-weight:bold; letter-spacing:2px; border-top: 1px solid var(--border-color);">▼ TRONO ▼</div>`;
                             
                             html += `<div class="seccion" ondragover="allow(event)">`;
                             
@@ -321,29 +371,34 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                 const esVacio = p.altura === 0;
                                 const esSobrepeso = p.peso >= MAX_KG;
                                 
-                                let bgStyle = '';
+                                let tickHombro = '';
                                 if (!esVacio) {{
-                                    const base = PESO_TRONO / 36;
-                                    const minVal = base - 10;
-                                    let px = (p.peso - minVal) / (MAX_KG - minVal);
-                                    px = Math.max(0, Math.min(1, px));
-                                    const hue = (1 - px) * 120;
-                                    bgStyle = `background-color: hsl(${{hue}}, 80%, 30%) !important; border-color: transparent;`;
+                                    let pref = (p.pref_hombro || "").toLowerCase().trim();
+                                    if (pref !== "") {{
+                                        if (pref.includes("derech")) {{
+                                            if (vNom === "Izquierda") tickHombro = ' <span title="Hombro correcto" style="font-size:11px;">✅</span>';
+                                            else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:11px;">❌</span>';
+                                        }} else if (pref.includes("izquierd")) {{
+                                            if (vNom === "Derecha") tickHombro = ' <span title="Hombro correcto" style="font-size:11px;">✅</span>';
+                                            else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:11px;">❌</span>';
+                                        }} else if (pref.includes("ambos")) {{
+                                            tickHombro = ' <span title="Hombro correcto" style="font-size:11px;">✅</span>';
+                                        }}
+                                    }}
                                 }}
-
+                                
                                 html += `
                                     <div class="costalero ${{esVacio ? 'vacio' : ''}} ${{esSobrepeso ? 'sobrepeso' : ''}}" 
-                                         style="${{bgStyle}}"
                                          draggable="${{!esVacio}}" ondragstart="drag(event, '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})" ondrop="drop(event, '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})">
                                         ${{esVacio ? 
                                             `<span>HUECO LIBRE</span>` :
                                             `<span>
-                                                <button style="background:none; border:none; color:#fff; cursor:pointer; padding:0 5px 0 0;" onclick="vaciarHueco('${{idT}}','${{vNom}}','${{sec}}',${{i}})">🗑️</button>
-                                                <b style="color:#fff">${{p.nombre}}</b>
+                                                <button class="btn-basura" style="color:#ff4757;" onclick="vaciarHueco('${{idT}}','${{vNom}}','${{sec}}',${{i}})">🗑️</button>
+                                                <b style="color:var(--text-dark)">${{p.nombre}} ${{tickHombro}}</b>
                                             </span>
                                             <span>
-                                                <span style="color:#fff">${{p.altura}}cm</span> 
-                                                <b style="color:#e8d08c; margin-left:5px">${{p.peso.toFixed(1)}}kg</b>
+                                                <span style="color:var(--text-dark)">${{p.altura}}cm</span> 
+                                                <b style="color:var(--color-granate); margin-left:5px">${{p.peso.toFixed(1)}}kg</b>
                                             </span>`
                                         }}
                                     </div>`;
@@ -351,7 +406,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                             html += `</div>`;
                             if (sec === "Detras") html += `<div class="stats-box"><b>${{sec.toUpperCase()}}:</b> ${{statsSec.media.toFixed(1)}}cm | ${{statsSec.totalVara.toFixed(1)}}kg</div>`;
                         }});
-                        html += `<div style="text-align:center; padding:10px; border:1px solid #d4af37; border-radius:5px; font-size:12px; color:#d4af37; margin-top:10px;"><b>TOTAL VARA: ${{statsVara.totalVara.toFixed(1)}} kg</b></div></div>`;
+                        html += `<div style="text-align:center; padding:10px; background:#fff; border:1px solid var(--color-oro); border-radius:5px; font-size:12px; color:var(--color-granate); margin-top:15px; font-weight:bold;">TOTAL VARA: ${{statsVara.totalVara.toFixed(1)}} kg</div></div>`;
                     }}
                     app.innerHTML += html + `</div></div>`;
                 }}
@@ -379,64 +434,115 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 turnosData[dragging.t][dragging.v][dragging.s][dragging.i] = turnosData[t][v][s][i];
                 turnosData[t][v][s][i] = orig;
                 renderGrid();
-                guardarEstado(); // AUTO-GUARDADO
+                guardarEstado();
             }}
             function vaciarHueco(t, v, s, i) {{
                 turnosData[t][v][s][i] = hueco();
                 renderGrid();
-                guardarEstado(); // AUTO-GUARDADO
+                guardarEstado();
             }}
 
+            // ==========================================
+            // EXPORTACIÓN A PDF (ESTILO MAYORDOMÍA)
+            // ==========================================
             function exportarAsistenciaPDF() {{
                 if(asistentes.length === 0) {{
-                    alert("No hay nadie en la lista de asistencia.");
+                    alert("El ensayo está vacío. Añade costaleros primero.");
                     return;
                 }}
+                
+                const btn = document.getElementById('btn-generar-pdf');
+                btn.innerText = "⏳ GENERANDO ACTA...";
                 
                 let fechaInput = document.getElementById("fecha-ensayo").value;
                 let fechaFormateada = fechaInput ? fechaInput.split('-').reverse().join('/') : new Date().toLocaleDateString();
                 
-                let div = document.createElement("div");
-                div.style.padding = "40px";
-                div.style.fontFamily = "Arial, sans-serif";
-                
-                let html = `
-                    <div style="text-align:center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px;">
-                        <h1 style="color:#000; margin:0; text-transform:uppercase;">Parte de Asistencia Oficial</h1>
-                        <h3 style="color:#555; margin:10px 0 0 0;">Ensayo del Cristo de la Agonía</h3>
-                        <p style="margin:5px 0 0 0; font-size:14px; font-weight:bold;">Fecha: ${{fechaFormateada}} | Costaleros presentes: ${{asistentes.length}}</p>
+                // CONSTRUCCIÓN DEL HTML PARA EL PDF
+                let htmlPDF = `
+                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; padding: 20px;">
+                    
+                    <div style="text-align: center; border-bottom: 2px solid #5c164e; padding-bottom: 15px; margin-bottom: 20px;">
+                        <img src="bandera_tercio_npj.jpg" alt="Logo" style="width: 80px; height: auto; margin-bottom: 10px;" onerror="this.style.display='none'">
+                        <h1 style="color: #5c164e; margin: 0; font-size: 20px; text-transform: uppercase;">OFS Muy Ilustre Mayordomía Ntro. Padre Jesús Nazareno</h1>
+                        <h2 style="color: #b5952f; margin: 5px 0; font-size: 16px; text-transform: uppercase;">Acta Oficial de Ensayo</h2>
+                        <p style="margin: 5px 0 0 0; font-size: 13px; font-weight: bold; color: #666;">Fecha del Ensayo: ${{fechaFormateada}}</p>
                     </div>
-                    <ul style="column-count: 2; column-gap: 40px; list-style:none; padding:0; margin:0;">
+
+                    <h3 style="color: #5c164e; border-bottom: 1px solid #d4af37; padding-bottom: 5px; font-size: 16px;">1. LISTADO DE ASISTENCIA (${{asistentes.length}} Costaleros)</h3>
+                    <ul style="column-count: 3; column-gap: 20px; list-style:none; padding:0; margin:0 0 30px 0; font-size: 11px;">
                 `;
                 
                 let asisNombres = [...asistentes].sort((a,b) => a.nombre.localeCompare(b.nombre));
-                
-                asisNombres.forEach((a, idx) => {{
-                    html += `<li style="padding: 8px 0; border-bottom: 1px solid #ddd; font-size:14px; color:#000;">
-                                <b>${{idx + 1}}.</b> ${{a.nombre}} <span style="color:#666; font-size:12px;">(${{a.altura}}cm)</span>
-                             </li>`;
+                asisNombres.forEach(a => {{
+                    htmlPDF += `<li style="padding: 4px 0; border-bottom: 1px solid #eee;">
+                                    <b>${{a.nombre}}</b> <span style="color:#888;">(${{a.altura}}cm)</span>
+                                </li>`;
                 }});
                 
-                html += `</ul>`;
-                div.innerHTML = html;
+                htmlPDF += `</ul>`;
+
+                // SECCIÓN 2: DISTRIBUCIÓN
+                htmlPDF += `<h3 style="color: #5c164e; border-bottom: 1px solid #d4af37; padding-bottom: 5px; font-size: 16px; page-break-before: always;">2. DISTRIBUCIÓN DEL TRONO</h3>`;
                 
+                for (const [idT, varas] of Object.entries(turnosData)) {{
+                    htmlPDF += `
+                    <div style="border: 1px solid #d4af37; border-radius: 8px; margin-bottom: 25px; page-break-inside: avoid;">
+                        <h3 style="background: #5c164e; color: #fff; padding: 8px; margin: 0; font-size: 14px; text-transform: uppercase; text-align: center;">${{idT}}</h3>
+                        <div style="display: flex; width: 100%;">
+                    `;
+                    
+                    for (const [vNom, vData] of Object.entries(varas)) {{
+                        htmlPDF += `
+                            <div style="flex: 1; padding: 10px; border-right: 1px solid #eee;">
+                                <h4 style="text-align: center; color: #5c164e; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin: 0 0 10px 0; font-size: 12px; font-weight: bold; text-transform: uppercase;">VARA ${{vNom}}</h4>
+                        `;
+                        
+                        ["Delante", "Detras"].forEach(sec => {{
+                            if(sec === "Delante") htmlPDF += `<div style="font-size: 10px; color: #5c164e; text-align: center; margin-bottom: 5px; font-weight: bold; background: #eee; padding: 3px; border-radius: 3px;">▲ DELANTE ▲</div>`;
+                            if(sec === "Detras") htmlPDF += `<div style="font-size: 10px; color: #fff; text-align: center; margin: 8px 0; font-weight: bold; background: #5c164e; padding: 3px; border-radius: 3px;">▼ TRONO ▼</div>`;
+                            
+                            htmlPDF += `<ul style="list-style: none; padding: 0; margin: 0; font-size: 10px;">`;
+                            vData[sec].forEach(p => {{
+                                let esVacio = p.altura === 0;
+                                if(esVacio) {{
+                                    htmlPDF += `<li style="padding: 4px; margin-bottom: 2px; text-align:center; border: 1px dashed #ccc; background: #fafafa; color: #aaa; font-style: italic;">-- Hueco Libre --</li>`;
+                                }} else {{
+                                    htmlPDF += `<li style="padding: 4px; margin-bottom: 2px; border: 1px solid #ddd; display: flex; justify-content: space-between;">
+                                                    <b>${{p.nombre}}</b> <span style="color:#666;">${{p.altura}}cm</span>
+                                                </li>`;
+                                }}
+                            }});
+                            htmlPDF += `</ul>`;
+                            
+                            if(sec === "Detras") htmlPDF += `<div style="font-size: 10px; color: #5c164e; text-align: center; margin-top: 5px; font-weight: bold; background: #eee; padding: 3px; border-radius: 3px;">▼ DETRÁS ▼</div>`;
+                        }});
+                        htmlPDF += `</div>`;
+                    }}
+                    htmlPDF += `</div></div>`;
+                }}
+                htmlPDF += `</div>`;
+
+                const container = document.getElementById('pdf-container');
+                container.innerHTML = htmlPDF;
+                container.style.display = 'block';
+
                 const opciones = {{
                     margin:       10,
-                    filename:     `Asistencia_Ensayo_${{fechaFormateada.replace(/\\//g,'-')}}.pdf`,
+                    filename:     `Acta_Ensayo_${{fechaFormateada.replace(/\\//g,'-')}}.pdf`,
                     image:        {{ type: 'jpeg', quality: 0.98 }},
                     html2canvas:  {{ scale: 2, useCORS: true }},
                     jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'portrait' }}
                 }};
                 
-                html2pdf().set(opciones).from(div).save();
+                html2pdf().set(opciones).from(container).save().then(() => {{
+                    container.style.display = 'none';
+                    btn.innerText = "📄 EXPORTAR ACTA PDF";
+                }});
             }}
 
             window.onload = () => {{
-                // 1. Intentamos cargar el estado previo guardado en el ordenador
-                let cargadoConExito = cargarEstado();
-                
-                // 2. Si no había nada guardado, creamos un ensayo nuevo desde cero
-                if(!cargadoConExito) {{
+                let cargado = cargarEstado();
+                if(!cargado) {{
                     document.getElementById('fecha-ensayo').valueAsDate = new Date();
                     inicializarTurnos();
                 }}
