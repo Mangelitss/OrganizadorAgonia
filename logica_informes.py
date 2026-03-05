@@ -4,26 +4,38 @@ import datetime
 def crear_html_informe(tipo, archivo_json):
     try:
         with open(archivo_json, 'r', encoding='utf-8') as f:
-            datos = json.load(f)
+            datos_raw = json.load(f)
     except Exception as e:
-        return False, str(e)
+        return False, f"Error al abrir el archivo: {str(e)}"
 
     fecha = datetime.datetime.now().strftime("%d/%m/%Y")
     
+    # Extracción inteligente de metadatos (Sello de procesión e Indicaciones)
+    indicaciones = datos_raw.get("indicaciones", {})
+    
+    # Filtramos para quedarnos solo con la estructura de tronos y cruces al dibujar los varales
+    datos_tronos = {k: v for k, v in datos_raw.items() if k in ["Trono", "Cruz"]}
+
     # 1. RASTREO DE IDS (Para pintar el fondo de amarillo en los que repiten Trono)
     ids_en_turno_c = set()
-    if "Trono" in datos and "Turno C" in datos["Trono"]:
-        for varal in datos["Trono"]["Turno C"].values():
+    if "Trono" in datos_tronos and "Turno C" in datos_tronos["Trono"]:
+        for varal in datos_tronos["Trono"]["Turno C"].values():
             for sec in varal.values():
                 for p in sec:
                     if p.get("id", -1) != -1:
                         ids_en_turno_c.add(p["id"])
 
+    # Extraer normativa general (aplica a ambas procesiones)
+    i_norm = indicaciones.get("normativa", "").strip() or "(Sin normativa específica dictada por el Capataz)"
+
     # 2. DEFINICIÓN DINÁMICA DE TEXTOS Y LÓGICA SEGÚN PROCESIÓN
     if "Viernes" in tipo:
-        # ==========================================
-        # TEXTOS: VIERNES SANTO
-        # ==========================================
+        # Extraer textos del JSON para el Viernes
+        i_t1 = indicaciones.get("tramo1", "").strip() or "(Sin indicaciones especiales)"
+        i_t2 = indicaciones.get("tramo2", "").strip() or "(Sin indicaciones especiales)"
+        i_t3 = indicaciones.get("tramo3", "").strip() or "(Sin indicaciones especiales)"
+        i_t4 = indicaciones.get("tramo4", "").strip() or "(Sin indicaciones especiales)"
+
         bloque_itinerario = """
         <div class="seccion-texto">
             <h3>📍 Orden e Itinerario Oficial (Viernes Santo)</h3>
@@ -39,14 +51,17 @@ def crear_html_informe(tipo, archivo_json):
         </div>
         """
         
-        # 🟢 AQUÍ PUEDES MODIFICAR LAS INDICACIONES DEL VIERNES:
-        bloque_indicaciones = """
-        <div class="seccion-texto">
-            <h3>⚠️ Indicaciones Específicas para los Tramos</h3>
-            <p><b>Tramo 1:</b> Atención especial a la salida de Monserrate. Movimientos muy suaves y coordinados para salvar la puerta.</p>
-            <p><b>Tramo 2:</b> Cuidado con el giro de entrada a la Plaza Nueva y evitar los tirones en las arrancadas.</p>
-            <p><b>Tramo 3:</b> Mantener el paso firme, especial precaución con el cruce de cables en la Glorieta.</p>
-            <p><b>Tramo 4:</b> Respetar los tiempos de relevo marcados por el capataz, la calle se estrecha en los últimos metros.</p>
+        bloque_indicaciones = f"""
+        <div class="seccion-texto indicaciones-dinamicas">
+            <h3>⚠️ Indicaciones Específicas del Capataz</h3>
+            <p><b>Tramo 1 (Monserrate ➔ Ayto):</b><br>{i_t1}</p>
+            <p><b>Tramo 2 (Ayto ➔ As de Oros):</b><br>{i_t2}</p>
+            <p><b>Tramo 3 (As Oros ➔ Glorieta):</b><br>{i_t3}</p>
+            <p><b>Tramo 4 y Regreso:</b><br>{i_t4}</p>
+        </div>
+        <div class="seccion-texto indicaciones-dinamicas">
+            <h3>📜 Normativa de la Cuadrilla</h3>
+            <p>{i_norm}</p>
         </div>
         """
         
@@ -112,6 +127,10 @@ def crear_html_informe(tipo, archivo_json):
         t_a = "[2]" if es_par else "[1]"
         t_b = "[1]" if es_par else "[2]"
 
+        # Extraer textos del JSON para el Miércoles
+        i_t1 = indicaciones.get("tramo1", "").strip() or "(Sin indicaciones especiales)"
+        i_t2 = indicaciones.get("tramo2", "").strip() or "(Sin indicaciones especiales)"
+
         bloque_itinerario = f"""
         <div class="seccion-texto">
             <h3>📍 Orden e Itinerario Oficial (Miércoles Santo)</h3>
@@ -122,12 +141,15 @@ def crear_html_informe(tipo, archivo_json):
         </div>
         """
         
-        # 🟢 AQUÍ PUEDES MODIFICAR LAS INDICACIONES DEL MIÉRCOLES:
-        bloque_indicaciones = """
-        <div class="seccion-texto">
-            <h3>⚠️ Indicaciones Específicas para los Tramos</h3>
-            <p><b>Tramo 1 (San Francisco a Gasolinera):</b> Cuidado extremo en la salida por la puerta de San Francisco. Movimientos suaves al girar a la calle principal y mantener siempre la cadencia del tambor.</p>
-            <p><b>Tramo 2 (Gasolinera a Monserrate):</b> Tramo de esfuerzo y subida hacia el Santuario de Monserrate. Administrar las fuerzas y hacer caso estricto a las indicaciones del Capataz en la rampa de llegada.</p>
+        bloque_indicaciones = f"""
+        <div class="seccion-texto indicaciones-dinamicas">
+            <h3>⚠️ Indicaciones Específicas del Capataz</h3>
+            <p><b>Tramo 1 (San Francisco a Gasolinera):</b><br>{i_t1}</p>
+            <p><b>Tramo 2 (Gasolinera a Monserrate):</b><br>{i_t2}</p>
+        </div>
+        <div class="seccion-texto indicaciones-dinamicas">
+            <h3>📜 Normativa de la Cuadrilla</h3>
+            <p>{i_norm}</p>
         </div>
         """
 
@@ -263,11 +285,14 @@ def crear_html_informe(tipo, archivo_json):
             .btn-info {{ background: none; border: none; color: #007bff; cursor: pointer; padding: 0; font-size: 14px; line-height: 1; margin-top:-2px; }}
             .btn-info:hover {{ transform: scale(1.1); }}
 
-            /* TEXTOS INFERIORES */
+            /* TEXTOS INFERIORES E INDICACIONES (CSS A PRUEBA DE DESBORDAMIENTO) */
             .seccion-texto {{ background: #fafafa; padding: 20px; border-radius: 8px; border-left: 4px solid #5c164e; margin-bottom: 20px; page-break-inside: avoid; }}
             .seccion-texto h3 {{ color: #5c164e; margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-size: 16px; text-transform: uppercase; }}
             .seccion-texto p {{ font-size: 12px; line-height: 1.5; color: #444; margin-bottom: 8px; }}
             .lista-tramos {{ font-size: 12px; color: #444; line-height: 1.6; margin: 0; padding-left: 20px; }}
+            
+            /* Esto es lo que evita que los textos del JSON se salgan del marco */
+            .indicaciones-dinamicas p {{ white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; margin-bottom: 12px; }}
 
             /* MODAL (POP-UP) */
             .modal-overlay {{ display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(3px); }}
@@ -281,8 +306,8 @@ def crear_html_informe(tipo, archivo_json):
                 body {{ background: #fff; padding: 0; font-family: 'Open Sans', Helvetica, sans-serif; }}
                 .no-print, .web-controls {{ display: none !important; }}
                 .container {{ box-shadow: none; border-top: none; padding: 0; }}
-                .turno-box {{ border: 1px solid #000; }}
-                .turno-title {{ background: #eee !important; color: #000 !important; border-bottom: 1px solid #000; -webkit-print-color-adjust: exact; }}
+                .turno-box {{ border: 1px solid #000; page-break-inside: avoid; }}
+                .turno-title {{ background: #eee !important; color: #000 !important; border-bottom: 1px solid #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
                 .bg-amarillo, .bg-azul, .bg-rojo, .seccion-mid, .caja {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
             }}
         </style>
@@ -319,7 +344,7 @@ def crear_html_informe(tipo, archivo_json):
             </div>
     """
 
-    for categoria, turnos in datos.items():
+    for categoria, turnos in datos_tronos.items():
         if not turnos: continue
         
         html += f"<h2 style='color:#5c164e; border-bottom: 2px solid #5c164e; padding-bottom:5px; margin-top:30px; font-size:18px;'>ESTRUCTURA: {categoria.upper()}</h2>"
@@ -342,7 +367,7 @@ def crear_html_informe(tipo, archivo_json):
                         html += generar_li_costalero(p)
                     html += "</ul>"
                 
-                html += "<div class='seccion-mid'> TRONO </div>"
+                html += "<div class='seccion-mid'>▼ TRONO ▼</div>"
                 
                 if "Detras" in secciones:
                     html += "<ul class='lista-costaleros'>"
@@ -354,18 +379,11 @@ def crear_html_informe(tipo, archivo_json):
                 html += "</div>"
             html += "</div></div>"
 
-    # INSERTAMOS LOS TEXTOS ESPECÍFICOS DE LA PROCESIÓN (Itinerario + Indicaciones)
+    # INSERTAMOS LOS TEXTOS DINÁMICOS
     html += bloque_itinerario
     html += bloque_indicaciones
-    
-    html += """
-        <div class="seccion-texto">
-            <h3>📜 Normativa de la Cuadrilla</h3>
-            <p><i>(Reservado para las normas oficiales de la Mayordomía que se adjuntarán próximamente).</i></p>
-        </div>
-    """
 
-    turnos_json_str = json.dumps(datos)
+    turnos_json_str = json.dumps(datos_raw)
     html += f"""
             <div style="text-align: center; margin-top: 40px; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 10px;">
                 Generado por el Sistema Gestor Cofrade de la Agonía.

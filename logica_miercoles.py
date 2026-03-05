@@ -13,7 +13,7 @@ def cargar_datos_miercoles(archivo='datos.json'):
 
 def generar_cuadrillas_miercoles(costaleros, es_par=True):
     # Reparto inicial por altura
-    pool = sorted(costaleros, key=lambda x: x['altura'], reverse=True)
+    pool = sorted(costaleros, key=lambda x: x.get('altura', 0), reverse=True)
     
     # Rellenamos con huecos si el censo es crítico para poder formar el trono base
     while len(pool) < 72:
@@ -21,12 +21,12 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
         
     turno_a_personas = pool[:36]
     turno_b_personas = pool[36:72]
-    restantes = pool[72:] # Los costaleros sobrantes (Ej: Si hay 103, aquí hay 31 personas)
+    restantes = pool[72:] 
     
     cruz_turnos = [[], []]
     
-    disp_restantes = [p.copy() for p in restantes if p['id'] != -1]
-    disp_restantes.sort(key=lambda x: x['altura'], reverse=True)
+    disp_restantes = [p.copy() for p in restantes if p.get('id', -1) != -1]
+    disp_restantes.sort(key=lambda x: x.get('altura', 0), reverse=True)
     
     def extraer_seguro(lista, cantidad):
         res = []
@@ -39,22 +39,15 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
     cruz_turnos[1].extend(extraer_seguro(disp_restantes, 8))
     
     # 2. SISTEMA DE EMERGENCIA: Si falta gente, prestamos del Turno B (Nunca del A)
-    # y asegurando que no coincidan en el mismo tramo de calle.
-    disp_b = [p.copy() for p in turno_b_personas if p['id'] != -1]
-    disp_b.sort(key=lambda x: x['altura'], reverse=True)
+    disp_b = [p.copy() for p in turno_b_personas if p.get('id', -1) != -1]
+    disp_b.sort(key=lambda x: x.get('altura', 0), reverse=True)
     
     if es_par:
-        # Año PAR: Turno B carga el Trono en Tramo 1. 
-        # Solo puede ayudar en Cruz Turno 2 (Tramo 2).
         if len(cruz_turnos[1]) < 8:
-            faltan = 8 - len(cruz_turnos[1])
-            cruz_turnos[1].extend(extraer_seguro(disp_b, faltan))
+            cruz_turnos[1].extend(extraer_seguro(disp_b, 8 - len(cruz_turnos[1])))
     else:
-        # Año IMPAR: Turno B carga el Trono en Tramo 2.
-        # Solo puede ayudar en Cruz Turno 1 (Tramo 1).
         if len(cruz_turnos[0]) < 8:
-            faltan = 8 - len(cruz_turnos[0])
-            cruz_turnos[0].extend(extraer_seguro(disp_b, faltan))
+            cruz_turnos[0].extend(extraer_seguro(disp_b, 8 - len(cruz_turnos[0])))
             
     # 3. Si aún así faltan huecos, metemos HUECO LIBRE
     for i in range(2):
@@ -62,15 +55,15 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
             cruz_turnos[i].append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
             
     # Marcado visual para el JS y el PDF
-    ids_cruz = {p['id'] for t in [0, 1] for p in cruz_turnos[t] if p['id'] != -1}
-    ids_trono = {p['id'] for p in turno_a_personas + turno_b_personas if p['id'] != -1}
+    ids_cruz = {p.get('id', -1) for t in [0, 1] for p in cruz_turnos[t] if p.get('id', -1) != -1}
+    ids_trono = {p.get('id', -1) for p in turno_a_personas + turno_b_personas if p.get('id', -1) != -1}
     
     for p in turno_b_personas:
-        if p['id'] in ids_cruz: p['nombre'] += " (C)"
+        if p.get('id', -1) in ids_cruz: p['nombre'] = p.get('nombre', '') + " (C)"
         
     for t in [0, 1]:
         for p in cruz_turnos[t]:
-            if p['id'] in ids_trono: p['nombre'] += " (C)"
+            if p.get('id', -1) in ids_trono: p['nombre'] = p.get('nombre', '') + " (C)"
 
     # ==========================================
     # DISTRIBUCIÓN AVANZADA: ALTURA + HOMBRO
@@ -79,68 +72,53 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
         varas = ["Izquierda", "Centro", "Derecha"]
         res = {v: {"Delante": [], "Detras": []} for v in varas}
         
-        reales = [p for p in personas if p['altura'] > 0]
-        huecos = [p for p in personas if p['altura'] == 0]
+        reales = [p for p in personas if p.get('altura', 0) > 0]
+        huecos = [p for p in personas if p.get('altura', 0) == 0]
         
-        # --- DELANTE (Más altos primero) ---
-        reales.sort(key=lambda x: x['altura'], reverse=True)
-        
+        reales.sort(key=lambda x: x.get('altura', 0), reverse=True)
         for _ in range(6):
             fila = []
-            for _ in range(3):
-                fila.append(reales.pop(0) if reales else huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
-            
+            for _ in range(3): fila.append(reales.pop(0) if reales else huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
             asig = {"Izquierda": None, "Centro": None, "Derecha": None}
             libres = []
-            
             for p in fila:
                 pref = str(p.get('pref_hombro', '')).lower()
                 if 'derech' in pref and asig["Izquierda"] is None: asig["Izquierda"] = p
                 elif 'izquierd' in pref and asig["Derecha"] is None: asig["Derecha"] = p
                 elif 'ambos' in pref and asig["Centro"] is None: asig["Centro"] = p
                 else: libres.append(p)
-            
             for v in varas:
                 if asig[v] is None and libres: asig[v] = libres.pop(0)
             for v in varas: res[v]["Delante"].append(asig[v])
             
-        # --- DETRÁS (Más bajos primero) ---
-        reales.sort(key=lambda x: x['altura'])
-        
+        reales.sort(key=lambda x: x.get('altura', 0))
         for _ in range(6):
             fila = []
-            for _ in range(3):
-                fila.append(reales.pop(0) if reales else huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
-            
+            for _ in range(3): fila.append(reales.pop(0) if reales else huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
             asig = {"Izquierda": None, "Centro": None, "Derecha": None}
             libres = []
-            
             for p in fila:
                 pref = str(p.get('pref_hombro', '')).lower()
                 if 'derech' in pref and asig["Izquierda"] is None: asig["Izquierda"] = p
                 elif 'izquierd' in pref and asig["Derecha"] is None: asig["Derecha"] = p
                 elif 'ambos' in pref and asig["Centro"] is None: asig["Centro"] = p
                 else: libres.append(p)
-            
             for v in varas:
                 if asig[v] is None and libres: asig[v] = libres.pop(0)
             for v in varas: res[v]["Detras"].append(asig[v])
-
         return res
 
     def distribuir_cruz(personas):
         varas = ["Izquierda", "Derecha"]
         res = {v: {"Delante": [], "Detras": []} for v in varas}
         
-        reales = [p for p in personas if p['altura'] > 0]
-        huecos = [p for p in personas if p['altura'] == 0]
+        reales = [p for p in personas if p.get('altura', 0) > 0]
+        huecos = [p for p in personas if p.get('altura', 0) == 0]
         
-        # --- DELANTE ---
-        reales.sort(key=lambda x: x['altura'], reverse=True)
+        reales.sort(key=lambda x: x.get('altura', 0), reverse=True)
         for _ in range(2):
             fila = []
             for _ in range(2): fila.append(reales.pop(0) if reales else huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
-            
             asig = {"Izquierda": None, "Derecha": None}
             libres = []
             for p in fila:
@@ -148,17 +126,14 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
                 if 'derech' in pref and asig["Izquierda"] is None: asig["Izquierda"] = p
                 elif 'izquierd' in pref and asig["Derecha"] is None: asig["Derecha"] = p
                 else: libres.append(p)
-                
             for v in varas:
                 if asig[v] is None and libres: asig[v] = libres.pop(0)
             for v in varas: res[v]["Delante"].append(asig[v])
             
-        # --- DETRÁS ---
-        reales.sort(key=lambda x: x['altura'])
+        reales.sort(key=lambda x: x.get('altura', 0))
         for _ in range(2):
             fila = []
             for _ in range(2): fila.append(reales.pop(0) if reales else huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
-            
             asig = {"Izquierda": None, "Derecha": None}
             libres = []
             for p in fila:
@@ -166,14 +141,14 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
                 if 'derech' in pref and asig["Izquierda"] is None: asig["Izquierda"] = p
                 elif 'izquierd' in pref and asig["Derecha"] is None: asig["Derecha"] = p
                 else: libres.append(p)
-                
             for v in varas:
                 if asig[v] is None and libres: asig[v] = libres.pop(0)
             for v in varas: res[v]["Detras"].append(asig[v])
-            
         return res
 
+    # Incorporamos el "Sello" de procesión al generar desde cero
     return {
+        "tipo_procesion": "miercoles_santo",
         "Trono": {
             "Turno A": distribuir_trono(turno_a_personas),
             "Turno B": distribuir_trono(turno_b_personas)
@@ -189,24 +164,26 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
     master_json = json.dumps(master_list)
     marca_tiempo = str(int(time.time()))
 
-    # Lógica de tramos cruzada dependiendo del año
+    try:
+        with open('datos.json', 'r', encoding='utf-8') as f:
+            censo_completo = f.read().strip()
+            if not censo_completo: censo_completo = "[]"
+    except:
+        censo_completo = "[]"
+
     if es_par:
-        tramos_trono_a = [2]
-        tramos_trono_b = [1]
-        txt_trono_1 = "Turno B"
-        txt_trono_2 = "Turno A"
+        tramos_trono_a = [2]; tramos_trono_b = [1]
+        txt_trono_1 = "Turno B"; txt_trono_2 = "Turno A"
     else:
-        tramos_trono_a = [1]
-        tramos_trono_b = [2]
-        txt_trono_1 = "Turno A"
-        txt_trono_2 = "Turno B"
+        tramos_trono_a = [1]; tramos_trono_b = [2]
+        txt_trono_1 = "Turno A"; txt_trono_2 = "Turno B"
 
     html = f"""
     <!DOCTYPE html>
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Miércoles Santo - Gestor de Procesión</title>
+        <title>Miércoles Santo - Motor Dinámico</title>
         <style>
             body {{ font-family: 'Segoe UI', sans-serif; background: #0c0209; color: #f8f0f5; padding: 20px; }}
             .controles {{ position: sticky; top: 0; background: #1a0514; padding: 15px; z-index: 100; border-bottom: 2px solid #d4af37; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }}
@@ -222,7 +199,6 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             .bloque-ruta h5 {{ margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }}
             .bloque-ruta ul {{ margin: 0; padding: 0; list-style: none; }}
             .bloque-ruta li {{ padding: 8px 0; border-bottom: 1px dashed #3d0c2e; font-size: 13px; display: flex; }}
-            .bloque-ruta li:last-child {{ border: none; }}
             .tramo-label {{ width: 220px; color: #a37c95; flex-shrink: 0; }}
 
             .turno-container {{ background: #1a0514; padding: 20px; margin-bottom: 40px; border-radius: 15px; border: 1px solid #3d0c2e; box-shadow: 0 0 15px rgba(212, 175, 55, 0.05); }}
@@ -234,53 +210,52 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             .seccion {{ background: #160311; padding: 10px; margin: 10px 0; border-radius: 5px; min-height: 80px; border: 1px dashed #4a1038; }}
             
             .costalero {{ background: #3d0c2e; border: 1px solid #571342; margin: 5px 0; padding: 8px; border-radius: 4px; cursor: move; display: flex; justify-content: space-between; align-items: center; font-size: 11px; transition: 0.3s; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }}
-            .costalero.vacio {{ border: 1px dashed #571342; background: #0c0209; color: #884d72; cursor: default; flex-direction: column; align-items: stretch; text-shadow: none; }}
+            .costalero.vacio {{ border: 1px dashed #571342; background: #0c0209; color: #884d72; cursor: default; flex-direction: column; align-items: stretch; text-shadow: none; overflow: visible; position: relative; }}
             .costalero.sobrepeso {{ border: 2px solid #ff4757; background: #6b0b1c; }}
             
             .costalero.dyn-rep-c {{ border: 1px solid #ffd700; box-shadow: inset 0 0 8px rgba(255, 215, 0, 0.2); }}
-            .dyn-text-c {{ color: #ffd700; font-weight: bold; font-size: 11px; }}
-            
             .costalero.dyn-rep-cruz {{ border: 1px solid #00d2ff; box-shadow: inset 0 0 8px rgba(0, 210, 255, 0.2); }}
-            .dyn-text-cruz {{ color: #00d2ff; font-weight: bold; font-size: 11px; }}
-
             .costalero.dyn-rep-doble {{ border: 2px solid #ff4757; box-shadow: inset 0 0 10px rgba(255, 71, 87, 0.4); }}
-            .dyn-text-doble {{ color: #ff4757; font-weight: bold; font-size: 11px; }}
-
             .costalero.dyn-conflicto {{ border: 2px dashed #ff0000; background: #4a0000; animation: parpadeo 1s infinite; }}
             .dyn-text-conflicto {{ color: #fff; font-weight: bold; font-size: 12px; text-shadow: none; }}
 
             .modal-overlay {{ display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(3px); }}
-            .modal-content {{ background: #1a0514; border: 2px solid #d4af37; padding: 25px; border-radius: 12px; width: 90%; max-width: 550px; box-shadow: 0 0 25px rgba(212, 175, 55, 0.2); position: relative; animation: slideIn 0.3s ease-out; }}
+            .modal-content {{ background: #1a0514; border: 2px solid #d4af37; padding: 25px; border-radius: 12px; width: 90%; max-width: 600px; position: relative; animation: slideIn 0.3s ease-out; }}
             .modal-close {{ position: absolute; top: 15px; right: 15px; background: none; border: none; color: #ff4757; font-size: 24px; cursor: pointer; transition: 0.2s; }}
             .modal-close:hover {{ transform: scale(1.2); }}
-
+            
             @keyframes parpadeo {{ 50% {{ opacity: 0.5; }} }}
             @keyframes slideIn {{ from {{ transform: translateY(-30px); opacity: 0; }} to {{ transform: translateY(0); opacity: 1; }} }}
 
-            .btn-control {{ background: #3d0c2e; color: #f8f0f5; border: 1px solid #d4af37; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 12px; text-transform: uppercase; margin-left: 5px; }}
+            .btn-control {{ background: #3d0c2e; color: #f8f0f5; border: 1px solid #d4af37; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; margin-left: 5px; text-transform: uppercase; transition: 0.3s; }}
             .btn-control:hover {{ background: #571342; box-shadow: 0 0 8px rgba(212, 175, 55, 0.4); }}
             .btn-export {{ background: #d4af37; color: #000; border-color: #b5952f; }}
-            .btn-export:hover {{ background: #b5952f; box-shadow: 0 0 10px rgba(212, 175, 55, 0.6); color:#000; }}
+            .btn-export:hover {{ background: #b5952f; color:#000; }}
             .btn-load {{ background: #17517e; border-color: #2980b9; }}
-            .btn-load:hover {{ background: #1f6b9c; box-shadow: 0 0 10px rgba(41, 128, 185, 0.6); }}
+            .btn-load:hover {{ background: #1f6b9c; }}
             
             .stats-box {{ background: #0c0209; padding: 8px; border-radius: 4px; font-size: 10px; color: #d4af37; margin-top: 5px; border-left: 3px solid #d4af37; }}
-            input.search-p {{ background: #0c0209; border: 1px solid #3d0c2e; color: #d4af37; padding: 5px; width: 100%; font-size: 10px; border-radius: 3px; outline: none; }}
-            .sugerencias {{ background: #1a0514; border: 1px solid #d4af37; max-height: 80px; overflow-y: auto; position: absolute; z-index: 200; width: 200px; }}
-            .sug-item {{ padding: 5px; cursor: pointer; border-bottom: 1px solid #3d0c2e; color: #e8d08c; font-size: 11px; }}
-            .sug-item:hover {{ background: #3d0c2e; color: #fff; }}
+            input.search-p {{ background: #0c0209; border: 1px solid #3d0c2e; color: #d4af37; padding: 5px; width: 100%; font-size: 10px; border-radius: 3px; outline: none; box-sizing: border-box; }}
+            input.search-p:focus {{ border-color: #d4af37; }}
+            .sugerencias {{ background: #1a0514; border: 1px solid #d4af37; max-height: 100px; overflow-y: auto; position: absolute; z-index: 999; width: 100%; top: 100%; left: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.2); border-radius: 3px; }}
+            .sug-item {{ padding: 6px; cursor: pointer; border-bottom: 1px solid #eee; color: #e8d08c; font-size: 11px; text-align: left; }}
+            .sug-item:hover {{ background: #3d0c2e; color: #fff; font-weight: bold; }}
+            
+            /* CSS arreglado para que los textos no rompan la caja */
+            textarea.indicaciones-input {{ width: 100%; height: 70px; background: #0c0209; color: #d4af37; border: 1px solid #3d0c2e; border-radius: 5px; padding: 10px; font-family: inherit; margin-bottom: 15px; outline: none; resize: vertical; box-sizing: border-box; }}
+            textarea.indicaciones-input:focus {{ border-color: #d4af37; }}
+            .texto-indicaciones {{ font-size: 13px; color: #f8f0f5; white-space: pre-wrap; font-family: inherit; line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }}
         </style>
     </head>
     <body>
         <div class="controles">
             <div>
-                <div style="font-size:18px; font-weight:bold; color:#d4af37;">MIÉRCOLES SANTO - GESTOR DE PROCESIÓN</div>
-                <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Control de Hombro: ✅ Correcto | ❌ Incorrecto</div>
+                <div style="font-size:18px; font-weight:bold; color:#d4af37;">MIÉRCOLES SANTO - MOTOR DINÁMICO</div>
+                <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Auditor de Censo Activado | ✅ Hombro Correcto</div>
             </div>
             <div>
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
-                
-                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR DATOS</button>
+                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR JSON</button>
                 <button id="btn-heatmap" class="btn-control" onclick="toggleHeatmap()">🧊 Mapa Peso: OFF</button>
                 <button class="btn-control btn-export" onclick="descargarDatosJSON()">💾 DESCARGAR DATOS</button>
             </div>
@@ -293,22 +268,39 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             </div>
         </div>
 
+        <div id="modal-indicaciones" class="modal-overlay" onclick="cerrarModalIndicaciones(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <button class="modal-close" onclick="cerrarModalIndicaciones()">✖</button>
+                <h3 style="color:#d4af37; margin-top:0; border-bottom:1px solid #3d0c2e; padding-bottom:10px;">📝 Editar Indicaciones y Normativa</h3>
+                
+                <label style="color:#e8d08c; font-size:13px; font-weight:bold;">⚠️ Tramo 1 (S. Francisco ➔ Gasolinera):</label>
+                <textarea id="text-tramo1" class="indicaciones-input" placeholder="Escribe aquí las indicaciones para el primer tramo..."></textarea>
+                
+                <label style="color:#e8d08c; font-size:13px; font-weight:bold;">⚠️ Tramo 2 (Gasolinera ➔ Monserrate):</label>
+                <textarea id="text-tramo2" class="indicaciones-input" placeholder="Escribe aquí las indicaciones para el segundo tramo..."></textarea>
+                
+                <label style="color:#e8d08c; font-size:13px; font-weight:bold;">📜 Normativa de la Cuadrilla:</label>
+                <textarea id="text-normativa" class="indicaciones-input" style="height: 120px;" placeholder="Escribe aquí las normas generales o avisos del Capataz..."></textarea>
+                
+                <button onclick="guardarIndicaciones()" style="width:100%; background:#d4af37; color:#000; font-weight:bold; font-size: 14px; padding:12px; border:none; border-radius:5px; cursor:pointer; margin-top:5px; text-transform: uppercase;">💾 Guardar Notas en el Cuadrante</button>
+            </div>
+        </div>
+
         <div id="panel-alertas" class="alerta-box">
             ⚠️ ¡ALERTA CRÍTICA! Imposibilidad física detectada:
             <ul id="lista-alertas"></ul>
         </div>
         
         <div style="background:#23061b; padding:15px; border-left:5px solid #d4af37; margin:20px 0; border-radius:4px;">
-            <h3 style="margin:0; color:#d4af37;">📅 AÑO {anio} </h3>
+            <h3 style="margin:0; color:#d4af37;">📅 AÑO {anio} ({'PAR' if es_par else 'IMPAR'})</h3>
             <p style="margin: 8px 0 0 0; font-size: 13px; color: #e8d08c; line-height: 1.6;">
-                📍 <b>TRONO:</b> Sale <b>{txt_trono_1}</b> (San Francisco ➔ Gasolinera) | Releva <b>{txt_trono_2}</b> (Gasolinera ➔ Monserrate)<br>
-                ✝️ <b>CRUZ:</b> Sale <b>Turno 1</b> (San Francisco ➔ Gasolinera) | Releva <b>Turno 2</b> (Gasolinera ➔ Monserrate)
+                📍 <b>TRONO:</b> Sale <b>{txt_trono_1}</b> (S. Francisco ➔ Gasolinera) | Releva <b>{txt_trono_2}</b> (Gasolinera ➔ Monserrate)<br>
+                ✝️ <b>CRUZ:</b> Sale <b>Turno 1</b> (S. Francisco ➔ Gasolinera) | Releva <b>Turno 2</b> (Gasolinera ➔ Monserrate)
             </p>
         </div>
 
         <div class="buscador-box">
             <h3 style="margin-top:0; color:#d4af37;">🔍 BUSCADOR EN TIEMPO REAL</h3>
-            <p style="font-size:12px; color:#a37c95; margin-top:-10px;">Busca el itinerario de alguien escribiendo, o pulsa el icono ℹ️ al lado de su nombre abajo.</p>
             <input type="text" id="input-buscador" placeholder="Escribe el nombre de un costalero/a..." onkeyup="actualizarBuscador()">
             <div id="resultado-itinerario" class="itinerario-result"></div>
         </div>
@@ -318,15 +310,20 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             <span style="color:#ffd700; margin-right:20px; font-weight:bold;">■ Amarillo: Dobla Trono (Turno A + B)</span>
             <span style="color:#00d2ff; margin-right:20px; font-weight:bold;">■ Azul: Carga Alterna (Trono y Cruz)</span>
             <span style="color:#ff4757; margin-right:20px; font-weight:bold;">■ Rojo: Sobreesfuerzo (Carga Ambos Tramos Seguidos)</span>
-            <span style="color:#ffffff; background:#b30000; padding:2px 5px; font-weight:bold; border:1px dashed white;">■ ROJO PARPADEANTE: Imposible (Mismo tramo)</span>
+            <span style="color:#ffffff; background:#b30000; padding:2px 5px; font-weight:bold; border:1px dashed white;">■ ROJO PARPADEANTE: Imposible / Baja Censo / No Sale</span>
         </div>
 
         <div id="app"></div>
+        
+        <div id="indicaciones-container"></div>
 
         <script>
             const TS_PYTHON = "{marca_tiempo}";
             const DATOS_INICIALES = {turnos_json};
             const MASTER_LIST = {master_json};
+            const CENSO_COMPLETO = {censo_completo}; 
+            const DIA_PROCESION = 'miercoles_santo';
+            
             const PESO_TRONO = {peso_trono};
             const PESO_CRUZ = {peso_cruz};
             const MAX_KG = {limite_peso};
@@ -335,7 +332,6 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             let estadoGlobal = {{}};
             let heatmapActivo = false;
             
-            // Constantes dinámicas que varían según el año par/impar
             const TRAMOS = {{
                 "Trono": {{ "Turno A": {tramos_trono_a}, "Turno B": {tramos_trono_b} }},
                 "Cruz": {{ "Turno 1": [1], "Turno 2": [2] }}
@@ -344,7 +340,6 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             function init() {{
                 let savedTs = localStorage.getItem('miercoles_santo_ts');
                 let savedDatos = localStorage.getItem('miercoles_santo_datos');
-
                 if (savedDatos && savedTs === TS_PYTHON) {{
                     datos = JSON.parse(savedDatos);
                 }} else {{
@@ -352,14 +347,23 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                     localStorage.setItem('miercoles_santo_ts', TS_PYTHON);
                     localStorage.setItem('miercoles_santo_datos', JSON.stringify(datos));
                 }}
+                
+                // Aseguramos el sello y las indicaciones
+                datos.tipo_procesion = "miercoles_santo";
+                if(!datos.indicaciones) {{
+                    datos.indicaciones = {{ tramo1: "", tramo2: "", normativa: "" }};
+                }}
+                
                 render();
             }}
 
             function guardarMemoria() {{
+                datos.tipo_procesion = "miercoles_santo";
                 localStorage.setItem('miercoles_santo_datos', JSON.stringify(datos));
             }}
 
             function descargarDatosJSON() {{
+                datos.tipo_procesion = "miercoles_santo";
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datos, null, 2));
                 const dlAnchorElem = document.createElement('a');
                 dlAnchorElem.setAttribute("href", dataStr);
@@ -369,27 +373,88 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 dlAnchorElem.remove();
             }}
 
-            // NUEVA FUNCIÓN: CARGAR JSON DESDE EL ORDENADOR
             function cargarJSON(event) {{
                 const file = event.target.files[0];
                 if (!file) return;
-
                 const reader = new FileReader();
                 reader.onload = function(e) {{
                     try {{
                         const loadedData = JSON.parse(e.target.result);
+                        
+                        // BLOQUEO ANTIDESPISTES: Detecta si es de otro día
+                        if (loadedData.tipo_procesion && loadedData.tipo_procesion !== "miercoles_santo") {{
+                            alert("❌ ERROR: Este archivo pertenece a otra procesión. No puedes cargarlo aquí.");
+                            event.target.value = '';
+                            return;
+                        }} else if (!loadedData.tipo_procesion && loadedData.Trono && loadedData.Trono["Turno C"]) {{
+                            // Compatibilidad con archivos antiguos de viernes
+                            alert("❌ ERROR: Este archivo pertenece al Viernes Santo. No puedes cargarlo aquí.");
+                            event.target.value = '';
+                            return;
+                        }}
+
                         if(loadedData.Trono && loadedData.Cruz) {{
+                            let msgBorrados = [];
+                            let msgNoSalen = [];
+
+                            // AUDITORÍA DEL CENSO
+                            for (let tipo of ["Trono", "Cruz"]) {{
+                                if (!loadedData[tipo]) continue;
+                                for (let t of Object.keys(loadedData[tipo])) {{
+                                    for (let v of Object.keys(loadedData[tipo][t])) {{
+                                        for (let sec of ["Delante", "Detras"]) {{
+                                            for (let i = 0; i < loadedData[tipo][t][v][sec].length; i++) {{
+                                                let p = loadedData[tipo][t][v][sec][i];
+                                                if (p.id && p.id !== -1) {{
+                                                    let personaCenso = CENSO_COMPLETO.find(c => c.id === p.id);
+                                                    if (!personaCenso) {{
+                                                        // NO EXISTE EN EL CENSO
+                                                        msgBorrados.push(`- ${{p.nombre}}`);
+                                                        // DESTRUCCIÓN Y SUSTITUCIÓN POR HUECO LIBRE
+                                                        loadedData[tipo][t][v][sec][i] = {{ "nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1 }};
+                                                    }} else {{
+                                                        // SÍ EXISTE: Actualizamos altura y hombro por si hubo cambios
+                                                        p.altura = personaCenso.altura;
+                                                        p.pref_hombro = personaCenso.pref_hombro;
+                                                        
+                                                        // AVISO SI SE DESMARCÓ DEL DÍA
+                                                        if (!personaCenso[DIA_PROCESION]) {{
+                                                            msgNoSalen.push(`- ${{p.nombre}}`);
+                                                        }}
+                                                    }}
+                                                }}
+                                            }}
+                                        }}
+                                    }}
+                                }}
+                            }}
+
+                            let alertaFinal = "";
+                            if (msgBorrados.length > 0) {{
+                                alertaFinal += "⚠️ EL CENSO SE HA MODIFICADO:\\nLas siguientes personas ya no aparecen en la base de datos oficial (o su ID cambió) y sus huecos han sido liberados automáticamente:\\n" + msgBorrados.join("\\n") + "\\n\\n";
+                            }}
+                            if (msgNoSalen.length > 0) {{
+                                alertaFinal += "⚠️ PERSONAS QUE NO SALEN HOY:\\n(Aparecerán parpadeando en ROJO en el cuadrante)\\n" + msgNoSalen.join("\\n") + "\\n\\n";
+                            }}
+
+                            if (alertaFinal !== "") {{
+                                alert(alertaFinal);
+                            }} else {{
+                                alert("✅ Configuración cargada correctamente. Todo el personal está al día en el censo.");
+                            }}
+
                             datos = loadedData;
+                            datos.tipo_procesion = "miercoles_santo";
+                            if(!datos.indicaciones) datos.indicaciones = {{ tramo1: "", tramo2: "", normativa: "" }};
+                            
                             guardarMemoria();
                             render();
-                            alert("✅ Configuración cargada correctamente.");
                         }} else {{
-                            alert("❌ El archivo seleccionado no tiene el formato correcto para una procesión.");
+                            alert("❌ Archivo JSON inválido.");
                         }}
                     }} catch (error) {{
-                        alert("❌ Error al leer el archivo. Asegúrate de que hayas seleccionado el correcto."\n"En cualquier caso, contactame");
+                        alert("❌ Error al leer el archivo JSON.");
                     }}
-                    // Reseteamos el input por si quieres cargar el mismo archivo otra vez después
                     event.target.value = '';
                 }};
                 reader.readAsText(file);
@@ -400,6 +465,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 let alertasCriticas = [];
 
                 for (let tipo of ["Trono", "Cruz"]) {{
+                    if (!datos[tipo]) continue;
                     for (let t of Object.keys(datos[tipo])) {{
                         for (let v of Object.keys(datos[tipo][t])) {{
                             for (let sec of ["Delante", "Detras"]) {{
@@ -420,45 +486,45 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                     s.estadoStr = "normal";
                     
                     let cristoArr = [];
-                    s.cristo.forEach(t => cristoArr.push(...TRAMOS.Trono[t]));
+                    s.cristo.forEach(t => cristoArr.push(...(TRAMOS.Trono[t] || [])));
                     let cristoUniq = [...new Set(cristoArr)]; 
                     
                     let cruzArr = [];
-                    s.cruz.forEach(t => cruzArr.push(...TRAMOS.Cruz[t]));
+                    s.cruz.forEach(t => cruzArr.push(...(TRAMOS.Cruz[t] || [])));
                     let cruzUniq = [...new Set(cruzArr)];
                     
                     let allTramos = [...new Set([...cristoUniq, ...cruzUniq])].sort((a,b) => a - b);
                     s.tramos = allTramos; 
 
                     let tieneConflicto = false;
-                    let tieneDoble = false;
-
                     let cristoTurnosUnicos = [...new Set(s.cristo)];
-                    let cruzTurnosUnicos = [...new Set(s.cruz)];
                     
-                    if (s.cristo.length > cristoTurnosUnicos.length || s.cruz.length > cruzTurnosUnicos.length) {{
+                    if (s.cristo.length > cristoTurnosUnicos.length || s.cruz.length > [...new Set(s.cruz)].length) {{
                         tieneConflicto = true;
-                        alertasCriticas.push(`<b>${{s.nombre}}</b> está duplicado/a dentro de un mismo turno manualmente.`);
+                        alertasCriticas.push(`<b>${{s.nombre}}</b> duplicado en un mismo turno.`);
                     }}
 
                     let interseccion = cristoUniq.filter(t => cruzUniq.includes(t));
                     if (interseccion.length > 0) {{
                         tieneConflicto = true;
-                        alertasCriticas.push(`<b>${{s.nombre}}</b> está asignado/a al Trono y a la Cruz en el <b>Tramo ${{interseccion.join(', ')}}</b> a la vez.`);
+                        alertasCriticas.push(`<b>${{s.nombre}}</b> en Trono y Cruz a la vez (Tramo ${{interseccion.join(', ')}}).`);
                     }}
 
-                    // En Miércoles Santo, si hace 2 tramos, no hay descanso posible porque la procesión es seguida.
-                    if (allTramos.length > 1) tieneDoble = true;
-
-                    if (tieneConflicto) {{
+                    let personaCenso = CENSO_COMPLETO.find(c => c.id == id);
+                    if (!personaCenso) {{
+                        s.estadoStr = "baja_censo";
+                    }} else if (!personaCenso[DIA_PROCESION]) {{
+                        s.estadoStr = "no_procesiona";
+                    }} else if (tieneConflicto) {{
                         s.estadoStr = "conflicto";
+                    }} else if (allTramos.length > 1) {{
+                        s.estadoStr = "doble";
                     }} else if (cruzUniq.length > 0 && cristoUniq.length > 0) {{
-                        s.estadoStr = tieneDoble ? "doble" : "repCruz"; 
+                        s.estadoStr = "repCruz"; 
                     }} else if (cristoTurnosUnicos.length >= 2) {{
-                        s.estadoStr = tieneDoble ? "doble" : "repC";
+                        s.estadoStr = "repC";
                     }}
                 }}
-
                 estadoGlobal = stats;
 
                 let panel = document.getElementById("panel-alertas");
@@ -471,20 +537,74 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 }}
             }}
 
+            // ==========================================
+            // LÓGICA DE NOTAS E INDICACIONES
+            // ==========================================
+            function abrirModalIndicaciones() {{
+                if(!datos.indicaciones) datos.indicaciones = {{ tramo1: "", tramo2: "", normativa: "" }};
+                document.getElementById('text-tramo1').value = datos.indicaciones.tramo1 || "";
+                document.getElementById('text-tramo2').value = datos.indicaciones.tramo2 || "";
+                document.getElementById('text-normativa').value = datos.indicaciones.normativa || "";
+                document.getElementById('modal-indicaciones').style.display = 'flex';
+            }}
+
+            function cerrarModalIndicaciones(ev) {{
+                if (!ev || ev.target.id === 'modal-indicaciones' || ev.target.className === 'modal-close') {{
+                    document.getElementById('modal-indicaciones').style.display = 'none';
+                }}
+            }}
+
+            function guardarIndicaciones() {{
+                if(!datos.indicaciones) datos.indicaciones = {{}};
+                datos.indicaciones.tramo1 = document.getElementById('text-tramo1').value;
+                datos.indicaciones.tramo2 = document.getElementById('text-tramo2').value;
+                datos.indicaciones.normativa = document.getElementById('text-normativa').value;
+                
+                guardarMemoria();
+                renderIndicaciones(); 
+                cerrarModalIndicaciones();
+            }}
+
+            function renderIndicaciones() {{
+                if(!datos.indicaciones) datos.indicaciones = {{ tramo1: "", tramo2: "", normativa: "" }};
+                
+                let container = document.getElementById('indicaciones-container');
+                container.innerHTML = `
+                    <div class="turno-container" style="margin-top: 40px; border-color: #5c164e; box-shadow: 0 0 15px rgba(92, 22, 78, 0.15);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #3d0c2e; padding-bottom: 10px; margin-bottom: 15px;">
+                            <h2 style="margin:0; border:none; padding:0; color:#d4af37; text-transform: uppercase; letter-spacing: 2px;">📝 INDICACIONES Y NORMATIVA</h2>
+                            <button class="btn-control" onclick="abrirModalIndicaciones()" style="background:#5c164e; border-color:#d4af37; color:#fff;">✏️ EDITAR TEXTOS</button>
+                        </div>
+                        <div style="display:flex; gap: 20px; flex-wrap: wrap;">
+                            <div style="flex:1; min-width:300px; background:#160311; padding:15px; border-radius:8px; border-left:4px solid #d4af37;">
+                                <h4 style="color:#e8d08c; margin-top:0;">⚠️ Tramo 1 (S. Francisco ➔ Gasolinera)</h4>
+                                <p class="texto-indicaciones">${{datos.indicaciones.tramo1 || "<i style='color:#a37c95;'>(Sin indicaciones para este tramo)</i>"}}</p>
+                            </div>
+                            <div style="flex:1; min-width:300px; background:#160311; padding:15px; border-radius:8px; border-left:4px solid #d4af37;">
+                                <h4 style="color:#e8d08c; margin-top:0;">⚠️ Tramo 2 (Gasolinera ➔ Monserrate)</h4>
+                                <p class="texto-indicaciones">${{datos.indicaciones.tramo2 || "<i style='color:#a37c95;'>(Sin indicaciones para este tramo)</i>"}}</p>
+                            </div>
+                        </div>
+                        <div style="background:#160311; padding:15px; border-radius:8px; border-left:4px solid #5c164e; margin-top:15px;">
+                            <h4 style="color:#e8d08c; margin-top:0;">📜 Normativa de la Cuadrilla</h4>
+                            <p class="texto-indicaciones">${{datos.indicaciones.normativa || "<i style='color:#a37c95;'>(Sin normativa especificada)</i>"}}</p>
+                        </div>
+                    </div>
+                `;
+            }}
+
+            // Resto de la lógica de vistas
             function abrirInfoModal(id) {{
                 let st = estadoGlobal[id];
                 if (!st) return;
-                
                 let tOcupados = st.tramos;
-                let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px; border-bottom:1px solid #3d0c2e; padding-bottom:10px; display:flex; align-items:center;">📋 Hoja de Ruta: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
-                
-                html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN</h5><ul>`;
+                let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px;">📋 Hoja de Ruta: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
+                html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN DE IDA</h5><ul>`;
                 [
                     {{ num: 1, txt: "1. S.Francisco ➔ Gasolinera" }},
                     {{ num: 2, txt: "2. Gasolinera ➔ Monserrate" }}
                 ].forEach(tr => {{ html += generarFilaTramo(tr, st, tOcupados); }});
                 html += `</ul></div>`;
-
                 document.getElementById('modal-body').innerHTML = html;
                 document.getElementById('modal-info').style.display = 'flex';
             }}
@@ -508,17 +628,14 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 if (idFound) {{
                     let st = estadoGlobal[idFound];
                     let tOcupados = st.tramos;
-                    
                     resDiv.style.display = 'block';
-                    let html = `<h4 style="color:#d4af37; margin-bottom:10px; font-size:16px;">📋 Hoja de Ruta: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
-                    
-                    html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN</h5><ul>`;
+                    let html = `<h4 style="color:#d4af37; margin-bottom:10px; font-size:16px;">📋 Hoja de Ruta Viva: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
+                    html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN DE IDA</h5><ul>`;
                     [
                         {{ num: 1, txt: "1. S.Francisco ➔ Gasolinera" }},
                         {{ num: 2, txt: "2. Gasolinera ➔ Monserrate" }}
                     ].forEach(tr => {{ html += generarFilaTramo(tr, st, tOcupados); }});
                     html += `</ul></div>`;
-
                     resDiv.innerHTML = html;
                 }} else {{
                     resDiv.style.display = 'none';
@@ -527,24 +644,22 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
 
             function generarFilaTramo(tr, st, tOcupados) {{
                 let label = "🕯️ <strong style='color:#884d72'>Cirio (Descanso)</strong>";
-                
                 let enCristo = [];
-                st.cristo.forEach(t => {{ if(TRAMOS.Trono[t].includes(tr.num)) enCristo.push(t); }});
+                st.cristo.forEach(t => {{ if((TRAMOS.Trono[t]||[]).includes(tr.num)) enCristo.push(t); }});
                 let enCruz = [];
-                st.cruz.forEach(t => {{ if(TRAMOS.Cruz[t].includes(tr.num)) enCruz.push(t); }});
+                st.cruz.forEach(t => {{ if((TRAMOS.Cruz[t]||[]).includes(tr.num)) enCruz.push(t); }});
 
                 if (enCristo.length > 0 && enCruz.length > 0) {{
                     label = `💥 <strong style='color:#ff0000; animation: parpadeo 1s infinite;'>¡IMPOSIBLE! (${{enCristo.join('+')}} y ${{enCruz.join('+')}})</strong>`;
                 }} else if (enCristo.length > 0) {{
-                    label = `💪 <strong style='color:#e8d08c'>Trono (${{enCristo.join(" + ")}})</strong>`;
+                    label = `💪 <strong style='color:#e8d08c'>🕍 Trono (${{enCristo.join(" + ")}})</strong>`;
                 }} else if (enCruz.length > 0) {{
-                    label = `💪 <strong style='color:#00d2ff'>Cruz (${{enCruz.join('+')}})</strong>`;
+                    label = `💪 <strong style='color:#00d2ff'>✝️ Cruz (${{enCruz.join('+')}})</strong>`;
                 }}
                 
                 if(tOcupados.length === 2 && (enCristo.length > 0 || enCruz.length > 0)) {{
                     label = label.replace("💪", "⚠️").replace("#e8d08c", "#ff4757").replace("#00d2ff", "#ff4757") + " [SOBREESFUERZO]";
                 }}
-                
                 return `<li><span class="tramo-label">${{tr.txt}}</span> ${{label}}</li>`;
             }}
 
@@ -552,11 +667,8 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 heatmapActivo = !heatmapActivo;
                 const btn = document.getElementById('btn-heatmap');
                 btn.innerText = heatmapActivo ? '🔥 Mapa Peso: ON' : '🧊 Mapa Peso: OFF';
-                if (heatmapActivo) {{
-                    btn.style.background = '#d4af37'; btn.style.color = '#0c0209';
-                }} else {{
-                    btn.style.background = '#3d0c2e'; btn.style.color = '#f8f0f5';
-                }}
+                if (heatmapActivo) {{ btn.style.background = '#d4af37'; btn.style.color = '#0c0209'; }} 
+                else {{ btn.style.background = '#3d0c2e'; btn.style.color = '#f8f0f5'; }}
                 render();
             }}
 
@@ -566,19 +678,20 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 const minVal = base - 10;
                 let p = (peso - minVal) / (MAX_KG - minVal);
                 p = Math.max(0, Math.min(1, p));
-                const hue = (1 - p) * 120;
-                return `hsl(${{hue}}, 80%, 30%)`;
+                return `hsl(${{(1 - p) * 120}}, 80%, 30%)`;
             }}
 
             function render() {{
                 analizarEstado(); 
                 actualizarBuscador(); 
-
+                
                 const app = document.getElementById('app');
                 app.innerHTML = '';
                 
                 for (const [tipo, turnos] of Object.entries(datos)) {{
-                    let tituloBloque = tipo === "Trono" ? "TURNOS DE TRONO" : "TURNOS DE CRUZ INSIGNIA";
+                    if(tipo === "indicaciones" || tipo === "tipo_procesion") continue; 
+                    
+                    let tituloBloque = tipo === "Trono" ? "🕍 TRONO PRINCIPAL" : "✝️ LA CRUZ";
                     app.innerHTML += `<h1 style="color:#d4af37; border-bottom: 2px solid #d4af37; padding-bottom:10px; margin-top:40px;">${{tituloBloque}}</h1>`;
                     
                     for (const [idT, varas] of Object.entries(turnos)) {{
@@ -587,109 +700,81 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                         
                         for (const [vNom, vData] of Object.entries(varas)) {{
                             const statsVara = calcularStats(vData.Delante.concat(vData.Detras), tipo);
-                            
                             html += `<div class="vara"><h3>VARA ${{vNom.toUpperCase()}}</h3>`;
+                            
                             ["Delante", "Detras"].forEach(sec => {{
                                 const statsSec = calcularStats(vData[sec], tipo);
-                                
-                                if (sec === "Delante") {{
-                                    html += `<div class="stats-box"><b>${{sec.toUpperCase()}}:</b> ${{statsSec.media.toFixed(1)}}cm | ${{statsSec.totalVara.toFixed(1)}}kg</div>`;
-                                }}
-                                
-                                if (sec === "Detras") {{
-                                    let divTitulo = tipo === "Trono" ? "▼ TRONO ▼" : "▼ CRUZ ▼";
-                                    html += `<div style="text-align:center; padding-top: 10px; margin-bottom: 5px; color:#e8d08c; font-size:12px; font-weight:bold; letter-spacing:2px; border-top: 1px dashed #3d0c2e;">${{divTitulo}}</div>`;
-                                }}
+                                if (sec === "Delante") html += `<div class="stats-box"><b>${{sec.toUpperCase()}}:</b> ${{statsSec.media.toFixed(1)}}cm | ${{statsSec.totalVara.toFixed(1)}}kg</div>`;
+                                if (sec === "Detras") html += `<div style="text-align:center; padding-top:10px; margin-bottom:5px; color:#e8d08c; font-size:12px; font-weight:bold; letter-spacing:2px; border-top:1px dashed #3d0c2e;">${{tipo === "Trono" ? "▼ TRONO ▼" : "▼ CRUZ ▼"}}</div>`;
                                 
                                 html += `<div class="seccion" ondragover="allow(event)">`;
-                                
                                 vData[sec].forEach((p, i) => {{
                                     const esVacio = p.altura === 0;
                                     const esSobrepeso = p.peso >= MAX_KG;
                                     
-                                    let clExtra = '';
-                                    let nExtra = '';
-                                    let tagFinal = '';
-                                    let tickHombro = '';
+                                    let clExtra = ''; let nExtra = ''; let tagFinal = ''; let tickHombro = '';
 
                                     if (!esVacio) {{
-                                        // Validación Estricta de Hombro
                                         let pref = (p.pref_hombro || "").toLowerCase().trim();
                                         if (pref !== "") {{
                                             if (pref.includes("derech")) {{
-                                                if (vNom === "Izquierda") tickHombro = ' <span title="Hombro correcto" style="font-size:12px; margin-left:3px; text-shadow:none;">✅</span>';
-                                                else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:12px; margin-left:3px; text-shadow:none;">❌</span>';
+                                                if (vNom === "Izquierda") tickHombro = ' <span title="Hombro correcto" style="font-size:12px;">✅</span>';
+                                                else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:12px;">❌</span>';
                                             }} else if (pref.includes("izquierd")) {{
-                                                if (vNom === "Derecha") tickHombro = ' <span title="Hombro correcto" style="font-size:12px; margin-left:3px; text-shadow:none;">✅</span>';
-                                                else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:12px; margin-left:3px; text-shadow:none;">❌</span>';
+                                                if (vNom === "Derecha") tickHombro = ' <span title="Hombro correcto" style="font-size:12px;">✅</span>';
+                                                else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:12px;">❌</span>';
                                             }} else if (pref.includes("ambos")) {{
-                                                tickHombro = ' <span title="Hombro correcto" style="font-size:12px; margin-left:3px; text-shadow:none;">✅</span>';
+                                                tickHombro = ' <span title="Hombro correcto" style="font-size:12px;">✅</span>';
                                             }}
                                         }}
 
                                         if (estadoGlobal[p.id]) {{
                                             let est = estadoGlobal[p.id].estadoStr;
-                                            if (est === "conflicto") {{
-                                                clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [¡CRÍTICO!]';
-                                            }} else if (est === "doble") {{
-                                                clExtra = 'dyn-rep-doble'; nExtra = 'dyn-text-doble'; tagFinal = ' (Sobrecarga)';
-                                            }} else if (est === "repCruz") {{
-                                                clExtra = 'dyn-rep-cruz'; nExtra = 'dyn-text-cruz'; tagFinal = ' (Cruz)';
-                                            }} else if (est === "repC") {{
-                                                clExtra = 'dyn-rep-c'; nExtra = 'dyn-text-c'; tagFinal = ' (Doble)';
-                                            }}
+                                            if (est === "baja_censo") {{ clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [BAJA]'; }} 
+                                            else if (est === "no_procesiona") {{ clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [NO SALE]'; }} 
+                                            else if (est === "conflicto") {{ clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [CRÍTICO]'; }} 
+                                            else if (est === "doble") {{ clExtra = 'dyn-rep-doble'; nExtra = 'dyn-text-doble'; tagFinal = ' (Sobrecarga)'; }} 
+                                            else if (est === "repCruz") {{ clExtra = 'dyn-rep-cruz'; nExtra = 'dyn-text-cruz'; tagFinal = ' (Cruz)'; }} 
+                                            else if (est === "repC") {{ clExtra = 'dyn-rep-c'; nExtra = 'dyn-text-c'; tagFinal = ' (Doble)'; }}
                                         }}
                                     }}
                                     
-                                    if (heatmapActivo) {{ clExtra = ''; tagFinal = ''; }}
-                                    
-                                    let bgStyle = '';
-                                    if (heatmapActivo && !esVacio) {{
-                                        bgStyle = `background-color: ${{getHeatmapColor(p.peso, tipo)}} !important; border-color: transparent;`;
-                                    }}
+                                    let bgStyle = (heatmapActivo && !esVacio) ? `background-color: ${{getHeatmapColor(p.peso, tipo)}} !important; border-color: transparent;` : '';
 
                                     html += `
                                         <div class="costalero ${{esVacio ? 'vacio' : ''}} ${{esSobrepeso && !heatmapActivo ? 'sobrepeso' : ''}} ${{clExtra}}" 
-                                             style="${{bgStyle}}" title="Preferencia de hombro: ${{p.pref_hombro || 'Indiferente'}}"
+                                             style="${{bgStyle}}" title="Hombro: ${{p.pref_hombro || 'Indiferente'}}"
                                              draggable="${{!esVacio}}" ondragstart="drag(event, '${{tipo}}', '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})" ondrop="drop(event, '${{tipo}}', '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})">
                                             ${{esVacio ? 
                                                 `<input type="text" class="search-p" placeholder="Escribir nombre..." onkeyup="buscarMini(event, '${{tipo}}','${{idT}}','${{vNom}}','${{sec}}',${{i}})">
                                                  <div id="sug-${{tipo}}-${{idT}}-${{vNom}}-${{sec}}-${{i}}" class="sugerencias" style="display:none"></div>` :
                                                 `<span>
-                                                    <button style="background:none; border:none; color:#00d2ff; cursor:pointer; padding:0 5px 0 0; font-size:14px;" onclick="abrirInfoModal(${{p.id}}); event.stopPropagation();" title="Ver itinerario">ℹ️</button>
-                                                    <button style="background:none; border:none; color:#ff4757; cursor:pointer; padding:0 5px 0 0;" onclick="eliminar('${{tipo}}','${{idT}}','${{vNom}}','${{sec}}',${{i}})" title="Quitar">🗑️</button>
+                                                    <button style="background:none; border:none; color:#00d2ff; cursor:pointer; padding:0 5px 0 0; font-size:14px;" onclick="abrirInfoModal(${{p.id}}); event.stopPropagation();">ℹ️</button>
+                                                    <button style="background:none; border:none; color:#ff4757; cursor:pointer; padding:0 5px 0 0;" onclick="eliminar('${{tipo}}','${{idT}}','${{vNom}}','${{sec}}',${{i}})">🗑️</button>
                                                     <span class="${{nExtra}}">${{p.nombre}} ${{tickHombro}} ${{tagFinal}}</span>
                                                 </span>
-                                                <span>
-                                                    <span style="color:${{heatmapActivo ? '#fff' : '#d4af37'}}">${{p.altura}}cm</span> 
-                                                    <b style="color:${{heatmapActivo ? '#fff' : '#e8d08c'}}; margin-left:5px">${{p.peso.toFixed(1)}}kg</b>
-                                                </span>`
+                                                <span><span style="color:${{heatmapActivo?'#fff':'#d4af37'}}">${{p.altura}}cm</span> <b style="color:${{heatmapActivo?'#fff':'#e8d08c'}}; margin-left:5px">${{p.peso.toFixed(1)}}kg</b></span>`
                                             }}
                                         </div>`;
                                 }});
                                 html += `</div>`;
-                                
-                                if (sec === "Detras") {{
-                                    html += `<div class="stats-box"><b>${{sec.toUpperCase()}}:</b> ${{statsSec.media.toFixed(1)}}cm | ${{statsSec.totalVara.toFixed(1)}}kg</div>`;
-                                }}
+                                if (sec === "Detras") html += `<div class="stats-box"><b>${{sec.toUpperCase()}}:</b> ${{statsSec.media.toFixed(1)}}cm | ${{statsSec.totalVara.toFixed(1)}}kg</div>`;
                             }});
                             html += `<div style="text-align:center; padding:10px; border:1px solid #d4af37; border-radius:5px; font-size:12px; color:#d4af37; margin-top:10px;"><b>TOTAL VARA: ${{statsVara.totalVara.toFixed(1)}} kg</b></div></div>`;
                         }}
                         app.innerHTML += html + `</div></div>`;
                     }}
                 }}
+                
+                renderIndicaciones();
             }}
 
             function calcularStats(p_list, tipo) {{
                 let filtrados = p_list.filter(p => p.altura > 0);
                 let m = filtrados.length > 0 ? filtrados.reduce((a, b) => a + b.altura, 0) / filtrados.length : 0;
-                let tV = 0; 
-                let base = tipo === 'Trono' ? PESO_TRONO / 36 : PESO_CRUZ / 8;
-                
+                let tV = 0; let base = tipo === 'Trono' ? PESO_TRONO / 36 : PESO_CRUZ / 8;
                 p_list.forEach(p => {{
-                    if(p.altura > 0) {{
-                        p.peso = Math.min(MAX_KG, Math.max(0, base + ((p.altura - m) * (base * 0.05))));
-                        tV += p.peso;
+                    if(p.altura > 0) {{ p.peso = Math.min(MAX_KG, Math.max(0, base + ((p.altura - m) * (base * 0.05)))); tV += p.peso;
                     }} else p.peso = 0;
                 }});
                 return {{ media: m, totalVara: tV }};
@@ -707,11 +792,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                         const div = document.createElement('div');
                         div.className = 'sug-item';
                         div.innerHTML = `${{m.nombre}} (${{m.altura}}cm)`;
-                        div.onclick = () => {{ 
-                            datos[tipo][t][v][s][i] = {{...m}}; 
-                            render(); 
-                            guardarMemoria(); 
-                        }};
+                        div.onclick = () => {{ datos[tipo][t][v][s][i] = {{...m}}; render(); guardarMemoria(); }};
                         sugDiv.appendChild(div);
                     }});
                 }} else sugDiv.style.display = 'none';
@@ -725,18 +806,14 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 let orig = datos[dragging.tipo][dragging.t][dragging.v][dragging.s][dragging.i];
                 datos[dragging.tipo][dragging.t][dragging.v][dragging.s][dragging.i] = datos[tipo][t][v][s][i];
                 datos[tipo][t][v][s][i] = orig;
-                render(); 
-                guardarMemoria(); 
+                render(); guardarMemoria(); 
             }}
-            
             function eliminar(tipo, t, v, s, i) {{
-                if (confirm(`¿Estás seguro de quitar a esta persona?`)) {{
+                if (confirm(`¿Quitar a esta persona?`)) {{
                     datos[tipo][t][v][s][i] = {{"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1}};
-                    render(); 
-                    guardarMemoria(); 
+                    render(); guardarMemoria(); 
                 }}
             }}
-            
             window.onload = init; 
         </script>
     </body>

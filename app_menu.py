@@ -154,7 +154,7 @@ class GestorCofradeAPP:
         card = tk.Frame(f, bg=C_BLANCO, padx=50, pady=50, highlightbackground="#e0e0e0", highlightthickness=1)
         card.place(relx=0.5, rely=0.5, anchor="center")
         
-        tk.Label(card, text="Bienvenido al Sistema Central", font=("Segoe UI", 26, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=(0, 10))
+        tk.Label(card, text="Sistema de Gestión Turnos Cristo de la Agonía", font=("Segoe UI", 26, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=(0, 10))
         tk.Label(card, text="OFS Muy Ilustre Mayordomía de Ntro. Padre Jesús Nazareno", font=("Segoe UI", 14), bg=C_BLANCO, fg="#666").pack(pady=5)
         tk.Frame(card, height=2, bg=C_ORO, width=100).pack(pady=20)
         tk.Label(card, text="Selecciona un módulo en el menú lateral izquierdo para empezar a trabajar.", font=("Segoe UI", 12), bg=C_BLANCO, fg="#888").pack(pady=10)
@@ -205,7 +205,7 @@ class GestorCofradeAPP:
         btn_nuevo.pack(side=tk.LEFT, padx=(0, 10))
         btn_abrir = self.crear_boton_moderno(btn_frame, "🌐 ABRIR CUADRANTE ANTERIOR", "#17517e", "#1f6b9c", C_BLANCO, command=abrir_anterior)
         btn_abrir.pack(side=tk.LEFT)
-        tk.Label(card, text="* Generar un nuevo cuadrante sobreescribirá la vista web actual.", font=("Segoe UI", 10, "italic"), bg=C_BLANCO, fg="#888").pack(anchor="w", pady=(30, 0))
+        tk.Label(card, text="* Generar un nuevo cuadrante sobreescribirá la ultima modificación sin guardar.", font=("Segoe UI", 10, "italic"), bg=C_BLANCO, fg="#888").pack(anchor="w", pady=(30, 0))
         return f
 
     def crear_pantalla_ensayos(self):
