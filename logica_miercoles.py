@@ -206,7 +206,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Miércoles Santo - Motor Dinámico</title>
+        <title>Miércoles Santo - Gestor de Procesión</title>
         <style>
             body {{ font-family: 'Segoe UI', sans-serif; background: #0c0209; color: #f8f0f5; padding: 20px; }}
             .controles {{ position: sticky; top: 0; background: #1a0514; padding: 15px; z-index: 100; border-bottom: 2px solid #d4af37; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }}
@@ -274,13 +274,13 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
     <body>
         <div class="controles">
             <div>
-                <div style="font-size:18px; font-weight:bold; color:#d4af37;">MIÉRCOLES SANTO - MOTOR DINÁMICO (Autoguardado 🟢)</div>
+                <div style="font-size:18px; font-weight:bold; color:#d4af37;">MIÉRCOLES SANTO - GESTOR DE PROCESIÓN</div>
                 <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Control de Hombro: ✅ Correcto | ❌ Incorrecto</div>
             </div>
             <div>
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
                 
-                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR JSON</button>
+                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR DATOS</button>
                 <button id="btn-heatmap" class="btn-control" onclick="toggleHeatmap()">🧊 Mapa Peso: OFF</button>
                 <button class="btn-control btn-export" onclick="descargarDatosJSON()">💾 DESCARGAR DATOS</button>
             </div>
@@ -299,7 +299,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
         </div>
         
         <div style="background:#23061b; padding:15px; border-left:5px solid #d4af37; margin:20px 0; border-radius:4px;">
-            <h3 style="margin:0; color:#d4af37;">📅 AÑO {anio} ({'PAR' if es_par else 'IMPAR'})</h3>
+            <h3 style="margin:0; color:#d4af37;">📅 AÑO {anio} </h3>
             <p style="margin: 8px 0 0 0; font-size: 13px; color: #e8d08c; line-height: 1.6;">
                 📍 <b>TRONO:</b> Sale <b>{txt_trono_1}</b> (San Francisco ➔ Gasolinera) | Releva <b>{txt_trono_2}</b> (Gasolinera ➔ Monserrate)<br>
                 ✝️ <b>CRUZ:</b> Sale <b>Turno 1</b> (San Francisco ➔ Gasolinera) | Releva <b>Turno 2</b> (Gasolinera ➔ Monserrate)
@@ -387,7 +387,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                             alert("❌ El archivo seleccionado no tiene el formato correcto para una procesión.");
                         }}
                     }} catch (error) {{
-                        alert("❌ Error al leer el archivo JSON. Asegúrate de que no esté corrupto.");
+                        alert("❌ Error al leer el archivo. Asegúrate de que hayas seleccionado el correcto."\n"En cualquier caso, contactame");
                     }}
                     // Reseteamos el input por si quieres cargar el mismo archivo otra vez después
                     event.target.value = '';
@@ -478,7 +478,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 let tOcupados = st.tramos;
                 let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px; border-bottom:1px solid #3d0c2e; padding-bottom:10px; display:flex; align-items:center;">📋 Hoja de Ruta: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
                 
-                html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN DE IDA</h5><ul>`;
+                html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN</h5><ul>`;
                 [
                     {{ num: 1, txt: "1. S.Francisco ➔ Gasolinera" }},
                     {{ num: 2, txt: "2. Gasolinera ➔ Monserrate" }}
@@ -510,9 +510,9 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                     let tOcupados = st.tramos;
                     
                     resDiv.style.display = 'block';
-                    let html = `<h4 style="color:#d4af37; margin-bottom:10px; font-size:16px;">📋 Hoja de Ruta Viva: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
+                    let html = `<h4 style="color:#d4af37; margin-bottom:10px; font-size:16px;">📋 Hoja de Ruta: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
                     
-                    html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN DE IDA</h5><ul>`;
+                    html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN</h5><ul>`;
                     [
                         {{ num: 1, txt: "1. S.Francisco ➔ Gasolinera" }},
                         {{ num: 2, txt: "2. Gasolinera ➔ Monserrate" }}
@@ -536,9 +536,9 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 if (enCristo.length > 0 && enCruz.length > 0) {{
                     label = `💥 <strong style='color:#ff0000; animation: parpadeo 1s infinite;'>¡IMPOSIBLE! (${{enCristo.join('+')}} y ${{enCruz.join('+')}})</strong>`;
                 }} else if (enCristo.length > 0) {{
-                    label = `💪 <strong style='color:#e8d08c'>🕍 Trono (${{enCristo.join(" + ")}})</strong>`;
+                    label = `💪 <strong style='color:#e8d08c'>Trono (${{enCristo.join(" + ")}})</strong>`;
                 }} else if (enCruz.length > 0) {{
-                    label = `💪 <strong style='color:#00d2ff'>✝️ Cruz (${{enCruz.join('+')}})</strong>`;
+                    label = `💪 <strong style='color:#00d2ff'>Cruz (${{enCruz.join('+')}})</strong>`;
                 }}
                 
                 if(tOcupados.length === 2 && (enCristo.length > 0 || enCruz.length > 0)) {{
@@ -578,7 +578,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 app.innerHTML = '';
                 
                 for (const [tipo, turnos] of Object.entries(datos)) {{
-                    let tituloBloque = tipo === "Trono" ? "🕍 TRONO PRINCIPAL" : "✝️ LA CRUZ";
+                    let tituloBloque = tipo === "Trono" ? "TURNOS DE TRONO" : "TURNOS DE CRUZ INSIGNIA";
                     app.innerHTML += `<h1 style="color:#d4af37; border-bottom: 2px solid #d4af37; padding-bottom:10px; margin-top:40px;">${{tituloBloque}}</h1>`;
                     
                     for (const [idT, varas] of Object.entries(turnos)) {{

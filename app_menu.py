@@ -25,7 +25,7 @@ CONFIG = {
 }
 
 # Paleta Mayordomía "Modern UI"
-C_MORADO = "#5c164e"
+C_MORADO = "#4F1243"
 C_MORADO_HOVER = "#7a1b67"
 C_MORADO_BG = "#2a0a23"
 C_ORO = "#d4af37"
@@ -40,8 +40,8 @@ C_TEXTO = "#333333"
 class GestorCofradeAPP:
     def __init__(self, root):
         self.root = root
-        self.root.title("Gestor Cofrade V1.0 - Mayordomía")
-        self.root.geometry("1050x650")
+        self.root.title("Gestor de Turnos Cristo de la Agonía V1.0 - Ntro. Padre Jesús Nazareno")
+        self.root.geometry("1280x720") ## 1050x650 anterior
         self.root.configure(bg=C_GRIS_FONDO)
         self.root.resizable(False, False)
 
@@ -102,7 +102,7 @@ class GestorCofradeAPP:
 
     # --- NAVEGACIÓN Y ANIMACIÓN ---
     def crear_menu_lateral(self):
-        lbl_titulo = tk.Label(self.frame_menu, text="GESTOR\nCOFRADE", bg=C_MORADO, fg=C_ORO, font=("Cinzel", 20, "bold"), pady=30)
+        lbl_titulo = tk.Label(self.frame_menu, text="GESTOR\nCOSTALEROS", bg=C_MORADO, fg=C_ORO, font=("Cinzel", 20, "bold"), pady=30)
         lbl_titulo.pack(fill=tk.X)
         
         opciones = [
@@ -265,7 +265,7 @@ class GestorCofradeAPP:
                 if exito: self.abrir_navegador(msg)
                 else: messagebox.showerror("Error", f"Error al generar: {msg}")
 
-        btn_generar = self.crear_boton_moderno(card, "📂 SELECCIONAR JSON Y GENERAR PDF", C_MORADO, C_MORADO_HOVER, C_BLANCO, command=generar)
+        btn_generar = self.crear_boton_moderno(card, "📂 SELECCIONAR ARCHIVO Y GENERAR PDF", C_MORADO, C_MORADO_HOVER, C_BLANCO, command=generar)
         btn_generar.pack(anchor="w")
         return f
 

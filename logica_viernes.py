@@ -217,7 +217,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Viernes Santo - Simulador Vivo</title>
+        <title>Viernes Santo - Gestor de Procesión</title>
         <style>
             body {{ font-family: 'Segoe UI', sans-serif; background: #0c0209; color: #f8f0f5; padding: 20px; }}
             .controles {{ position: sticky; top: 0; background: #1a0514; padding: 15px; z-index: 100; border-bottom: 2px solid #d4af37; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }}
@@ -287,13 +287,13 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
     <body>
         <div class="controles">
             <div>
-                <div style="font-size:18px; font-weight:bold; color:#d4af37;">VIERNES SANTO - MOTOR DINÁMICO (Autoguardado 🟢)</div>
-                <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Control de Hombro: ✅ Correcto | ❌ Incorrecto</div>
+                <div style="font-size:18px; font-weight:bold; color:#d4af37;">VIERNES SANTO - GESTOR DE PROCESIÓN</div>
+                <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Control de Hombros: ✅ Correcto | ❌ Incorrecto</div>
             </div>
             <div>
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
                 
-                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR JSON</button>
+                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR DATOS</button>
                 <button id="btn-heatmap" class="btn-control" onclick="toggleHeatmap()">🧊 Mapa Peso: OFF</button>
                 <button class="btn-control btn-export" onclick="descargarDatosJSON()">💾 DESCARGAR DATOS</button>
             </div>
@@ -314,16 +314,16 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
         <div class="buscador-box">
             <h3 style="margin-top:0; color:#d4af37;">🔍 BUSCADOR EN TIEMPO REAL</h3>
             <p style="font-size:12px; color:#a37c95; margin-top:-10px;">Busca el itinerario de alguien escribiendo, o pulsa el icono ℹ️ al lado de su nombre abajo.</p>
-            <input type="text" id="input-buscador" placeholder="Escribe el nombre de un costalero/a..." onkeyup="actualizarBuscador()">
+            <input type="text" id="input-buscador" placeholder="Escribe el nombre de un costalero/a... (Cuidado con tíldes)" onkeyup="actualizarBuscador()">
             <div id="resultado-itinerario" class="itinerario-result"></div>
         </div>
         
         <div style="margin-top:10px; padding:15px; border:1px dashed #3d0c2e; font-size:13px; background:#160311;">
             <b style="color:#e8d08c;">LEYENDA AUTOMÁTICA (Calculada al instante):</b><br><br>
-            <span style="color:#ffd700; margin-right:20px; font-weight:bold;">■ Amarillo: Dobla Cristo (Turno B + Turno C)</span>
-            <span style="color:#00d2ff; margin-right:20px; font-weight:bold;">■ Azul: Carga Alterna (Hace Cruz y Cristo con Descansos)</span>
-            <span style="color:#ff4757; margin-right:20px; font-weight:bold;">■ Rojo: Sobreesfuerzo (Carga tramos seguidos o más de 2 veces)</span>
-            <span style="color:#ffffff; background:#b30000; padding:2px 5px; font-weight:bold; border:1px dashed white;">■ ROJO PARPADEANTE: Imposible (Mismo tramo)</span>
+            <span style="color:#ffd700; margin-right:10px; font-weight:bold;">■ Amarillo: Repite Cristo (Turno B + Turno C)</span>
+            <span style="color:#00d2ff; margin-right:10px; font-weight:bold;">■ Azul: Carga Alterna (Hace Cruz y Cristo)</span>
+            <span style="color:#ff4757; margin-right:10px; font-weight:bold;">■ Rojo: Sobreesfuerzo (Carga 2 tramos seguidos)</span>
+            <span style="color:#ffffff; background:#b30000; padding:2px 5px; font-weight:bold; border:1px dashed white;">■ ROJO PARPADEANTE: Imposible</span>
         </div>
 
         <div id="app"></div>
@@ -392,7 +392,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                             alert("❌ El archivo seleccionado no tiene el formato correcto para una procesión.");
                         }}
                     }} catch (error) {{
-                        alert("❌ Error al leer el archivo JSON. Asegúrate de que no esté corrupto.");
+                        alert("❌ Error al leer el archivo. Asegúrate de que no esté corrupto.");
                     }}
                     event.target.value = '';
                 }};
@@ -541,7 +541,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                     ].forEach(tr => {{ html += generarFilaTramo(tr, st, tOcupados); }});
                     html += `</ul></div>`;
 
-                    html += `<div class="bloque-ruta"><h5>🏠 REGRESO (Solo Trono Principal)</h5><ul>`;
+                    html += `<div class="bloque-ruta"><h5>🏠 REGRESO (SOLO CON TRONO)</h5><ul>`;
                     [
                         {{ num: 5, txt: "5. Turismo ➔ Santiago" }},
                         {{ num: 6, txt: "6. Santiago ➔ Gasolinera" }},
@@ -568,14 +568,14 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                     label = `💥 <strong style='color:#ff0000; animation: parpadeo 1s infinite;'>¡IMPOSIBLE! (${{enCristo.join('+')}} y ${{enCruz.join('+')}})</strong>`;
                 }} else if (enCristo.length > 0) {{
                     let nombres = enCristo.join(" + ");
-                    label = `💪 <strong style='color:#e8d08c'>🕍 Trono (${{nombres}})</strong>`;
+                    label = `💪 <strong style='color:#e8d08c'>Trono (${{nombres}})</strong>`;
                 }} else if (enCruz.length > 0) {{
                     let sinDescanso = tOcupados.includes(tr.num - 1) || tOcupados.includes(tr.num + 1);
                     let sobrecarga = tOcupados.filter(t => t <= 4).length > 2;
                     if (sinDescanso || sobrecarga) {{
-                        label = `⚠️ <strong style='color:#ff4757'>✝️ Cruz (${{enCruz.join('+')}}) [SOBREESFUERZO]</strong>`;
+                        label = `⚠️ <strong style='color:#ff4757'>Cruz (${{enCruz.join('+')}}) [SOBREESFUERZO]</strong>`;
                     }} else {{
-                        label = `💪 <strong style='color:#00d2ff'>✝️ Cruz (${{enCruz.join('+')}})</strong>`;
+                        label = `💪 <strong style='color:#00d2ff'>Cruz (${{enCruz.join('+')}})</strong>`;
                     }}
                 }}
                 return `<li><span class="tramo-label">${{tr.txt}}</span> ${{label}}</li>`;
@@ -611,7 +611,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 app.innerHTML = '';
                 
                 for (const [tipo, turnos] of Object.entries(datos)) {{
-                    let tituloBloque = tipo === "Trono" ? "🕍 TRONO PRINCIPAL" : "✝️ LA CRUZ (4 Turnos)";
+                    let tituloBloque = tipo === "Trono" ? "TURNOS DE TRONO" : "TURNOS DE CRUZ INSIGNIA";
                     app.innerHTML += `<h1 style="color:#d4af37; border-bottom: 2px solid #d4af37; padding-bottom:10px; margin-top:40px;">${{tituloBloque}}</h1>`;
                     
                     for (const [idT, varas] of Object.entries(turnos)) {{

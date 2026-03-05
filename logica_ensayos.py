@@ -88,11 +88,18 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             .stats-box {{ background: #fdfdfd; padding: 8px; border-radius: 4px; font-size: 11px; color: var(--color-granate); margin-bottom: 8px; border-left: 3px solid var(--color-oro); border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee; }}
             
             .costalero {{ background: #ffffff; border: 1px solid #dcdcdc; margin: 6px 0; padding: 8px; border-radius: 4px; cursor: move; display: flex; justify-content: space-between; align-items: center; font-size: 12px; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }}
-            .costalero.vacio {{ border: 1px dashed #b0b0b0; background: #fafafa; color: #888; cursor: default; justify-content: center; box-shadow: none; }}
+            .costalero.vacio {{ border: 1px dashed #b0b0b0; background: #fafafa; color: #888; cursor: default; flex-direction: column; align-items: stretch; position: relative; box-shadow: none; }}
             .costalero.sobrepeso {{ border: 2px solid #ff4757; background: #fff0f2; }}
             
             .btn-basura {{ background:none; border:none; cursor:pointer; padding:0 5px 0 0; font-size: 14px; }}
             .btn-basura:hover {{ transform: scale(1.2); }}
+
+            /* BUSCADOR INTEGRADO EN LOS HUECOS LIBRES */
+            input.search-p {{ background: #ffffff; border: 1px solid #ccc; color: var(--text-dark); padding: 5px; width: 100%; font-size: 11px; border-radius: 3px; outline: none; box-sizing: border-box; }}
+            input.search-p:focus {{ border-color: var(--color-granate); }}
+            .sugerencias {{ background: #ffffff; border: 1px solid var(--border-color); max-height: 80px; overflow-y: auto; position: absolute; z-index: 200; width: 100%; top: 100%; left: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 3px; }}
+            .sug-item {{ padding: 6px; cursor: pointer; border-bottom: 1px solid #eee; color: var(--text-dark); font-size: 11px; text-align: left; }}
+            .sug-item:hover {{ background: var(--bg-main); color: var(--color-granate); font-weight: bold; }}
 
         </style>
     </head>
@@ -147,7 +154,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             
             let asistentes = []; 
             let turnosData = {{}};  
-            let heatmapActivo = false;
 
             // ==========================================
             // SISTEMA DE AUTOGUARDADO Y ARCHIVOS JSON
@@ -348,6 +354,42 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 guardarEstado();
             }}
 
+            // BUSCADOR INTEGRADO EN LOS HUECOS
+            function buscarMini(ev, t, v, s, i) {{
+                const val = ev.target.value.toLowerCase();
+                const sugDiv = document.getElementById(`sug-${{t}}-${{v}}-${{s}}-${{i}}`);
+                if(val.length < 2) {{ sugDiv.style.display = 'none'; return; }}
+                
+                // Filtramos por el censo completo (MASTER_LIST)
+                const matches = MASTER_LIST.filter(p => p.nombre.toLowerCase().includes(val)).slice(0, 5);
+                sugDiv.innerHTML = '';
+                
+                if(matches.length > 0) {{
+                    sugDiv.style.display = 'block';
+                    matches.forEach(m => {{
+                        const div = document.createElement('div');
+                        div.className = 'sug-item';
+                        div.innerHTML = `${{m.nombre}} (${{m.altura}}cm)`;
+                        div.onclick = () => {{ 
+                            turnosData[t][v][s][i] = {{...m}}; 
+                            
+                            // 💡 MAGIA: Si el costalero no estaba en la lista de asistentes del lateral, lo añadimos
+                            let yaEsta = asistentes.some(a => a.id === m.id);
+                            if (!yaEsta) {{
+                                asistentes.push({{...m}});
+                            }}
+                            
+                            renderPanelAsistentes();
+                            renderGrid(); 
+                            guardarEstado(); 
+                        }};
+                        sugDiv.appendChild(div);
+                    }});
+                }} else {{
+                    sugDiv.style.display = 'none';
+                }}
+            }}
+
             function renderGrid() {{
                 const app = document.getElementById('grid-app');
                 app.innerHTML = '';
@@ -391,7 +433,8 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                     <div class="costalero ${{esVacio ? 'vacio' : ''}} ${{esSobrepeso ? 'sobrepeso' : ''}}" 
                                          draggable="${{!esVacio}}" ondragstart="drag(event, '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})" ondrop="drop(event, '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})">
                                         ${{esVacio ? 
-                                            `<span>HUECO LIBRE</span>` :
+                                            `<input type="text" class="search-p" placeholder="Buscar nombre..." onkeyup="buscarMini(event, '${{idT}}','${{vNom}}','${{sec}}',${{i}})">
+                                             <div id="sug-${{idT}}-${{vNom}}-${{sec}}-${{i}}" class="sugerencias" style="display:none"></div>` :
                                             `<span>
                                                 <button class="btn-basura" style="color:#ff4757;" onclick="vaciarHueco('${{idT}}','${{vNom}}','${{sec}}',${{i}})">🗑️</button>
                                                 <b style="color:var(--text-dark)">${{p.nombre}} ${{tickHombro}}</b>
@@ -436,6 +479,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 renderGrid();
                 guardarEstado();
             }}
+            
             function vaciarHueco(t, v, s, i) {{
                 turnosData[t][v][s][i] = hueco();
                 renderGrid();
