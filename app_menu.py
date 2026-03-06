@@ -143,7 +143,7 @@ class GestorCofradeAPP:
     def crear_pantallas(self):
         self.frames["Inicio"] = self.crear_pantalla_inicio()
         self.frames["Miércoles Santo"] = self.crear_pantalla_procesion("Miércoles Santo", "visualizador_miercoles.html", generar_cuadrillas_miercoles, generar_html_miercoles, True)
-        self.frames["Viernes Santo"] = self.crear_pantalla_procesion("Viernes Santo", "visualizador_viernes.html", generar_cuadrillas_viernes, generar_html_viernes, False)
+        self.frames["Viernes Santo"] = self.crear_pantalla_procesion("Viernes Santo", "visualizador_viernes.html", generar_cuadrillas_viernes, generar_html_viernes, True)
         self.frames["Ensayos"] = self.crear_pantalla_ensayos()
         self.frames["Censo (Costaleros)"] = self.crear_pantalla_censo()
         self.frames["Exportar PDF"] = self.crear_pantalla_pdf()
@@ -248,8 +248,16 @@ class GestorCofradeAPP:
         card.place(relx=0.5, rely=0.45, anchor="center", width=650)
         
         tk.Label(card, text="Generador de PDF Oficial", font=("Segoe UI", 22, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(anchor="w", pady=(0, 10))
-        tk.Label(card, text="Selecciona para qué procesión vas a generar el informe oficial.", font=("Segoe UI", 12), bg=C_BLANCO, fg="#666").pack(anchor="w", pady=(0, 30))
+        tk.Label(card, text="Selecciona para qué procesión vas a generar el informe oficial.", font=("Segoe UI", 12), bg=C_BLANCO, fg="#666").pack(anchor="w", pady=(0, 20))
         
+        # NUEVO: Cajón para introducir el Año
+        fila_anio = tk.Frame(card, bg=C_BLANCO)
+        fila_anio.pack(fill=tk.X, pady=(0, 20))
+        tk.Label(fila_anio, text="Año del cuadrante a exportar:", bg=C_BLANCO, font=("Segoe UI", 12, "bold")).pack(side=tk.LEFT)
+        entry_anio = tk.Entry(fila_anio, font=("Segoe UI", 14), width=10, bg="#f9f9f9", relief="solid", bd=1)
+        entry_anio.insert(0, str(datetime.datetime.now().year))
+        entry_anio.pack(side=tk.LEFT, padx=15)
+
         var_tipo = tk.StringVar(value="Viernes Santo")
         style = ttk.Style()
         style.configure("TRadiobutton", background=C_BLANCO, font=("Segoe UI", 12))
@@ -261,11 +269,13 @@ class GestorCofradeAPP:
         def generar():
             archivo = filedialog.askopenfilename(title="Selecciona el archivo JSON descargado de la web", filetypes=[("Archivos JSON", "*.json")])
             if archivo:
-                exito, msg = crear_html_informe(var_tipo.get(), archivo)
+                # Capturamos el año y se lo enviamos a la lógica
+                anio = int(entry_anio.get()) if entry_anio.get().isdigit() else datetime.datetime.now().year
+                exito, msg = crear_html_informe(var_tipo.get(), archivo, anio)
                 if exito: self.abrir_navegador(msg)
                 else: messagebox.showerror("Error", f"Error al generar: {msg}")
 
-        btn_generar = self.crear_boton_moderno(card, "📂 SELECCIONAR ARCHIVO Y GENERAR PDF", C_MORADO, C_MORADO_HOVER, C_BLANCO, command=generar)
+        btn_generar = self.crear_boton_moderno(card, "📂 SELECCIONAR JSON Y GENERAR PDF", C_MORADO, C_MORADO_HOVER, C_BLANCO, command=generar)
         btn_generar.pack(anchor="w")
         return f
 

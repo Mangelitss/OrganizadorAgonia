@@ -10,7 +10,7 @@ def cargar_datos_viernes(archivo='datos.json'):
         print(f"Error cargando {archivo}: {e}")
         return []
 
-def generar_cuadrillas_viernes(costaleros):
+def generar_cuadrillas_viernes(costaleros, es_par=True):
     pool = sorted(costaleros, key=lambda x: x.get('altura', 0), reverse=True)
     
     turno_a = pool[:36]
@@ -46,35 +46,55 @@ def generar_cuadrillas_viernes(costaleros):
         while len(res) < cantidad and len(lista) > 0: res.append(lista.pop(0))
         return res
 
-    cruz_turnos[1].extend(extraer_seguro(disp_c, 8)) 
-    cruz_turnos[3].extend(extraer_seguro(disp_b, 8)) 
-    cruz_turnos[0].extend(extraer_seguro(disp_c, 8)) 
-    
-    cruz_turnos[2].extend(extraer_seguro(disp_b, 4))
-    cruz_turnos[2].extend(extraer_seguro(disp_c, 4))
+    # ==========================================
+    # ASIGNACIÓN QUIRÚRGICA CRUZ (PAR / IMPAR)
+    # ==========================================
+    if es_par:
+        # AÑO PAR: Trono en T1(A), T2(B), T3(A), T4(C)
+        cruz_turnos[0].extend(extraer_seguro(disp_c, 8)) # T1: Cruz C
+        cruz_turnos[1].extend(extraer_seguro(disp_c, 8)) # T2: Cruz C
+        cruz_turnos[2].extend(extraer_seguro(disp_b, 4)) # T3: Cruz B(4) + C(4) [TRAMO MALDITO]
+        cruz_turnos[2].extend(extraer_seguro(disp_c, 4))
+        cruz_turnos[3].extend(extraer_seguro(disp_b, 8)) # T4: Cruz B
+    else:
+        # AÑO IMPAR: Trono en T1(C), T2(A), T3(B), T4(A)
+        cruz_turnos[0].extend(extraer_seguro(disp_b, 8)) # T1: Cruz B
+        cruz_turnos[1].extend(extraer_seguro(disp_b, 4)) # T2: Cruz B(4) + C(4) [TRAMO MALDITO]
+        cruz_turnos[1].extend(extraer_seguro(disp_c, 4))
+        cruz_turnos[2].extend(extraer_seguro(disp_c, 8)) # T3: Cruz C
+        cruz_turnos[3].extend(extraer_seguro(disp_c, 8)) # T4: Cruz C
 
     for i in range(4):
         while len(cruz_turnos[i]) < 8: 
             cruz_turnos[i].append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
 
-    for t in [0, 1, 3]:
-        for p in cruz_turnos[t]: 
-            if p.get('id', -1) != -1: p['nombre'] = p.get('nombre', '') + " (C)"
-            
-    for p in cruz_turnos[2]: 
-        if p.get('id', -1) != -1: p['nombre'] = p.get('nombre', '') + " (C-Doble)"
-
-    ids_cruz_normal = {p.get('id', -1) for t in [0, 1, 3] for p in cruz_turnos[t] if p.get('id', -1) != -1}
-    ids_cruz_doble = {p.get('id', -1) for p in cruz_turnos[2] if p.get('id', -1) != -1}
+    # Etiquetado Dinámico de Dobles (Sobreesfuerzos en Cruz)
+    cruz_counts = {}
+    for t in range(4):
+        for p in cruz_turnos[t]:
+            pid = p.get('id', -1)
+            if pid != -1:
+                cruz_counts[pid] = cruz_counts.get(pid, 0) + 1
+                
+    for t in range(4):
+        for p in cruz_turnos[t]:
+            pid = p.get('id', -1)
+            if pid != -1:
+                if cruz_counts[pid] > 1: p['nombre'] = p.get('nombre', '').replace(' (C-Doble)','').replace(' (C)','') + " (C-Doble)"
+                else: p['nombre'] = p.get('nombre', '').replace(' (C-Doble)','').replace(' (C)','') + " (C)"
 
     for p in turno_b:
-        if p.get('id', -1) in ids_cruz_doble: p['nombre'] = p.get('nombre', '') + " (C-Doble)"
-        elif p.get('id', -1) in ids_cruz_normal: p['nombre'] = p.get('nombre', '') + " (C)"
-        
+        pid = p.get('id', -1)
+        if pid in cruz_counts:
+            if cruz_counts[pid] > 1: p['nombre'] = p.get('nombre', '').replace(' (C-Doble)','').replace(' (C)','') + " (C-Doble)"
+            else: p['nombre'] = p.get('nombre', '').replace(' (C-Doble)','').replace(' (C)','') + " (C)"
+            
     for p in turno_c:
-        if p.get('id', -1) != -1 and "(R)" not in p.get('nombre', ''):
-            if p.get('id', -1) in ids_cruz_doble: p['nombre'] = p.get('nombre', '') + " (C-Doble)"
-            elif p.get('id', -1) in ids_cruz_normal: p['nombre'] = p.get('nombre', '') + " (C)"
+        pid = p.get('id', -1)
+        if pid != -1 and "(R)" not in p.get('nombre', ''):
+            if pid in cruz_counts:
+                if cruz_counts[pid] > 1: p['nombre'] = p.get('nombre', '').replace(' (C-Doble)','').replace(' (C)','') + " (C-Doble)"
+                else: p['nombre'] = p.get('nombre', '').replace(' (C-Doble)','').replace(' (C)','') + " (C)"
 
     def distribuir_trono(personas):
         varas = ["Izquierda", "Centro", "Derecha"]
@@ -152,7 +172,6 @@ def generar_cuadrillas_viernes(costaleros):
             for v in varas: res[v]["Detras"].append(asig[v])
         return res
 
-    # Incorporamos el "Sello" de procesión
     return {
         "tipo_procesion": "viernes_santo",
         "Trono": {"Turno A": distribuir_trono(turno_a), "Turno B": distribuir_trono(turno_b), "Turno C": distribuir_trono(turno_c)},
@@ -164,6 +183,24 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
     turnos_json = json.dumps(datos_completos)
     master_json = json.dumps(master_list)
     marca_tiempo = str(int(time.time()))
+
+    # ==========================================
+    # CÁLCULO DE TRAMOS Y TEXTOS SEGÚN AÑO
+    # ==========================================
+    if es_par:
+        # AÑO PAR: Ida (A, B, A, C) | Regreso (A, B+C, A)
+        tramos_trono_a = "[1, 3, 5, 7]"
+        tramos_trono_b = "[2, 6]"
+        tramos_trono_c = "[4, 6]"
+        txt_t1, txt_t2, txt_t3, txt_t4 = "Turno A", "Turno B", "Turno A", "Turno C"
+        txt_r1, txt_r2, txt_r3 = "Turno A", "Turnos B + C", "Turno A"
+    else:
+        # AÑO IMPAR: Ida (C, A, B, A) | Regreso (B+C, A, B+C)
+        tramos_trono_a = "[2, 4, 6]"
+        tramos_trono_b = "[3, 5, 7]"
+        tramos_trono_c = "[1, 5, 7]"
+        txt_t1, txt_t2, txt_t3, txt_t4 = "Turno C", "Turno A", "Turno B", "Turno A"
+        txt_r1, txt_r2, txt_r3 = "Turnos B + C", "Turno A", "Turnos B + C"
 
     try:
         with open('datos.json', 'r', encoding='utf-8') as f:
@@ -235,7 +272,6 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
             .sug-item {{ padding: 6px; cursor: pointer; border-bottom: 1px solid #eee; color: #e8d08c; font-size: 11px; text-align: left; }}
             .sug-item:hover {{ background: #3d0c2e; color: #fff; font-weight: bold; }}
             
-            /* CSS arreglado para que los textos no rompan la caja */
             textarea.indicaciones-input {{ width: 100%; background: #0c0209; color: #d4af37; border: 1px solid #3d0c2e; border-radius: 5px; padding: 8px; font-family: inherit; margin-bottom: 10px; outline: none; resize: vertical; box-sizing: border-box; font-size:12px; }}
             textarea.indicaciones-input:focus {{ border-color: #d4af37; }}
             .texto-indicaciones {{ font-size: 12px; color: #f8f0f5; white-space: pre-wrap; font-family: inherit; line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; margin:0; }}
@@ -244,12 +280,12 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
     <body>
         <div class="controles">
             <div>
-                <div style="font-size:18px; font-weight:bold; color:#d4af37;">VIERNES SANTO - MOTOR DINÁMICO</div>
+                <div style="font-size:18px; font-weight:bold; color:#d4af37;">VIERNES SANTO - GESTOR DE TURNOS</div>
                 <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Auditor de Censo Activado | ✅ Hombro Correcto</div>
             </div>
             <div>
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
-                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR JSON</button>
+                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR DATOS</button>
                 <button id="btn-heatmap" class="btn-control" onclick="toggleHeatmap()">🧊 Mapa Peso: OFF</button>
                 <button class="btn-control btn-export" onclick="descargarDatosJSON()">💾 DESCARGAR DATOS</button>
             </div>
@@ -291,6 +327,22 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
             <ul id="lista-alertas"></ul>
         </div>
         
+        <div style="background:#23061b; padding:15px; border-left:5px solid #d4af37; margin:20px 0; border-radius:4px;">
+            <h3 style="margin:0; color:#d4af37;">📅 AÑO {anio} ({'PAR' if es_par else 'IMPAR'})</h3>
+            <p style="margin: 8px 0 0 0; font-size: 13px; color: #e8d08c; line-height: 1.6;">
+                📍 <b>Tramos de la Procesión (Ida)</b> tanto para Cruz, como Trono <br>
+                            ▶ Tramo 1 - Monserrate → Ayuntamiento               || <b>{txt_t1}</b> <br>
+                            ▶ Tramo 2 - Ayuntamiento → As de Oros (Plaza Nueva) || <b>{txt_t2}</b> <br>
+                            ▶ Tramo 3 - As de Oros → Glorieta                   || <b>{txt_t3}</b><br>
+                            ▶ Tramo 4 - Glorieta → Oficina de Turismo           || <b>{txt_t4}</b><br>
+                            
+                📍 <b>Regreso</b> (Solo con el Trono Principal) <br>
+                            ▶ Tramo 1 - Oficina Turismo → Santiago              || <b>{txt_r1}</b> <br>
+                            ▶ Tramo 2 - Santiago → Gasolinera                   || <b>{txt_r2}</b> <br>
+                            ▶ Tramo 3 - Gasolinera → San Francisco              || <b>{txt_r3}</b> <br>
+            </p>
+        </div>
+
         <div class="buscador-box">
             <h3 style="margin-top:0; color:#d4af37;">🔍 BUSCADOR EN TIEMPO REAL</h3>
             <p style="font-size:12px; color:#a37c95; margin-top:-10px;">Busca el itinerario de alguien escribiendo, o pulsa el icono ℹ️ al lado de su nombre abajo.</p>
@@ -326,7 +378,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
             let heatmapActivo = false;
             
             const TRAMOS = {{
-                "Trono": {{ "Turno A": [1, 3, 5, 7], "Turno B": [2, 6], "Turno C": [4, 6] }},
+                "Trono": {{ "Turno A": {tramos_trono_a}, "Turno B": {tramos_trono_b}, "Turno C": {tramos_trono_c} }},
                 "Cruz": {{ "Turno 1": [1], "Turno 2": [2], "Turno 3": [3], "Turno 4": [4] }}
             }};
 
@@ -373,7 +425,6 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                     try {{
                         const loadedData = JSON.parse(e.target.result);
                         
-                        // BLOQUEO ANTIDESPISTES: Detecta si es de otro día
                         if (loadedData.tipo_procesion && loadedData.tipo_procesion !== "viernes_santo") {{
                             alert("❌ ERROR: Este archivo pertenece a otra procesión. No puedes cargarlo en la vista del Viernes Santo.");
                             event.target.value = '';
@@ -388,7 +439,6 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                             let msgBorrados = [];
                             let msgNoSalen = [];
 
-                            // AUDITORÍA DEL CENSO
                             for (let tipo of ["Trono", "Cruz"]) {{
                                 if (!loadedData[tipo]) continue;
                                 for (let t of Object.keys(loadedData[tipo])) {{
@@ -595,7 +645,6 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 `;
             }}
 
-            // Resto de la lógica
             function abrirInfoModal(id) {{
                 let st = estadoGlobal[id];
                 if (!st) return;

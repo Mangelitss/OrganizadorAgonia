@@ -183,7 +183,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Miércoles Santo - Motor Dinámico</title>
+        <title>Miércoles Santo - Gestor de Turnos</title>
         <style>
             body {{ font-family: 'Segoe UI', sans-serif; background: #0c0209; color: #f8f0f5; padding: 20px; }}
             .controles {{ position: sticky; top: 0; background: #1a0514; padding: 15px; z-index: 100; border-bottom: 2px solid #d4af37; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }}
@@ -250,12 +250,12 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
     <body>
         <div class="controles">
             <div>
-                <div style="font-size:18px; font-weight:bold; color:#d4af37;">MIÉRCOLES SANTO - MOTOR DINÁMICO</div>
-                <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Auditor de Censo Activado | ✅ Hombro Correcto</div>
+                <div style="font-size:18px; font-weight:bold; color:#d4af37;">MIÉRCOLES SANTO - GESTOR DE TURNOS</div>
+                <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Indicador de preferencia de hombro: ✅ Hombro Correcto</div>
             </div>
             <div>
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
-                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR JSON</button>
+                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR DATOS</button>
                 <button id="btn-heatmap" class="btn-control" onclick="toggleHeatmap()">🧊 Mapa Peso: OFF</button>
                 <button class="btn-control btn-export" onclick="descargarDatosJSON()">💾 DESCARGAR DATOS</button>
             </div>
