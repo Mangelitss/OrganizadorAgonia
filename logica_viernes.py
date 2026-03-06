@@ -528,9 +528,6 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 }}
             }}
 
-            // ==========================================
-            // LÓGICA DE NOTAS E INDICACIONES (4 TRAMOS)
-            // ==========================================
             function abrirModalIndicaciones() {{
                 if(!datos.indicaciones) datos.indicaciones = {{ tramo1: "", tramo2: "", tramo3: "", tramo4: "", normativa: "" }};
                 document.getElementById('text-tramo1').value = datos.indicaciones.tramo1 || "";
