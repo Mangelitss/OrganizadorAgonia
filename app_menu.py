@@ -5,6 +5,7 @@ import datetime
 import webbrowser
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
+from tkinter import messagebox
 
 # Importamos las lógicas independientes
 from logica_trono import cargar_datos, generar_turnos_base, generar_html_interactivo
@@ -12,6 +13,7 @@ from logica_miercoles import generar_cuadrillas_miercoles, generar_html_miercole
 from logica_viernes import generar_cuadrillas_viernes, generar_html_viernes
 from logica_ensayos import generar_html_ensayo
 from logica_informes import crear_html_informe
+from logica_licencia import comprobar_licencia
 
 # ==========================================
 # CONFIGURACIÓN Y COLORES
@@ -33,13 +35,19 @@ C_ORO_HOVER = "#b5952f"
 C_BLANCO = "#ffffff"
 C_GRIS_FONDO = "#f0f2f5"
 C_TEXTO = "#333333"
+C_ROJO = "#360928"
 
 # ==========================================
 # CLASE PRINCIPAL DE LA INTERFAZ
 # ==========================================
 class GestorCofradeAPP:
     def __init__(self, root):
-        self.root = root
+
+        self.root = root        
+
+        # 1. OCULTAMOS LA VENTANA PRINCIPAL AL ARRANCAR
+        self.root.withdraw()
+
         self.root.title("Gestor de Turnos Cristo de la Agonía V1.0 - Ntro. Padre Jesús Nazareno")
         self.root.geometry("1280x720") ## 1050x650 anterior
         self.root.configure(bg=C_GRIS_FONDO)
@@ -60,6 +68,116 @@ class GestorCofradeAPP:
         self.crear_menu_lateral()
         self.crear_pantallas()
         self.mostrar_pantalla("Inicio")
+
+        # 2. EN VEZ DE LLAMAR AL LOGIN DIRECTO, VERIFICAMOS LA SESIÓN:
+        self.verificar_sesion()
+
+    # --- AÑADE ESTA NUEVA FUNCIÓN JUSTO DEBAJO DEL __init__ ---
+    def verificar_sesion(self):
+        import os, json
+        archivo_sesion = "licencia_local.json"
+        
+        # Comprobamos si ya iniciaron sesión alguna vez
+        if os.path.exists(archivo_sesion):
+            try:
+                with open(archivo_sesion, "r") as f:
+                    datos = json.load(f)
+                    user = datos.get("usuario")
+                    pwd = datos.get("password")
+                
+                # Validación silenciosa con Firebase
+                valido, mensaje = comprobar_licencia(user, pwd)
+                
+                if valido:
+                    # Todo correcto, abrimos el programa del tirón
+                    self.root.deiconify()
+                    return
+            except Exception:
+                pass # Si el archivo se corrompe, ignoramos y pedimos login
+                
+        # Si no hay archivo, o la licencia caducó, o cambiaron la contraseña:
+        self.pedir_login()
+
+    def pedir_login(self):
+        # Creamos una ventana emergente para el Login
+        self.ventana_login = tk.Toplevel(self.root)
+        self.ventana_login.title("Activación de Licencia - Gestor Cofrade")
+        self.ventana_login.geometry("450x600") # Un poco más alta para el logo
+        self.ventana_login.configure(bg="#23061b") # Fondo oscuro corporativo
+        self.ventana_login.resizable(True, True)
+        
+        # Si le dan a la 'X' para cerrar el login, cerramos el programa entero
+        self.ventana_login.protocol("WM_DELETE_WINDOW", self.root.destroy)
+        
+        # --- CARGAR Y REESCALAR LOGO POR PORCENTAJE ---
+        try:
+            from PIL import Image, ImageTk
+            pil_img = Image.open("bandera_tercio_npj.png")
+            
+            # ---> MODIFICA ESTE NÚMERO (ej: 10, 15, 20, 25) <---
+            porcentaje = 30  
+            
+            ancho_orig, alto_orig = pil_img.size
+            nuevo_ancho = int(ancho_orig * (porcentaje / 100))
+            nuevo_alto = int(alto_orig * (porcentaje / 100))
+            
+            # Reescalado de alta calidad (LANCZOS)
+            pil_img_rescalada = pil_img.resize((nuevo_ancho, nuevo_alto), Image.LANCZOS)
+            logo_img = ImageTk.PhotoImage(pil_img_rescalada)
+            
+            # Cambiamos el icono de la ventana
+            self.ventana_login.iconphoto(False, logo_img)
+            self.root.iconphoto(False, logo_img)
+            
+            # Colocamos el logo en la ventana
+            lbl_logo = tk.Label(self.ventana_login, image=logo_img, bg="#23061b")
+            lbl_logo.image = logo_img  # VITAL: Guardar referencia para que no se borre
+            lbl_logo.pack(pady=(25, 10))
+        except Exception as e:
+            print(f"Aviso: No se pudo cargar el logo - {e}")
+            pass
+
+        # Diseño del Login
+        tk.Label(self.ventana_login, text="CONTROL DE ACCESO", font=("Cinzel", 18, "bold"), bg="#23061b", fg="#d4af37").pack(pady=(0, 25))
+        
+        tk.Label(self.ventana_login, text="Usuario:", font=("Cinzel", 11, "bold"), bg="#23061b", fg="#e8d08c").pack(anchor="w", padx=50, pady=(0, 5))
+        self.entry_user = tk.Entry(self.ventana_login, font=("Segoe UI", 14), bg="#0c0209", fg="#d4af37", insertbackground="#d4af37", relief="solid", bd=1, justify="center")
+        self.entry_user.pack(fill=tk.X, padx=50, ipady=6, pady=(0, 20))
+        
+        tk.Label(self.ventana_login, text="Contraseña de Licencia:", font=("Cinzel", 11, "bold"), bg="#23061b", fg="#e8d08c").pack(anchor="w", padx=50, pady=(0, 5))
+        self.entry_pass = tk.Entry(self.ventana_login, font=("Segoe UI", 14), bg="#0c0209", fg="#d4af37", insertbackground="#d4af37", show="*", relief="solid", bd=1, justify="center")
+        self.entry_pass.pack(fill=tk.X, padx=50, ipady=6, pady=(0, 35))
+        
+        btn_login = tk.Button(self.ventana_login, text="INICIAR SESIÓN", font=("Cinzel", 14, "bold"), bg="#d4af37", fg="#0c0209", activebackground="#b5952f", activeforeground="#000", cursor="hand2", relief="flat", command=self.validar_acceso)
+        btn_login.pack(fill=tk.X, padx=50, ipady=8, pady=(0, 20))
+
+    def validar_acceso(self):
+        usuario = self.entry_user.get().strip()
+        password = self.entry_pass.get().strip()
+        
+        if not usuario or not password:
+            messagebox.showwarning("Atención", "Por favor, rellena ambos campos para verificar tu licencia.")
+            return
+            
+        # Preguntamos a Firebase
+        valido, mensaje = comprobar_licencia(usuario, password)
+        
+        if valido:
+            # Guardamos la sesión localmente para el futuro
+            import json
+            with open("licencia_local.json", "w") as f:
+                json.dump({"usuario": usuario, "password": password}, f)
+                
+            # Destruimos el candado y abrimos la app
+            self.ventana_login.destroy()
+            self.root.deiconify() 
+            
+            # --- AQUÍ RECUPERAMOS EL MENSAJE DE ÉXITO ---
+            messagebox.showinfo("Éxito", "Licencia validada correctamente.\n¡Bienvenido al Gestor Cofrade!")
+            
+        else:
+            # Error de contraseña, usuario o licencia caducada
+            messagebox.showerror("Acceso Denegado", mensaje)
 
     # --- UTILIDADES ---
     def guardar_censo(self, datos):
@@ -154,9 +272,10 @@ class GestorCofradeAPP:
         card = tk.Frame(f, bg=C_BLANCO, padx=50, pady=50, highlightbackground="#e0e0e0", highlightthickness=1)
         card.place(relx=0.5, rely=0.5, anchor="center")
         
-        tk.Label(card, text="Sistema de Gestión Turnos Cristo de la Agonía", font=("Segoe UI", 26, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=(0, 10))
-        tk.Label(card, text="OFS Muy Ilustre Mayordomía de Ntro. Padre Jesús Nazareno", font=("Segoe UI", 14), bg=C_BLANCO, fg="#666").pack(pady=5)
-        tk.Frame(card, height=2, bg=C_ORO, width=100).pack(pady=20)
+        tk.Label(card, text="Sistema de Gestión Turnos Y Procesiones", font=("Cinzel", 26, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=(0, 10))
+        tk.Label(card, text="OFS Muy Ilustre Mayordomía de Ntro. Padre Jesús Nazareno", font=("Cinzel", 17), bg=C_BLANCO, fg="#666").pack(pady=5)
+        tk.Label(card, text="Tercio del Cristo de la Agonía y María Magdalena", font=("Cinzel", 14), bg=C_BLANCO, fg="#666").pack(pady=5)
+        tk.Frame(card, height=2, bg=C_ORO, width=200).pack(pady=20)
         tk.Label(card, text="Selecciona un módulo en el menú lateral izquierdo para empezar a trabajar.", font=("Segoe UI", 12), bg=C_BLANCO, fg="#888").pack(pady=10)
         return f
 

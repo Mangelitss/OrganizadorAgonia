@@ -25,11 +25,11 @@ def crear_html_informe(tipo, archivo_json, anio):
 
     # Convertimos la imagen a código puro (Base64) para que el PDF jamás falle en local
     img_b64 = ""
-    if os.path.exists("bandera_tercio_npj.jpg"):
+    if os.path.exists("bandera_tercio_npj.ppg"):
         try:
-            with open("bandera_tercio_npj.jpg", "rb") as image_file:
+            with open("bandera_tercio_npj.ppg", "rb") as image_file:
                 encoded_string = base64.b64encode(image_file.read()).decode()
-                img_b64 = f"data:image/jpeg;base64,{encoded_string}"
+                img_b64 = f"data:image/png;base64,{encoded_string}"
         except: pass
 
     i_norm = indicaciones.get("normativa", "").strip() or "(Sin normativa específica dictada por el Capataz)"
@@ -395,7 +395,6 @@ def crear_html_informe(tipo, archivo_json, anio):
         </div>
         
         <div class="container" id="informe-content">
-            <div class="sello-anio no-print">AÑO {anio}</div>
             <div class="header">
                 <img src="{img_b64}" alt="Escudo Mayordomia" class="logo-img" style="{'display:none' if not img_b64 else ''}">
                 <h1>OFS Muy Ilustre Mayordomía de Nuestro Padre Jesús Nazareno</h1>
@@ -548,7 +547,7 @@ def crear_html_informe(tipo, archivo_json, anio):
                 const opt = {{
                     margin:       [10, 10, 10, 10], 
                     filename:     `Orden_Procesional_Agonia_{tipo.replace(" ", "_")}.pdf`,
-                    image:        {{ type: 'jpeg', quality: 0.98 }},
+                    image:        {{ type: 'png', quality: 0.98 }},
                     html2canvas:  {{ scale: 2, useCORS: true }},
                     jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'portrait' }}
                 }};
