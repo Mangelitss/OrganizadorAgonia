@@ -23,11 +23,11 @@ def crear_html_informe(tipo, archivo_json, anio):
     indicaciones = datos_raw.get("indicaciones", {})
     datos_tronos = {k: v for k, v in datos_raw.items() if k in ["Trono", "Cruz"]}
 
-    # Convertimos la imagen a código puro (Base64) para que el PDF jamás falle en local
+    # Convertimos la imagen a código puro (Base64) para que el PDF nativo la pueda imprimir siempre
     img_b64 = ""
-    if os.path.exists("bandera_tercio_npj.ppg"):
+    if os.path.exists("bandera_tercio_npj.png"):
         try:
-            with open("bandera_tercio_npj.ppg", "rb") as image_file:
+            with open("bandera_tercio_npj.png", "rb") as image_file:
                 encoded_string = base64.b64encode(image_file.read()).decode()
                 img_b64 = f"data:image/png;base64,{encoded_string}"
         except: pass
@@ -115,7 +115,7 @@ def crear_html_informe(tipo, archivo_json, anio):
             """
 
         bloque_itinerario = f"""
-        <div class="seccion-texto">
+        <div class="seccion-texto page-break-avoid">
             <h3>📍 Orden e Itinerario Oficial (Viernes Santo - Año {anio})</h3>
             <ul class="lista-tramos">
                 <li><b>Tramo 1:</b> Monserrate ➔ Ayuntamiento || <b>{txt_t1}</b></li>
@@ -130,14 +130,14 @@ def crear_html_informe(tipo, archivo_json, anio):
         """
         
         bloque_indicaciones = f"""
-        <div class="seccion-texto indicaciones-dinamicas">
+        <div class="seccion-texto indicaciones-dinamicas page-break-avoid">
             <h3>⚠️ Indicaciones Específicas del Cuadrillero</h3>
             <p><b>Tramo 1 (Monserrate ➔ Ayto):</b><br>{i_t1}</p>
             <p><b>Tramo 2 (Ayto ➔ As de Oros):</b><br>{i_t2}</p>
             <p><b>Tramo 3 (As Oros ➔ Glorieta):</b><br>{i_t3}</p>
             <p><b>Tramo 4 y Regreso:</b><br>{i_t4}</p>
         </div>
-        <div class="seccion-texto indicaciones-dinamicas">
+        <div class="seccion-texto indicaciones-dinamicas page-break-avoid" style="margin-bottom:0;">
             <h3>📜 Normativa de la Cuadrilla</h3>
             <p>{i_norm}</p>
         </div>
@@ -168,7 +168,6 @@ def crear_html_informe(tipo, archivo_json, anio):
             return html;
         """
 
-        # Variable recuperada para el Viernes
         js_fila_tramo = """
             if (enCristo.length > 0 && enCruz.length > 0) {
                 label = `💥 <strong style='color:#ff0000'>¡IMPOSIBLE! (${enCristo.join('+')} y ${enCruz.join('+')})</strong>`;
@@ -211,7 +210,7 @@ def crear_html_informe(tipo, archivo_json, anio):
             """
 
         bloque_itinerario = f"""
-        <div class="seccion-texto">
+        <div class="seccion-texto page-break-avoid">
             <h3>📍 Orden e Itinerario Oficial (Miércoles Santo - Año {anio})</h3>
             <ul class="lista-tramos">
                 <li><b>Tramo 1 (S. Francisco ➔ Gasolinera):</b> Carga el Trono el <b>{txt_trono_1}</b>, y la Cruz el <b>Turno 1</b>.</li>
@@ -221,12 +220,12 @@ def crear_html_informe(tipo, archivo_json, anio):
         """
         
         bloque_indicaciones = f"""
-        <div class="seccion-texto indicaciones-dinamicas">
+        <div class="seccion-texto indicaciones-dinamicas page-break-avoid">
             <h3>⚠️ Indicaciones Específicas del Cuadrillero</h3>
             <p><b>Tramo 1 (San Francisco a Gasolinera):</b><br>{i_t1}</p>
             <p><b>Tramo 2 (Gasolinera a Monserrate):</b><br>{i_t2}</p>
         </div>
-        <div class="seccion-texto indicaciones-dinamicas">
+        <div class="seccion-texto indicaciones-dinamicas page-break-avoid" style="margin-bottom:0;">
             <h3>📜 Normativa de la Cuadrilla</h3>
             <p>{i_norm}</p>
         </div>
@@ -245,7 +244,6 @@ def crear_html_informe(tipo, archivo_json, anio):
             return html;
         """
 
-        # Variable recuperada para el Miércoles
         js_fila_tramo = """
             if (enCristo.length > 0 && enCruz.length > 0) {
                 label = `💥 <strong style='color:#ff0000'>¡IMPOSIBLE! (${enCristo.join('+')} y ${enCruz.join('+')})</strong>`;
@@ -259,7 +257,6 @@ def crear_html_informe(tipo, archivo_json, anio):
             }
         """
 
-    # GENERADOR DE CELDAS (APLICANDO COLOR MATEMÁTICO REAL)
     def generar_li_costalero(p):
         nombre_original = p.get('nombre', 'HUECO LIBRE')
         if nombre_original == "HUECO LIBRE" or p.get('id', -1) == -1:
@@ -269,7 +266,6 @@ def crear_html_informe(tipo, archivo_json, anio):
         clase_bg = ""
         nombre_limpio = nombre_original.replace(" (R)", "").replace(" (C)", "").replace(" (C-Doble)", "").strip()
         
-        # APLICACIÓN INFALIBLE DE COLORES POR MATRIZ DE TRAMOS
         if pid in tramos_dict:
             d = tramos_dict[pid]
             if d['tiene_doble']:
@@ -291,16 +287,12 @@ def crear_html_informe(tipo, archivo_json, anio):
         </li>
         """
 
-    # ==========================================
-    # HTML ESTRUCTURA
-    # ==========================================
     html = f"""
     <!DOCTYPE html>
     <html lang="es">
     <head>
         <meta charset="UTF-8">
         <title>Informe Oficial - {tipo} {anio}</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Open+Sans:wght@400;600;800&display=swap');
             
@@ -345,9 +337,9 @@ def crear_html_informe(tipo, archivo_json, anio):
             .costalero-cell {{ padding: 5px 8px; margin-bottom: 3px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; background: #fff; }}
             .hueco-libre {{ padding: 5px 8px; margin-bottom: 3px; border-radius: 4px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; background: #fafafa; color: #aaa; font-style: italic; }}
             
-            .bg-amarillo {{ background-color: #fff9c4 !important; border-color: #fbc02d !important; color: #000; }}
-            .bg-azul {{ background-color: #e1f5fe !important; border-color: #4fc3f7 !important; color: #000; }}
-            .bg-rojo {{ background-color: #ffebee !important; border-color: #ef9a9a !important; color: #000; }}
+            .bg-amarillo {{ background-color: #fff9c4 !important; border-color: #fbc02d !important; color: #000 !important; }}
+            .bg-azul {{ background-color: #e1f5fe !important; border-color: #4fc3f7 !important; color: #000 !important; }}
+            .bg-rojo {{ background-color: #ffebee !important; border-color: #ef9a9a !important; color: #000 !important; }}
             
             .c-info {{ display: flex; align-items: center; gap: 5px; }}
             .nombre {{ font-weight: 600; font-size: 11px; }}
@@ -367,19 +359,40 @@ def crear_html_informe(tipo, archivo_json, anio):
             .modal-close:hover {{ transform: scale(1.2); }}
             @keyframes slideIn {{ from {{ transform: translateY(-30px); opacity: 0; }} to {{ transform: translateY(0); opacity: 1; }} }}
 
+            /* ==========================================
+               ESTILOS NATIVOS DE IMPRESIÓN / PDF
+               ========================================== */
             @media print {{
-                body {{ background: #fff; padding: 0; font-family: 'Open Sans', Helvetica, sans-serif; }}
+                @page {{ 
+                    margin: 0; /* TRUCO MAGICO: Elimina la URL y fecha automáticas del navegador */
+                }}
+                
+                body {{ 
+                    background: #fff !important; 
+                    padding: 1.5cm !important; /* Margen interno físico para que el folio quede elegante */
+                    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important; 
+                }}
+                
                 .no-print, .web-controls {{ display: none !important; }}
-                .container {{ box-shadow: none; border-top: none; padding: 0; }}
-                .turno-box {{ border: 1px solid #000; page-break-inside: avoid; }}
-                .turno-title {{ background: #eee !important; color: #000 !important; border-bottom: 1px solid #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
-                .bg-amarillo, .bg-azul, .bg-rojo, .seccion-mid, .caja {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+                
+                .container {{ box-shadow: none !important; border-top: none !important; padding: 0 !important; max-width: 100% !important; }}
+                
+                .turno-box {{ border: 1px solid #000 !important; page-break-inside: avoid !important; margin-bottom: 20px !important; }}
+                .turno-title {{ background: #eee !important; color: #000 !important; border-bottom: 1px solid #000 !important; }}
+                
+                .seccion-texto {{ background: transparent !important; border: 1px solid #ccc !important; border-left: 4px solid #5c164e !important; }}
+                .page-break-avoid {{ page-break-inside: avoid !important; }}
+                
+                /* Forzamos los colores de fondo cruciales para la impresión */
+                * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
             }}
         </style>
     </head>
     <body>
         <div class="web-controls no-print">
-            <button class="btn-pdf" onclick="generarPDF()">📥 DESCARGAR PDF PARA WHATSAPP</button>
+            <button class="btn-pdf" onclick="window.print()">🖨️ IMPRIMIR / GUARDAR PDF</button>
+            <p style="color:#d4af37; font-size:12px; margin-top:-5px;">*En la ventana que se abra, selecciona "Guardar como PDF"</p>
+            
             <div class="buscador-box">
                 <h3 style="margin-top:0; color:#d4af37;">🔍 BUSCADOR DE COSTALERO</h3>
                 <input type="text" id="input-buscador" placeholder="Escribe un nombre..." onkeyup="actualizarBuscador()">
@@ -395,6 +408,7 @@ def crear_html_informe(tipo, archivo_json, anio):
         </div>
         
         <div class="container" id="informe-content">
+            <div class="sello-anio no-print">AÑO {anio}</div>
             <div class="header">
                 <img src="{img_b64}" alt="Escudo Mayordomia" class="logo-img" style="{'display:none' if not img_b64 else ''}">
                 <h1>OFS Muy Ilustre Mayordomía de Nuestro Padre Jesús Nazareno</h1>
@@ -411,7 +425,7 @@ def crear_html_informe(tipo, archivo_json, anio):
 
     for categoria, turnos in datos_tronos.items():
         if not turnos: continue
-        html += f"<h2 style='color:#5c164e; border-bottom: 2px solid #5c164e; padding-bottom:5px; margin-top:30px; font-size:18px;'>ESTRUCTURA: {categoria.upper()}</h2>"
+        html += f"<h2 style='color:#5c164e; border-bottom: 2px solid #5c164e; padding-bottom:5px; margin-top:30px; font-size:18px;' class='page-break-avoid'>ESTRUCTURA: {categoria.upper()}</h2>"
         for nombre_turno, varales in turnos.items():
             html += f"""
             <div class="turno-box">
@@ -447,7 +461,7 @@ def crear_html_informe(tipo, archivo_json, anio):
 
     turnos_json_str = json.dumps(datos_raw)
     html += f"""
-            <div style="text-align: center; margin-top: 40px; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 10px;">
+            <div style="text-align: center; margin-top: 40px; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 10px; page-break-inside: avoid;">
                 Informe generado por Sistema de Gestión de Costaleros del <br> Tercio del Cristo de la Agonía y María Magdalena | {anio}
             </div>
         </div>
@@ -538,29 +552,6 @@ def crear_html_informe(tipo, archivo_json, anio):
             }}
 
             window.onload = () => {{ analizarEstado(); }};
-
-            function generarPDF() {{
-                const element = document.getElementById('informe-content');
-                const btn = document.querySelector('.btn-pdf');
-                btn.innerText = "⏳ GENERANDO PDF...";
-                
-                const opt = {{
-                    margin:       [10, 10, 10, 10], 
-                    filename:     `Orden_Procesional_Agonia_{tipo.replace(" ", "_")}.pdf`,
-                    image:        {{ type: 'png', quality: 0.98 }},
-                    html2canvas:  {{ scale: 2, useCORS: true }},
-                    jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'portrait' }}
-                }};
-                
-                setTimeout(() => {{
-                    html2pdf().set(opt).from(element).save().then(() => {{
-                        btn.innerText = "📥 DESCARGAR PDF PARA WHATSAPP";
-                    }}).catch(err => {{
-                        alert("Error al generar PDF. Asegúrate de tener conexión a Internet.");
-                        btn.innerText = "📥 DESCARGAR PDF PARA WHATSAPP";
-                    }});
-                }}, 150);
-            }}
         </script>
     </body>
     </html>

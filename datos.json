@@ -1,17 +1,8 @@
 [
     {
-        "id": 1,
-        "nombre": "Aitor Guiraoo Rodriguez",
-        "altura": 151,
-        "pref_hombro": "Izquierdo",
-        "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
-    },
-    {
         "id": 2,
         "nombre": "Cristo Fernando Abadía Lóp",
-        "altura": 149,
+        "altura": 200,
         "pref_hombro": "Izquierdo",
         "puede_repetir": true,
         "miercoles_santo": true,

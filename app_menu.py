@@ -3,6 +3,7 @@ import os
 import json
 import datetime
 import webbrowser
+import shutil  # NUEVO: Para hacer las copias de seguridad de los archivos
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from tkcalendar import DateEntry
@@ -624,6 +625,10 @@ class GestorCofradeAPP:
         btn_borrar = self.crear_boton_moderno(toolbar, "❌ Borrar", "#ff4757", "#ff6b81", C_BLANCO, command=self.borrar_costalero)
         btn_borrar.pack(side=tk.LEFT, padx=10)
         
+        # NUEVO BOTÓN: CARGAR CENSO EXTERNO
+        btn_cargar = self.crear_boton_moderno(toolbar, "📂 Cargar Censo", "#17517e", "#1f6b9c", C_BLANCO, command=self.cargar_censo_externo)
+        btn_cargar.pack(side=tk.LEFT, padx=10)
+        
         search_frame = tk.Frame(toolbar, bg=C_GRIS_FONDO)
         search_frame.pack(side=tk.RIGHT)
         tk.Label(search_frame, text="🔍 Buscar:", bg=C_GRIS_FONDO, font=("Segoe UI", 11)).pack(side=tk.LEFT, padx=(0,5))
@@ -662,6 +667,61 @@ class GestorCofradeAPP:
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         return f
+
+    # --- NUEVA FUNCIÓN: CARGAR CENSO EXTERNO ---
+    def cargar_censo_externo(self):
+        # 1. Pedimos al usuario que seleccione su archivo JSON
+        archivo_nuevo = filedialog.askopenfilename(
+            title="Seleccionar archivo de Censo Local (datos.json)",
+            filetypes=[("Archivos JSON", "*.json")]
+        )
+        if not archivo_nuevo:
+            return
+
+        # 2. Mostramos advertencia de sobreescritura
+        confirmacion = messagebox.askyesno(
+            "⚠️ Atención: Sobreescritura",
+            "Vas a reemplazar el censo actual por el archivo seleccionado.\n\n"
+            "El sistema creará una copia de seguridad automática del censo antiguo por precaución.\n\n"
+            "¿Estás completamente seguro de querer continuar?"
+        )
+        if not confirmacion:
+            return
+
+        # 3. Creamos la copia de seguridad del archivo actual
+        archivo_actual = CONFIG['archivo_datos']
+        if os.path.exists(archivo_actual):
+            fecha_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            archivo_backup = f"censo_backup_{fecha_str}.json"
+            try:
+                shutil.copy(archivo_actual, archivo_backup)
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo crear la copia de seguridad: {e}")
+                return
+
+        # 4. Intentamos leer y cargar el nuevo archivo
+        try:
+            with open(archivo_nuevo, 'r', encoding='utf-8') as f:
+                nuevos_datos = json.load(f)
+            
+            # Validación básica para asegurarnos de que no nos han metido un archivo raro
+            if not isinstance(nuevos_datos, list):
+                raise ValueError("El archivo no tiene la estructura de censo correcta.")
+
+            # 5. Sobreescribimos el archivo del sistema con los nuevos datos
+            with open(archivo_actual, 'w', encoding='utf-8') as f:
+                json.dump(nuevos_datos, f, indent=4, ensure_ascii=False)
+            
+            # 6. Actualizamos la tabla para que los vea
+            self.actualizar_tabla_censo()
+            
+            msg = "Censo actualizado correctamente.\n\n"
+            if os.path.exists(archivo_actual):
+                msg += f"Se ha guardado tu censo anterior a salvo en el archivo:\n{archivo_backup}"
+            messagebox.showinfo("Éxito", msg)
+            
+        except Exception as e:
+            messagebox.showerror("Error de Formato", f"El archivo seleccionado no es válido o está dañado:\n{e}")
 
     def actualizar_tabla_censo(self, event=None):
         for item in self.tree.get_children():
