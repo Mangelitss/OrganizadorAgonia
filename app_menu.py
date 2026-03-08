@@ -5,7 +5,7 @@ import datetime
 import webbrowser
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
-from tkinter import messagebox
+from tkcalendar import DateEntry
 
 # Importamos las lógicas independientes
 from logica_trono import cargar_datos, generar_turnos_base, generar_html_interactivo
@@ -14,6 +14,7 @@ from logica_viernes import generar_cuadrillas_viernes, generar_html_viernes
 from logica_ensayos import generar_html_ensayo
 from logica_informes import crear_html_informe
 from logica_licencia import comprobar_licencia
+from logica_calendario import cargar_eventos, guardar_eventos, generar_html_calendario
 
 # ==========================================
 # CONFIGURACIÓN Y COLORES
@@ -42,16 +43,21 @@ C_ROJO = "#360928"
 # ==========================================
 class GestorCofradeAPP:
     def __init__(self, root):
-
         self.root = root        
 
         # 1. OCULTAMOS LA VENTANA PRINCIPAL AL ARRANCAR
         self.root.withdraw()
+        
+        try:
+            self.root.iconbitmap("icono.ico")
+        except:
+            pass
 
         self.root.title("Gestor de Turnos Cristo de la Agonía V1.0 - Ntro. Padre Jesús Nazareno")
-        self.root.geometry("1280x720") ## 1050x650 anterior
+        self.root.geometry("1280x720")
         self.root.configure(bg=C_GRIS_FONDO)
-        self.root.resizable(False, False)
+        # HACEMOS LA VENTANA PRINCIPAL REESCALABLE
+        self.root.resizable(True, True)
 
         # Variables de estado
         self.current_frame = None
@@ -69,15 +75,13 @@ class GestorCofradeAPP:
         self.crear_pantallas()
         self.mostrar_pantalla("Inicio")
 
-        # 2. EN VEZ DE LLAMAR AL LOGIN DIRECTO, VERIFICAMOS LA SESIÓN:
+        # 2. VERIFICAMOS LA SESIÓN:
         self.verificar_sesion()
 
-    # --- AÑADE ESTA NUEVA FUNCIÓN JUSTO DEBAJO DEL __init__ ---
     def verificar_sesion(self):
         import os, json
         archivo_sesion = "licencia_local.json"
         
-        # Comprobamos si ya iniciaron sesión alguna vez
         if os.path.exists(archivo_sesion):
             try:
                 with open(archivo_sesion, "r") as f:
@@ -85,70 +89,58 @@ class GestorCofradeAPP:
                     user = datos.get("usuario")
                     pwd = datos.get("password")
                 
-                # Validación silenciosa con Firebase
                 valido, mensaje = comprobar_licencia(user, pwd)
                 
                 if valido:
-                    # Todo correcto, abrimos el programa del tirón
                     self.root.deiconify()
                     return
             except Exception:
-                pass # Si el archivo se corrompe, ignoramos y pedimos login
+                pass 
                 
-        # Si no hay archivo, o la licencia caducó, o cambiaron la contraseña:
         self.pedir_login()
 
     def pedir_login(self):
-        # Creamos una ventana emergente para el Login
         self.ventana_login = tk.Toplevel(self.root)
         self.ventana_login.title("Activación de Licencia - Gestor Cofrade")
-        self.ventana_login.geometry("450x600") # Un poco más alta para el logo
-        self.ventana_login.configure(bg="#23061b") # Fondo oscuro corporativo
+        self.ventana_login.geometry("450x600") 
+        self.ventana_login.configure(bg="#23061b") 
+        # VENTANA LOGIN REESCALABLE
         self.ventana_login.resizable(True, True)
-        
-        # Si le dan a la 'X' para cerrar el login, cerramos el programa entero
         self.ventana_login.protocol("WM_DELETE_WINDOW", self.root.destroy)
         
-        # --- CARGAR Y REESCALAR LOGO POR PORCENTAJE ---
         try:
             from PIL import Image, ImageTk
             pil_img = Image.open("bandera_tercio_npj.png")
             
-            # ---> MODIFICA ESTE NÚMERO (ej: 10, 15, 20, 25) <---
             porcentaje = 30  
             
             ancho_orig, alto_orig = pil_img.size
             nuevo_ancho = int(ancho_orig * (porcentaje / 100))
             nuevo_alto = int(alto_orig * (porcentaje / 100))
             
-            # Reescalado de alta calidad (LANCZOS)
             pil_img_rescalada = pil_img.resize((nuevo_ancho, nuevo_alto), Image.LANCZOS)
             logo_img = ImageTk.PhotoImage(pil_img_rescalada)
             
-            # Cambiamos el icono de la ventana
             self.ventana_login.iconphoto(False, logo_img)
             self.root.iconphoto(False, logo_img)
             
-            # Colocamos el logo en la ventana
             lbl_logo = tk.Label(self.ventana_login, image=logo_img, bg="#23061b")
-            lbl_logo.image = logo_img  # VITAL: Guardar referencia para que no se borre
+            lbl_logo.image = logo_img  
             lbl_logo.pack(pady=(25, 10))
         except Exception as e:
-            print(f"Aviso: No se pudo cargar el logo - {e}")
             pass
 
-        # Diseño del Login
-        tk.Label(self.ventana_login, text="CONTROL DE ACCESO", font=("Cinzel", 18, "bold"), bg="#23061b", fg="#d4af37").pack(pady=(0, 25))
+        tk.Label(self.ventana_login, text="CONTROL DE ACCESO", font=("Georgia", 18, "bold"), bg="#23061b", fg="#d4af37").pack(pady=(0, 25))
         
-        tk.Label(self.ventana_login, text="Usuario:", font=("Cinzel", 11, "bold"), bg="#23061b", fg="#e8d08c").pack(anchor="w", padx=50, pady=(0, 5))
-        self.entry_user = tk.Entry(self.ventana_login, font=("Segoe UI", 14), bg="#0c0209", fg="#d4af37", insertbackground="#d4af37", relief="solid", bd=1, justify="center")
+        tk.Label(self.ventana_login, text="Usuario (Hermandad):", font=("Georgia", 11, "bold"), bg="#23061b", fg="#e8d08c").pack(anchor="w", padx=50, pady=(0, 5))
+        self.entry_user = tk.Entry(self.ventana_login, font=("Helvetica", 14), bg="#0c0209", fg="#d4af37", insertbackground="#d4af37", relief="solid", bd=1, justify="center")
         self.entry_user.pack(fill=tk.X, padx=50, ipady=6, pady=(0, 20))
         
-        tk.Label(self.ventana_login, text="Contraseña de Licencia:", font=("Cinzel", 11, "bold"), bg="#23061b", fg="#e8d08c").pack(anchor="w", padx=50, pady=(0, 5))
-        self.entry_pass = tk.Entry(self.ventana_login, font=("Segoe UI", 14), bg="#0c0209", fg="#d4af37", insertbackground="#d4af37", show="*", relief="solid", bd=1, justify="center")
+        tk.Label(self.ventana_login, text="Contraseña de Licencia:", font=("Georgia", 11, "bold"), bg="#23061b", fg="#e8d08c").pack(anchor="w", padx=50, pady=(0, 5))
+        self.entry_pass = tk.Entry(self.ventana_login, font=("Helvetica", 14), bg="#0c0209", fg="#d4af37", insertbackground="#d4af37", show="*", relief="solid", bd=1, justify="center")
         self.entry_pass.pack(fill=tk.X, padx=50, ipady=6, pady=(0, 35))
         
-        btn_login = tk.Button(self.ventana_login, text="INICIAR SESIÓN", font=("Cinzel", 14, "bold"), bg="#d4af37", fg="#0c0209", activebackground="#b5952f", activeforeground="#000", cursor="hand2", relief="flat", command=self.validar_acceso)
+        btn_login = tk.Button(self.ventana_login, text="INICIAR SESIÓN", font=("Georgia", 13, "bold"), bg="#d4af37", fg="#0c0209", activebackground="#b5952f", activeforeground="#000", cursor="hand2", relief="flat", command=self.validar_acceso)
         btn_login.pack(fill=tk.X, padx=50, ipady=8, pady=(0, 20))
 
     def validar_acceso(self):
@@ -159,24 +151,17 @@ class GestorCofradeAPP:
             messagebox.showwarning("Atención", "Por favor, rellena ambos campos para verificar tu licencia.")
             return
             
-        # Preguntamos a Firebase
         valido, mensaje = comprobar_licencia(usuario, password)
         
         if valido:
-            # Guardamos la sesión localmente para el futuro
             import json
             with open("licencia_local.json", "w") as f:
                 json.dump({"usuario": usuario, "password": password}, f)
                 
-            # Destruimos el candado y abrimos la app
             self.ventana_login.destroy()
             self.root.deiconify() 
-            
-            # --- AQUÍ RECUPERAMOS EL MENSAJE DE ÉXITO ---
             messagebox.showinfo("Éxito", "Licencia validada correctamente.\n¡Bienvenido al Gestor Cofrade!")
-            
         else:
-            # Error de contraseña, usuario o licencia caducada
             messagebox.showerror("Acceso Denegado", mensaje)
 
     # --- UTILIDADES ---
@@ -190,7 +175,6 @@ class GestorCofradeAPP:
             return False
 
     def abrir_navegador(self, archivo_html):
-        """Abre el archivo HTML en el navegador por defecto del sistema"""
         ruta_absoluta = os.path.abspath(archivo_html)
         webbrowser.open(f"file://{ruta_absoluta}")
 
@@ -220,7 +204,7 @@ class GestorCofradeAPP:
 
     # --- NAVEGACIÓN Y ANIMACIÓN ---
     def crear_menu_lateral(self):
-        lbl_titulo = tk.Label(self.frame_menu, text="GESTOR\nCOSTALEROS", bg=C_MORADO, fg=C_ORO, font=("Cinzel", 20, "bold"), pady=30)
+        lbl_titulo = tk.Label(self.frame_menu, text="GESTOR\nCOSTALEROS", bg=C_MORADO, fg=C_ORO, font=("Georgia", 20, "bold"), pady=30)
         lbl_titulo.pack(fill=tk.X)
         
         opciones = [
@@ -228,6 +212,7 @@ class GestorCofradeAPP:
             ("Miércoles Santo", "🕯️"), 
             ("Viernes Santo", "✝️"), 
             ("Ensayos", "📋"), 
+            ("Calendario", "📅"), 
             ("Censo (Costaleros)", "👥"), 
             ("Exportar PDF", "📄")
         ]
@@ -240,8 +225,10 @@ class GestorCofradeAPP:
         btn_salir.pack(side=tk.BOTTOM, fill=tk.X, pady=20, padx=10)
 
     def mostrar_pantalla(self, nombre):
-        frame_in = self.frames[nombre]
+        frame_in = self.frames.get(nombre)
+        if not frame_in: return
         if self.current_frame == frame_in: return
+        
         if self.current_frame: self.current_frame.place_forget()
         self.current_frame = frame_in
         
@@ -263,6 +250,7 @@ class GestorCofradeAPP:
         self.frames["Miércoles Santo"] = self.crear_pantalla_procesion("Miércoles Santo", "visualizador_miercoles.html", generar_cuadrillas_miercoles, generar_html_miercoles, True)
         self.frames["Viernes Santo"] = self.crear_pantalla_procesion("Viernes Santo", "visualizador_viernes.html", generar_cuadrillas_viernes, generar_html_viernes, True)
         self.frames["Ensayos"] = self.crear_pantalla_ensayos()
+        self.frames["Calendario"] = self.crear_pantalla_calendario()
         self.frames["Censo (Costaleros)"] = self.crear_pantalla_censo()
         self.frames["Exportar PDF"] = self.crear_pantalla_pdf()
 
@@ -272,9 +260,9 @@ class GestorCofradeAPP:
         card = tk.Frame(f, bg=C_BLANCO, padx=50, pady=50, highlightbackground="#e0e0e0", highlightthickness=1)
         card.place(relx=0.5, rely=0.5, anchor="center")
         
-        tk.Label(card, text="Sistema de Gestión Turnos Y Procesiones", font=("Cinzel", 26, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=(0, 10))
-        tk.Label(card, text="OFS Muy Ilustre Mayordomía de Ntro. Padre Jesús Nazareno", font=("Cinzel", 17), bg=C_BLANCO, fg="#666").pack(pady=5)
-        tk.Label(card, text="Tercio del Cristo de la Agonía y María Magdalena", font=("Cinzel", 14), bg=C_BLANCO, fg="#666").pack(pady=5)
+        tk.Label(card, text="Sistema de Gestión Turnos Y Procesiones", font=("Georgia", 24, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=(0, 10))
+        tk.Label(card, text="OFS Muy Ilustre Mayordomía de Ntro. Padre Jesús Nazareno", font=("Georgia", 15), bg=C_BLANCO, fg="#666").pack(pady=5)
+        tk.Label(card, text="Tercio del Cristo de la Agonía y María Magdalena", font=("Georgia", 13), bg=C_BLANCO, fg="#666").pack(pady=5)
         tk.Frame(card, height=2, bg=C_ORO, width=200).pack(pady=20)
         tk.Label(card, text="Selecciona un módulo en el menú lateral izquierdo para empezar a trabajar.", font=("Segoe UI", 12), bg=C_BLANCO, fg="#888").pack(pady=10)
         return f
@@ -361,6 +349,232 @@ class GestorCofradeAPP:
         btn_abrir.pack(side=tk.LEFT)
         return f
 
+    def crear_pantalla_calendario(self):
+        f = tk.Frame(self.frame_main, bg="#f4f6f8", padx=30, pady=30)
+        
+        tk.Label(f, text="📅 Calendario de Ensayos y Citas", font=("Segoe UI", 22, "bold"), bg="#f4f6f8", fg=C_MORADO).pack(anchor="w")
+        
+        toolbar = tk.Frame(f, bg="#f4f6f8")
+        toolbar.pack(fill=tk.X, pady=15)
+        
+        btn_nuevo = self.crear_boton_moderno(toolbar, "➕ Añadir Cita", C_ORO, C_ORO_HOVER, C_TEXTO, command=lambda: self.abrir_formulario_evento())
+        btn_nuevo.pack(side=tk.LEFT, padx=(0, 10))
+        btn_editar = self.crear_boton_moderno(toolbar, "✏️ Editar", "#17517e", "#1f6b9c", C_BLANCO, command=lambda: self.abrir_formulario_evento(editar=True))
+        btn_editar.pack(side=tk.LEFT, padx=10)
+        btn_borrar = self.crear_boton_moderno(toolbar, "❌ Borrar", "#ff4757", "#ff6b81", C_BLANCO, command=self.borrar_evento)
+        btn_borrar.pack(side=tk.LEFT, padx=10)
+        
+        def exportar_html():
+            exito, archivo = generar_html_calendario(self.lista_eventos)
+            if exito: self.abrir_navegador(archivo)
+                
+        btn_pdf = self.crear_boton_moderno(toolbar, "📤 Exportar PDF", C_MORADO, C_MORADO_HOVER, C_BLANCO, command=exportar_html)
+        btn_pdf.pack(side=tk.RIGHT)
+
+        frame_tabla = tk.Frame(f, bg=C_BLANCO, highlightbackground="#ccc", highlightthickness=1)
+        frame_tabla.pack(fill=tk.BOTH, expand=True)
+        
+        columnas = ("id", "fecha", "hora", "motivo", "lugar", "indicaciones")
+        self.tabla_calendario = ttk.Treeview(frame_tabla, columns=columnas, show="headings", height=15)
+        
+        self.tabla_calendario.heading("id", text="ID") 
+        self.tabla_calendario.heading("fecha", text="Día")
+        self.tabla_calendario.heading("hora", text="Hora")
+        self.tabla_calendario.heading("motivo", text="Motivo / Cita")
+        self.tabla_calendario.heading("lugar", text="Lugar")
+        self.tabla_calendario.heading("indicaciones", text="Indicaciones")
+        
+        self.tabla_calendario.column("id", width=0, stretch=tk.NO)
+        self.tabla_calendario.column("fecha", width=120, anchor="center")
+        self.tabla_calendario.column("hora", width=80, anchor="center")
+        self.tabla_calendario.column("motivo", width=200)
+        self.tabla_calendario.column("lugar", width=150)
+        self.tabla_calendario.column("indicaciones", width=250)
+        
+        scrollbar = ttk.Scrollbar(frame_tabla, orient=tk.VERTICAL, command=self.tabla_calendario.yview)
+        self.tabla_calendario.configure(yscroll=scrollbar.set)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tabla_calendario.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        self.refrescar_tabla_calendario()
+        return f
+
+    def refrescar_tabla_calendario(self):
+        for row in self.tabla_calendario.get_children():
+            self.tabla_calendario.delete(row)
+        self.lista_eventos = cargar_eventos()
+        for idx, ev in enumerate(self.lista_eventos):
+            self.tabla_calendario.insert("", "end", values=(idx, ev.get("fecha",""), ev.get("hora",""), ev.get("motivo",""), ev.get("lugar",""), ev.get("indicaciones","")))
+
+    def borrar_evento(self):
+        seleccionado = self.tabla_calendario.selection()
+        if not seleccionado:
+            messagebox.showwarning("Atención", "Selecciona una cita de la tabla para borrarla.")
+            return
+            
+        motivo = self.tabla_calendario.item(seleccionado[0])['values'][3]
+        
+        if messagebox.askyesno("⚠️ Confirmar Borrado", f"¿Estás seguro de eliminar el evento:\n'{motivo}'?"):
+            idx = int(self.tabla_calendario.item(seleccionado[0])['values'][0])
+            del self.lista_eventos[idx]
+            guardar_eventos(self.lista_eventos)
+            self.refrescar_tabla_calendario()
+
+    # --- POPUP PARA AÑADIR / EDITAR CITA ---
+    def abrir_formulario_evento(self, editar=False):
+        evento = None
+        idx_editar = -1
+        
+        if editar:
+            seleccionado = self.tabla_calendario.selection()
+            if not seleccionado:
+                messagebox.showwarning("Atención", "Selecciona una cita de la tabla para editar.")
+                return
+            idx_editar = int(self.tabla_calendario.item(seleccionado[0])['values'][0])
+            evento = self.lista_eventos[idx_editar]
+
+        top = tk.Toplevel(self.root)
+        top.title("Editar Evento" if editar else "Nueva Cita / Ensayo")
+        top.geometry("450x620")
+        top.configure(bg=C_BLANCO)
+        
+        # VENTANA FORMULARIO EVENTO REESCALABLE
+        top.resizable(True, True)
+        top.transient(self.root) 
+        top.grab_set()
+
+        top.update_idletasks()
+        x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (450 // 2)
+        y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (620 // 2)
+        top.geometry(f"+{x}+{y}")
+
+        tk.Label(top, text="📅 Detalles de la Convocatoria", font=("Segoe UI", 16, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=(20, 15))
+        
+        form = tk.Frame(top, bg=C_BLANCO)
+        form.pack(padx=30, fill=tk.BOTH, expand=True)
+
+        # --- FECHA Y HORA (En la misma fila, alineación perfecta con pack) ---
+        fila_fechahora = tk.Frame(form, bg=C_BLANCO)
+        fila_fechahora.pack(fill=tk.X, pady=(0, 15))
+
+        # Bloque Fecha
+        bloque_fecha = tk.Frame(fila_fechahora, bg=C_BLANCO)
+        bloque_fecha.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
+        tk.Label(bloque_fecha, text="Día del Evento:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
+        cal_fecha = DateEntry(bloque_fecha, background=C_MORADO, foreground='white', borderwidth=2, font=("Segoe UI", 12), date_pattern='dd/MM/yyyy', cursor="hand2")
+        cal_fecha.pack(fill=tk.X)
+        
+        meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+        if evento and evento.get('fecha'):
+            try:
+                partes = evento['fecha'].split(' de ')
+                dia = int(partes[0])
+                mes = meses.index(partes[1]) + 1
+                anio_actual = datetime.datetime.now().year
+                fecha_obj = datetime.date(anio_actual, mes, dia)
+                cal_fecha.set_date(fecha_obj)
+            except: pass
+
+        # Bloque Hora
+        bloque_hora = tk.Frame(fila_fechahora, bg=C_BLANCO)
+        bloque_hora.pack(side=tk.RIGHT, fill=tk.X, expand=True)
+        tk.Label(bloque_hora, text="Hora:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
+        
+        caja_selectores = tk.Frame(bloque_hora, bg=C_BLANCO)
+        caja_selectores.pack(fill=tk.X)
+        
+        horas = [str(i).zfill(2) for i in range(24)]
+        minutos = ["00", "15", "30", "45"]
+        var_hh = tk.StringVar(value="20")
+        var_mm = tk.StringVar(value="00")
+        
+        if evento:
+            h_parts = evento.get('hora','').replace('h','').split(':')
+            if len(h_parts) == 2:
+                var_hh.set(h_parts[0])
+                var_mm.set(h_parts[1])
+
+        # State 'normal' para que el usuario pueda escribir manualmente los minutos que quiera
+        ttk.Combobox(caja_selectores, textvariable=var_hh, values=horas, width=4, font=("Segoe UI", 12), state="normal").pack(side=tk.LEFT, expand=True, fill=tk.X)
+        tk.Label(caja_selectores, text=":", bg=C_BLANCO, font=("Segoe UI", 12, "bold")).pack(side=tk.LEFT, padx=2)
+        ttk.Combobox(caja_selectores, textvariable=var_mm, values=minutos, width=4, font=("Segoe UI", 12), state="normal").pack(side=tk.LEFT, expand=True, fill=tk.X)
+
+        # --- MOTIVO ---
+        tk.Label(form, text="Motivo (Puedes elegir o escribir uno):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
+        var_motivo = tk.StringVar(value=evento.get('motivo', 'Ensayo') if evento else 'Ensayo')
+        combo_motivo = ttk.Combobox(form, textvariable=var_motivo, values=["Ensayo", "Reunión de Costaleros", "Mudá del Trono", "Misa de Hermandad"], font=("Segoe UI", 12))
+        combo_motivo.pack(fill=tk.X, pady=(0, 15))
+
+        # --- LUGAR ---
+        tk.Label(form, text="Lugar:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
+        var_lugar = tk.StringVar(value=evento.get('lugar', 'San Francisco') if evento else 'San Francisco')
+        combo_lugar = ttk.Combobox(form, textvariable=var_lugar, values=["San Francisco", "Santuario de Monserrate", "Casa de Hermandad", "As de Oros"], font=("Segoe UI", 12))
+        combo_lugar.pack(fill=tk.X, pady=(0, 15))
+
+        # --- INDICACIONES ---
+        tk.Label(form, text="Indicaciones (Opcional):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
+        text_ind = tk.Text(form, font=("Segoe UI", 11), height=4, relief="solid", bd=1, wrap=tk.WORD)
+        text_ind.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        
+        placeholder = "Ej: Venir con calzado oscuro, ropa cómoda..."
+        
+        if evento and evento.get('indicaciones'):
+            text_ind.insert("1.0", evento.get('indicaciones'))
+            text_ind.config(fg="black")
+        else:
+            text_ind.insert("1.0", placeholder)
+            text_ind.config(fg="grey")
+
+        def on_focus_in(e):
+            contenido = text_ind.get("1.0", "end-1c")
+            if contenido == placeholder:
+                text_ind.delete("1.0", tk.END)
+                text_ind.config(fg="black")
+                
+        def on_focus_out(e):
+            contenido = text_ind.get("1.0", "end-1c").strip()
+            if not contenido:
+                text_ind.insert("1.0", placeholder)
+                text_ind.config(fg="grey")
+
+        text_ind.bind("<FocusIn>", on_focus_in)
+        text_ind.bind("<FocusOut>", on_focus_out)
+
+        def guardar():
+            mtv = var_motivo.get().strip()
+            if not mtv:
+                messagebox.showwarning("Atención", "Debes especificar un motivo.")
+                return
+            
+            ind_final = text_ind.get("1.0", "end-1c").strip()
+            if ind_final == placeholder:
+                ind_final = ""
+
+            fecha_seleccionada = cal_fecha.get_date()
+            dia_str = str(fecha_seleccionada.day).zfill(2)
+            mes_str = meses[fecha_seleccionada.month - 1]
+            fecha_formateada = f"{dia_str} de {mes_str}"
+
+            datos_evento = {
+                "fecha": fecha_formateada,
+                "hora": f"{var_hh.get()}:{var_mm.get()}h",
+                "motivo": mtv,
+                "lugar": var_lugar.get().strip(),
+                "indicaciones": ind_final
+            }
+
+            if editar:
+                self.lista_eventos[idx_editar] = datos_evento
+            else:
+                self.lista_eventos.append(datos_evento)
+                
+            guardar_eventos(self.lista_eventos)
+            self.refrescar_tabla_calendario()
+            top.destroy()
+
+        btn_guardar = tk.Button(top, text="💾 GUARDAR EVENTO", bg=C_MORADO, fg=C_BLANCO, font=("Segoe UI", 12, "bold"), bd=0, cursor="hand2", command=guardar)
+        btn_guardar.pack(fill=tk.X, padx=30, pady=(0, 20), ipady=8)
+
     def crear_pantalla_pdf(self):
         f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO)
         card = tk.Frame(f, bg=C_BLANCO, padx=40, pady=40, highlightbackground="#e0e0e0", highlightthickness=1)
@@ -369,7 +583,6 @@ class GestorCofradeAPP:
         tk.Label(card, text="Generador de PDF Oficial", font=("Segoe UI", 22, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(anchor="w", pady=(0, 10))
         tk.Label(card, text="Selecciona para qué procesión vas a generar el informe oficial.", font=("Segoe UI", 12), bg=C_BLANCO, fg="#666").pack(anchor="w", pady=(0, 20))
         
-        # NUEVO: Cajón para introducir el Año
         fila_anio = tk.Frame(card, bg=C_BLANCO)
         fila_anio.pack(fill=tk.X, pady=(0, 20))
         tk.Label(fila_anio, text="Año del cuadrante a exportar:", bg=C_BLANCO, font=("Segoe UI", 12, "bold")).pack(side=tk.LEFT)
@@ -388,7 +601,6 @@ class GestorCofradeAPP:
         def generar():
             archivo = filedialog.askopenfilename(title="Selecciona el archivo JSON descargado de la web", filetypes=[("Archivos JSON", "*.json")])
             if archivo:
-                # Capturamos el año y se lo enviamos a la lógica
                 anio = int(entry_anio.get()) if entry_anio.get().isdigit() else datetime.datetime.now().year
                 exito, msg = crear_html_informe(var_tipo.get(), archivo, anio)
                 if exito: self.abrir_navegador(msg)
@@ -398,7 +610,6 @@ class GestorCofradeAPP:
         btn_generar.pack(anchor="w")
         return f
 
-    # --- PANTALLA CENSO (CRUD INTERACTIVO) ---
     def crear_pantalla_censo(self):
         f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO, padx=30, pady=30)
         tk.Label(f, text="Gestión del Censo General", font=("Segoe UI", 22, "bold"), bg=C_GRIS_FONDO, fg=C_MORADO).pack(anchor="w")
@@ -468,9 +679,6 @@ class GestorCofradeAPP:
                 if not hombro: hombro = "Indiferente"
                 self.tree.insert("", tk.END, values=(p['id'], p['nombre'], p['altura'], hombro.capitalize(), mi, vi))
 
-    # ==========================================
-    # NUEVO FORMULARIO POP-UP UNIFICADO (NUEVO/EDITAR)
-    # ==========================================
     def abrir_formulario_costalero(self, editar=False):
         datos = cargar_datos(CONFIG['archivo_datos'])
         costalero = None
@@ -484,29 +692,26 @@ class GestorCofradeAPP:
             costalero = next((x for x in datos if x['id'] == pid), None)
             if not costalero: return
 
-        # Crear ventana Modal (Pop-up)
         top = tk.Toplevel(self.root)
         top.title("Editar Costalero" if editar else "Nuevo Costalero")
         top.geometry("400x480")
         top.configure(bg=C_BLANCO)
-        top.resizable(False, False)
+        
+        # VENTANA FORMULARIO COSTALERO REESCALABLE
+        top.resizable(True, True)
         top.transient(self.root) 
-        top.grab_set() # Bloquea la ventana principal hasta que se cierre esta
+        top.grab_set()
 
-        # Centrar ventana
         top.update_idletasks()
         x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (400 // 2)
         y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (480 // 2)
         top.geometry(f"+{x}+{y}")
 
-        # Título interno
         tk.Label(top, text="📋 Ficha del Costalero", font=("Segoe UI", 16, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=(20, 20))
 
-        # Contenedor del formulario
         form_frame = tk.Frame(top, bg=C_BLANCO)
-        form_frame.pack(padx=40, fill=tk.X)
+        form_frame.pack(padx=40, fill=tk.BOTH, expand=True)
 
-        # Campos
         tk.Label(form_frame, text="Nombre Completo:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
         var_nombre = tk.StringVar(value=costalero['nombre'] if costalero else "")
         tk.Entry(form_frame, textvariable=var_nombre, font=("Segoe UI", 12), relief="solid", bd=1).pack(fill=tk.X, pady=(2, 15))
@@ -520,7 +725,6 @@ class GestorCofradeAPP:
         combo_hombro = ttk.Combobox(form_frame, textvariable=var_hombro, values=["Derecho", "Izquierdo", "Ambos", "Indiferente"], state="readonly", font=("Segoe UI", 11))
         combo_hombro.pack(fill=tk.X, pady=(2, 20))
 
-        # Checkboxes Procesiones
         tk.Label(form_frame, text="Disponibilidad para procesionar:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
         var_miercoles = tk.BooleanVar(value=costalero.get('miercoles_santo', True) if costalero else True)
         var_viernes = tk.BooleanVar(value=costalero.get('viernes_santo', True) if costalero else True)
@@ -540,14 +744,12 @@ class GestorCofradeAPP:
             if hombro_val == "Indiferente": hombro_val = ""
 
             if editar:
-                # Modificamos el existente
                 costalero['nombre'] = var_nombre.get().strip()
                 costalero['altura'] = int(var_altura.get())
                 costalero['pref_hombro'] = hombro_val
                 costalero['miercoles_santo'] = var_miercoles.get()
                 costalero['viernes_santo'] = var_viernes.get()
             else:
-                # Creamos uno nuevo
                 nuevo_id = max([p.get('id', 0) for p in datos], default=0) + 1
                 datos.append({
                     "id": nuevo_id,
@@ -587,10 +789,6 @@ class GestorCofradeAPP:
 # ==========================================
 if __name__ == "__main__":
     root = tk.Tk()
-    
-    try: root.iconbitmap('favicon.ico')
-    except: pass
-
     app = GestorCofradeAPP(root)
     
     root.lift()
