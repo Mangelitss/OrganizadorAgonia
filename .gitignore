@@ -1,0 +1,16 @@
+# Carpetas de compilación de PyInstaller
+build/
+dist/
+*.spec
+
+# Caché interno de Python
+__pycache__/
+*.pyc
+
+# Archivos temporales o locales de tu app (¡MUY IMPORTANTE!)
+licencia_local.json
+informe_generado.html
+
+# Imágenes o recursos del sistema operativo
+.DS_Store
+Thumbs.db
