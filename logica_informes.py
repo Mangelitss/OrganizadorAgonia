@@ -32,7 +32,7 @@ def crear_html_informe(tipo, archivo_json, anio):
                 img_b64 = f"data:image/png;base64,{encoded_string}"
         except: pass
 
-    i_norm = indicaciones.get("normativa", "").strip() or "(Sin normativa específica dictada por el Capataz)"
+    i_norm = indicaciones.get("normativa", "").strip() or "(Sin normativa específica dictada por el cuadrillero)"
 
     # ==========================================
     # MOTOR MATEMÁTICO DE COLORES Y TRAMOS
@@ -131,7 +131,7 @@ def crear_html_informe(tipo, archivo_json, anio):
         
         bloque_indicaciones = f"""
         <div class="seccion-texto indicaciones-dinamicas">
-            <h3>⚠️ Indicaciones Específicas del Capataz</h3>
+            <h3>⚠️ Indicaciones Específicas del Cuadrillero</h3>
             <p><b>Tramo 1 (Monserrate ➔ Ayto):</b><br>{i_t1}</p>
             <p><b>Tramo 2 (Ayto ➔ As de Oros):</b><br>{i_t2}</p>
             <p><b>Tramo 3 (As Oros ➔ Glorieta):</b><br>{i_t3}</p>
@@ -146,7 +146,7 @@ def crear_html_informe(tipo, archivo_json, anio):
         js_html_rutas = """
             let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px; border-bottom:1px solid #3d0c2e; padding-bottom:10px;">📋 Hoja de Ruta: ${st.nombre}</h4>`;
             html += `<div style="background:#160311; padding:15px; border-radius:5px; border-left:5px solid #d4af37; margin-bottom:10px;">
-                        <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🌟 PROCESIÓN (Trono y Cruz)</h5>
+                        <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">PROCESIÓN</h5>
                         <ul style="list-style:none; padding:0; margin:0;">`;
             [
                 { num: 1, txt: "1. Monserrate ➔ Ayto" },
@@ -157,7 +157,7 @@ def crear_html_informe(tipo, archivo_json, anio):
             html += `</ul></div>`;
 
             html += `<div style="background:#160311; padding:15px; border-radius:5px; border-left:5px solid #d4af37;">
-                        <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🏠 REGRESO (Solo Trono)</h5>
+                        <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">REGRESO (Solo Trono)</h5>
                         <ul style="list-style:none; padding:0; margin:0;">`;
             [
                 { num: 5, txt: "5. Turismo ➔ Santiago" },
@@ -181,7 +181,7 @@ def crear_html_informe(tipo, archivo_json, anio):
                 }
                 let sobrecarga = tOcupados.filter(t => t <= 4).length > 2;
                 if (sinDescanso || sobrecarga) {
-                    label = `⚠️ <strong style='color:#ff4757'>Cruz (${enCruz.join('+')}) [SOBREESFUERZO]</strong>`;
+                    label = `⚠️ <strong style='color:#ff4757'>Cruz (${enCruz.join('+')}) [DOBLE CARGA]</strong>`;
                 } else {
                     label = `💪 <strong style='color:#00d2ff'>Cruz (${enCruz.join('+')})</strong>`;
                 }
@@ -222,7 +222,7 @@ def crear_html_informe(tipo, archivo_json, anio):
         
         bloque_indicaciones = f"""
         <div class="seccion-texto indicaciones-dinamicas">
-            <h3>⚠️ Indicaciones Específicas del Capataz</h3>
+            <h3>⚠️ Indicaciones Específicas del Cuadrillero</h3>
             <p><b>Tramo 1 (San Francisco a Gasolinera):</b><br>{i_t1}</p>
             <p><b>Tramo 2 (Gasolinera a Monserrate):</b><br>{i_t2}</p>
         </div>
@@ -403,9 +403,9 @@ def crear_html_informe(tipo, archivo_json, anio):
             </div>
             
             <div class="leyenda">
-                <div class="leyenda-item"><span class="caja bg-amarillo"></span> Repite Trono (Turnos seguidos)</div>
+                <div class="leyenda-item"><span class="caja bg-amarillo"></span> Repite Trono (B + C)</div>
                 <div class="leyenda-item"><span class="caja bg-azul"></span> Carga Alterna (Trono y Cruz)</div>
-                <div class="leyenda-item"><span class="caja bg-rojo"></span> Sobreesfuerzo Crítico (Consecutivos)</div>
+                <div class="leyenda-item"><span class="caja bg-rojo"></span> Doble Carga (2 Tramos Seguidos)</div>
             </div>
     """
 
@@ -448,7 +448,7 @@ def crear_html_informe(tipo, archivo_json, anio):
     turnos_json_str = json.dumps(datos_raw)
     html += f"""
             <div style="text-align: center; margin-top: 40px; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 10px;">
-                Generado por el Sistema Gestor Cofrade de la Agonía.
+                Informe generado por Sistema de Gestión de Costaleros del <br> Tercio del Cristo de la Agonía y María Magdalena | {anio}
             </div>
         </div>
         

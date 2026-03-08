@@ -5,5 +5,19 @@
         "motivo": "Ensayo",
         "lugar": "San Francisco",
         "indicaciones": ""
+    },
+    {
+        "fecha": "08 de Marzo",
+        "hora": "20:30h",
+        "motivo": "Ensayo",
+        "lugar": "San Francisco",
+        "indicaciones": "er"
+    },
+    {
+        "fecha": "08 de Marzo",
+        "hora": "20:00h",
+        "motivo": "Mudá del Trono",
+        "lugar": "San Francisco",
+        "indicaciones": ""
     }
 ]

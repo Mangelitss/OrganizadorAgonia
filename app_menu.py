@@ -308,9 +308,9 @@ class GestorCofradeAPP:
         btn_frame = tk.Frame(card, bg=C_BLANCO)
         btn_frame.pack(fill=tk.X, pady=10)
         
-        btn_nuevo = self.crear_boton_moderno(btn_frame, "✨ GENERAR NUEVO CUADRANTE", C_ORO, C_ORO_HOVER, C_TEXTO, command=generar_nuevo)
+        btn_nuevo = self.crear_boton_moderno(btn_frame, "GENERAR NUEVO CUADRANTE", C_ORO, C_ORO_HOVER, C_TEXTO, command=generar_nuevo)
         btn_nuevo.pack(side=tk.LEFT, padx=(0, 10))
-        btn_abrir = self.crear_boton_moderno(btn_frame, "🌐 ABRIR CUADRANTE ANTERIOR", "#17517e", "#1f6b9c", C_BLANCO, command=abrir_anterior)
+        btn_abrir = self.crear_boton_moderno(btn_frame, "ABRIR CUADRANTE ANTERIOR", "#17517e", "#1f6b9c", C_BLANCO, command=abrir_anterior)
         btn_abrir.pack(side=tk.LEFT)
         tk.Label(card, text="* Generar un nuevo cuadrante sobreescribirá la ultima modificación sin guardar.", font=("Segoe UI", 10, "italic"), bg=C_BLANCO, fg="#888").pack(anchor="w", pady=(30, 0))
         return f
@@ -343,9 +343,9 @@ class GestorCofradeAPP:
 
         btn_frame = tk.Frame(card, bg=C_BLANCO)
         btn_frame.pack(fill=tk.X, pady=10)
-        btn_nuevo = self.crear_boton_moderno(btn_frame, "✨ NUEVO ENTORNO", C_ORO, C_ORO_HOVER, C_TEXTO, command=generar_nuevo)
+        btn_nuevo = self.crear_boton_moderno(btn_frame, "NUEVO ENTORNO", C_ORO, C_ORO_HOVER, C_TEXTO, command=generar_nuevo)
         btn_nuevo.pack(side=tk.LEFT, padx=(0, 10))
-        btn_abrir = self.crear_boton_moderno(btn_frame, "🌐 ABRIR ANTERIOR", "#17517e", "#1f6b9c", C_BLANCO, command=abrir_anterior)
+        btn_abrir = self.crear_boton_moderno(btn_frame, "ABRIR ANTERIOR", "#17517e", "#1f6b9c", C_BLANCO, command=abrir_anterior)
         btn_abrir.pack(side=tk.LEFT)
         return f
 
@@ -585,7 +585,7 @@ class GestorCofradeAPP:
         
         fila_anio = tk.Frame(card, bg=C_BLANCO)
         fila_anio.pack(fill=tk.X, pady=(0, 20))
-        tk.Label(fila_anio, text="Año del cuadrante a exportar:", bg=C_BLANCO, font=("Segoe UI", 12, "bold")).pack(side=tk.LEFT)
+        tk.Label(fila_anio, text="Año de la procesión a exportar:", bg=C_BLANCO, font=("Segoe UI", 12, "bold")).pack(side=tk.LEFT)
         entry_anio = tk.Entry(fila_anio, font=("Segoe UI", 14), width=10, bg="#f9f9f9", relief="solid", bd=1)
         entry_anio.insert(0, str(datetime.datetime.now().year))
         entry_anio.pack(side=tk.LEFT, padx=15)
@@ -599,14 +599,14 @@ class GestorCofradeAPP:
         ttk.Radiobutton(card, text="Procesión Extraordinaria", variable=var_tipo, value="Procesión Extraordinaria").pack(anchor="w", pady=(5,30))
 
         def generar():
-            archivo = filedialog.askopenfilename(title="Selecciona el archivo JSON descargado de la web", filetypes=[("Archivos JSON", "*.json")])
+            archivo = filedialog.askopenfilename(title="Selecciona el archivo descargado de la web", filetypes=[("Archivos JSON", "*.json")])
             if archivo:
                 anio = int(entry_anio.get()) if entry_anio.get().isdigit() else datetime.datetime.now().year
                 exito, msg = crear_html_informe(var_tipo.get(), archivo, anio)
                 if exito: self.abrir_navegador(msg)
                 else: messagebox.showerror("Error", f"Error al generar: {msg}")
 
-        btn_generar = self.crear_boton_moderno(card, "📂 SELECCIONAR JSON Y GENERAR PDF", C_MORADO, C_MORADO_HOVER, C_BLANCO, command=generar)
+        btn_generar = self.crear_boton_moderno(card, "📂 SELECCIONAR DATOS Y GENERAR PDF", C_MORADO, C_MORADO_HOVER, C_BLANCO, command=generar)
         btn_generar.pack(anchor="w")
         return f
 

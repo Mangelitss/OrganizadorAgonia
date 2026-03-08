@@ -281,7 +281,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
         <div class="controles">
             <div>
                 <div style="font-size:18px; font-weight:bold; color:#d4af37;">VIERNES SANTO - GESTOR DE TURNOS</div>
-                <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Auditor de Censo Activado | ✅ Hombro Correcto</div>
+                <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Indicador de preferencia de hombro: ✅ Hombro Correcto</div>
             </div>
             <div>
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
@@ -316,7 +316,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 <textarea id="text-tramo4" class="indicaciones-input" style="height: 55px;" placeholder="Ej: Relevos en la Gasolinera..."></textarea>
                 
                 <label style="color:#e8d08c; font-size:13px; font-weight:bold;">📜 Normativa de la Cuadrilla:</label>
-                <textarea id="text-normativa" class="indicaciones-input" style="height: 80px;" placeholder="Escribe aquí las normas generales o avisos del Capataz..."></textarea>
+                <textarea id="text-normativa" class="indicaciones-input" style="height: 80px;" placeholder="Escribe aquí las normas generales o avisos del cuadrillero..."></textarea>
                 
                 <button onclick="guardarIndicaciones()" style="width:100%; background:#d4af37; color:#000; font-weight:bold; font-size: 14px; padding:12px; border:none; border-radius:5px; cursor:pointer; margin-top:5px; text-transform: uppercase;">💾 Guardar Notas en el Cuadrante</button>
             </div>
@@ -330,16 +330,16 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
         <div style="background:#23061b; padding:15px; border-left:5px solid #d4af37; margin:20px 0; border-radius:4px;">
             <h3 style="margin:0; color:#d4af37;">📅 AÑO {anio} ({'PAR' if es_par else 'IMPAR'})</h3>
             <p style="margin: 8px 0 0 0; font-size: 13px; color: #e8d08c; line-height: 1.6;">
-                📍 <b>Tramos de la Procesión (Ida)</b> tanto para Cruz, como Trono <br>
-                            ▶ Tramo 1 - Monserrate → Ayuntamiento               || <b>{txt_t1}</b> <br>
-                            ▶ Tramo 2 - Ayuntamiento → As de Oros (Plaza Nueva) || <b>{txt_t2}</b> <br>
-                            ▶ Tramo 3 - As de Oros → Glorieta                   || <b>{txt_t3}</b><br>
-                            ▶ Tramo 4 - Glorieta → Oficina de Turismo           || <b>{txt_t4}</b><br>
+                📍 <b>Tramos de la Procesión </b> tanto para Cruz, como Trono: <br>
+                            ▶ Tramo 1: Monserrate → Ayuntamiento               || <b>{txt_t1}</b> <br>
+                            ▶ Tramo 2: Ayuntamiento → As de Oros (Plaza Nueva) || <b>{txt_t2}</b> <br>
+                            ▶ Tramo 3: As de Oros → Glorieta                   || <b>{txt_t3}</b> <br>
+                            ▶ Tramo 4: Glorieta → Oficina de Turismo           || <b>{txt_t4}</b> <br>
                             
                 📍 <b>Regreso</b> (Solo con el Trono Principal) <br>
-                            ▶ Tramo 1 - Oficina Turismo → Santiago              || <b>{txt_r1}</b> <br>
-                            ▶ Tramo 2 - Santiago → Gasolinera                   || <b>{txt_r2}</b> <br>
-                            ▶ Tramo 3 - Gasolinera → San Francisco              || <b>{txt_r3}</b> <br>
+                            ▶ Tramo 1: Oficina Turismo → Santiago              || <b>{txt_r1}</b> <br>
+                            ▶ Tramo 2: Santiago → Gasolinera                   || <b>{txt_r2}</b> <br>
+                            ▶ Tramo 3: Gasolinera → San Francisco              || <b>{txt_r3}</b> <br>
             </p>
         </div>
 
@@ -354,7 +354,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
             <b style="color:#e8d08c;">LEYENDA AUTOMÁTICA:</b><br><br>
             <span style="color:#ffd700; margin-right:20px; font-weight:bold;">■ Amarillo: Repite Cristo (Turno B + C)</span>
             <span style="color:#00d2ff; margin-right:20px; font-weight:bold;">■ Azul: Carga Alterna (Trono y Cruz)</span>
-            <span style="color:#ff4757; margin-right:20px; font-weight:bold;">■ Rojo: Sobreesfuerzo (Carga Seguido)</span>
+            <span style="color:#ff4757; margin-right:20px; font-weight:bold;">■ Rojo: Carga Doble (Carga 2 Tramos Seguidos)</span>
             <span style="color:#ffffff; background:#b30000; padding:2px 5px; font-weight:bold; border:1px dashed white;">■ ROJO PARPADEANTE: Imposible / Baja Censo / No Sale</span>
         </div>
 
@@ -632,7 +632,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                                 <p class="texto-indicaciones">${{datos.indicaciones.tramo3 || "<i style='color:#a37c95;'>(Sin indicaciones)</i>"}}</p>
                             </div>
                             <div style="background:#160311; padding:12px; border-radius:8px; border-left:4px solid #d4af37;">
-                                <h4 style="color:#e8d08c; margin-top:0; font-size:13px;">⚠️ T4 y Regreso</h4>
+                                <h4 style="color:#e8d08c; margin-top:0; font-size:13px;">⚠️ T4: Glorieta ➔ Turismo</h4>
                                 <p class="texto-indicaciones">${{datos.indicaciones.tramo4 || "<i style='color:#a37c95;'>(Sin indicaciones)</i>"}}</p>
                             </div>
                         </div>
@@ -649,7 +649,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 let st = estadoGlobal[id];
                 if (!st) return;
                 let tOcupados = st.tramos;
-                let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px;">📋 Hoja de Ruta: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
+                let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px;">📋 Hoja de Ruta de: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
                 html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN</h5><ul>`;
                 [
                     {{ num: 1, txt: "1. Monserrate ➔ Ayto" }},
@@ -690,8 +690,8 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                     let st = estadoGlobal[idFound];
                     let tOcupados = st.tramos;
                     resDiv.style.display = 'block';
-                    let html = `<h4 style="color:#d4af37; margin-bottom:10px; font-size:16px;">📋 Hoja de Ruta Viva: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
-                    html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN</h5><ul>`;
+                    let html = `<h4 style="color:#d4af37; margin-bottom:10px; font-size:16px;">📋 Hoja de Ruta de: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
+                    html += `<div class="bloque-ruta"><h5>PROCESIÓN</h5><ul>`;
                     [
                         {{ num: 1, txt: "1. Monserrate ➔ Ayto" }},
                         {{ num: 2, txt: "2. Ayto ➔ As de Oros" }},
@@ -699,7 +699,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                         {{ num: 4, txt: "4. Glorieta ➔ Turismo" }}
                     ].forEach(tr => {{ html += generarFilaTramo(tr, st, tOcupados); }});
                     html += `</ul></div>`;
-                    html += `<div class="bloque-ruta"><h5>🏠 REGRESO (SOLO TRONO)</h5><ul>`;
+                    html += `<div class="bloque-ruta"><h5>REGRESO (SOLO TRONO)</h5><ul>`;
                     [
                         {{ num: 5, txt: "5. Turismo ➔ Santiago" }},
                         {{ num: 6, txt: "6. Santiago ➔ Gasolinera" }},
@@ -722,12 +722,12 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 if (enCristo.length > 0 && enCruz.length > 0) {{
                     label = `💥 <strong style='color:#ff0000; animation: parpadeo 1s infinite;'>¡IMPOSIBLE! (${{enCristo.join('+')}} y ${{enCruz.join('+')}})</strong>`;
                 }} else if (enCristo.length > 0) {{
-                    label = `💪 <strong style='color:#e8d08c'>🕍 Trono (${{enCristo.join(" + ")}})</strong>`;
+                    label = `💪 <strong style='color:#e8d08c'>Trono (${{enCristo.join(" + ")}})</strong>`;
                 }} else if (enCruz.length > 0) {{
                     let sinDescanso = tOcupados.includes(tr.num - 1) || tOcupados.includes(tr.num + 1);
                     let sobrecarga = tOcupados.filter(t => t <= 4).length > 2;
-                    if (sinDescanso || sobrecarga) {{ label = `⚠️ <strong style='color:#ff4757'>✝️ Cruz (${{enCruz.join('+')}}) [SOBREESFUERZO]</strong>`; }} 
-                    else {{ label = `💪 <strong style='color:#00d2ff'>✝️ Cruz (${{enCruz.join('+')}})</strong>`; }}
+                    if (sinDescanso || sobrecarga) {{ label = `⚠️ <strong style='color:#ff4757'>Cruz (${{enCruz.join('+')}}) [CARGA DOBLE]</strong>`; }} 
+                    else {{ label = `💪 <strong style='color:#00d2ff'>Cruz (${{enCruz.join('+')}})</strong>`; }}
                 }}
                 return `<li><span class="tramo-label">${{tr.txt}}</span> ${{label}}</li>`;
             }}
@@ -760,7 +760,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 for (const [tipo, turnos] of Object.entries(datos)) {{
                     if(tipo === "indicaciones" || tipo === "tipo_procesion") continue; 
                     
-                    let tituloBloque = tipo === "Trono" ? "🕍 TRONO PRINCIPAL" : "✝️ LA CRUZ (4 Turnos)";
+                    let tituloBloque = tipo === "Trono" ? "TRONO" : "CRUZ INSIGNIA";
                     app.innerHTML += `<h1 style="color:#d4af37; border-bottom: 2px solid #d4af37; padding-bottom:10px; margin-top:40px;">${{tituloBloque}}</h1>`;
                     
                     for (const [idT, varas] of Object.entries(turnos)) {{
@@ -802,7 +802,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                                             if (est === "baja_censo") {{ clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [BAJA]'; }} 
                                             else if (est === "no_procesiona") {{ clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [NO SALE]'; }} 
                                             else if (est === "conflicto") {{ clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [CRÍTICO]'; }} 
-                                            else if (est === "doble") {{ clExtra = 'dyn-rep-doble'; nExtra = 'dyn-text-doble'; tagFinal = ' (Sobrecarga)'; }} 
+                                            else if (est === "doble") {{ clExtra = 'dyn-rep-doble'; nExtra = 'dyn-text-doble'; tagFinal = ' (Doble Carga)'; }} 
                                             else if (est === "repCruz") {{ clExtra = 'dyn-rep-cruz'; nExtra = 'dyn-text-cruz'; tagFinal = ' (Cruz)'; }} 
                                             else if (est === "repC") {{ clExtra = 'dyn-rep-c'; nExtra = 'dyn-text-c'; tagFinal = ' (Doble)'; }}
                                         }}

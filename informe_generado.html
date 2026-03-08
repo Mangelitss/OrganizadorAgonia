@@ -103,13 +103,13 @@
                 <img src="" alt="Escudo Mayordomia" class="logo-img" style="display:none">
                 <h1>OFS Muy Ilustre Mayordomía de Nuestro Padre Jesús Nazareno</h1>
                 <h2>Orden Procesional - Viernes Santo</h2>
-                <p>Fecha de emisión: 07/03/2026 | Cuadrante del Año: 2026</p>
+                <p>Fecha de emisión: 08/03/2026 | Cuadrante del Año: 2026</p>
             </div>
             
             <div class="leyenda">
-                <div class="leyenda-item"><span class="caja bg-amarillo"></span> Repite Trono (Turnos seguidos)</div>
+                <div class="leyenda-item"><span class="caja bg-amarillo"></span> Repite Trono (B + C)</div>
                 <div class="leyenda-item"><span class="caja bg-azul"></span> Carga Alterna (Trono y Cruz)</div>
-                <div class="leyenda-item"><span class="caja bg-rojo"></span> Sobreesfuerzo Crítico (Consecutivos)</div>
+                <div class="leyenda-item"><span class="caja bg-rojo"></span> Doble Carga (2 Tramos Seguidos)</div>
             </div>
     <h2 style='color:#5c164e; border-bottom: 2px solid #5c164e; padding-bottom:5px; margin-top:30px; font-size:18px;'>ESTRUCTURA: TRONO</h2>
             <div class="turno-box">
@@ -1325,7 +1325,7 @@
         </div>
         
         <div class="seccion-texto indicaciones-dinamicas">
-            <h3>⚠️ Indicaciones Específicas del Capataz</h3>
+            <h3>⚠️ Indicaciones Específicas del Cuadrillero</h3>
             <p><b>Tramo 1 (Monserrate ➔ Ayto):</b><br>(Sin indicaciones especiales)</p>
             <p><b>Tramo 2 (Ayto ➔ As de Oros):</b><br>(Sin indicaciones especiales)</p>
             <p><b>Tramo 3 (As Oros ➔ Glorieta):</b><br>(Sin indicaciones especiales)</p>
@@ -1333,11 +1333,11 @@
         </div>
         <div class="seccion-texto indicaciones-dinamicas">
             <h3>📜 Normativa de la Cuadrilla</h3>
-            <p>(Sin normativa específica dictada por el Capataz)</p>
+            <p>(Sin normativa específica dictada por el cuadrillero)</p>
         </div>
         
             <div style="text-align: center; margin-top: 40px; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 10px;">
-                Generado por el Sistema Gestor Cofrade de la Agonía.
+                Informe generado por Sistema de Gestión de Costaleros del <br> Tercio del Cristo de la Agonía y María Magdalena | 2026
             </div>
         </div>
         
@@ -1402,7 +1402,7 @@
                 }
                 let sobrecarga = tOcupados.filter(t => t <= 4).length > 2;
                 if (sinDescanso || sobrecarga) {
-                    label = `⚠️ <strong style='color:#ff4757'>Cruz (${enCruz.join('+')}) [SOBREESFUERZO]</strong>`;
+                    label = `⚠️ <strong style='color:#ff4757'>Cruz (${enCruz.join('+')}) [DOBLE CARGA]</strong>`;
                 } else {
                     label = `💪 <strong style='color:#00d2ff'>Cruz (${enCruz.join('+')})</strong>`;
                 }
@@ -1417,7 +1417,7 @@
                 
             let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px; border-bottom:1px solid #3d0c2e; padding-bottom:10px;">📋 Hoja de Ruta: ${st.nombre}</h4>`;
             html += `<div style="background:#160311; padding:15px; border-radius:5px; border-left:5px solid #d4af37; margin-bottom:10px;">
-                        <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🌟 PROCESIÓN (Trono y Cruz)</h5>
+                        <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">PROCESIÓN</h5>
                         <ul style="list-style:none; padding:0; margin:0;">`;
             [
                 { num: 1, txt: "1. Monserrate ➔ Ayto" },
@@ -1428,7 +1428,7 @@
             html += `</ul></div>`;
 
             html += `<div style="background:#160311; padding:15px; border-radius:5px; border-left:5px solid #d4af37;">
-                        <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🏠 REGRESO (Solo Trono)</h5>
+                        <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">REGRESO (Solo Trono)</h5>
                         <ul style="list-style:none; padding:0; margin:0;">`;
             [
                 { num: 5, txt: "5. Turismo ➔ Santiago" },

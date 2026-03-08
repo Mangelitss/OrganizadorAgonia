@@ -1,7 +1,18 @@
 import json
+import os
+import base64
 
 def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
     master_json = json.dumps(master_list)
+
+    # Convertimos la imagen a Base64 para garantizar que cargue en el PDF nativo
+    img_b64 = ""
+    if os.path.exists("bandera_tercio_npj.png"):
+        try:
+            with open("bandera_tercio_npj.png", "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode()
+                img_b64 = f"data:image/png;base64,{encoded_string}"
+        except: pass
 
     html = f"""
     <!DOCTYPE html>
@@ -9,7 +20,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
     <head>
         <meta charset="UTF-8">
         <title>Organizador de Ensayos - La Agonía</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
         <style>
             /* PALETA CLARA - MAYORDOMÍA */
             :root {{
@@ -89,6 +99,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             
             .costalero {{ background: #ffffff; border: 1px solid #dcdcdc; margin: 6px 0; padding: 8px; border-radius: 4px; cursor: move; display: flex; justify-content: space-between; align-items: center; font-size: 12px; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }}
             .costalero.vacio {{ border: 1px dashed #b0b0b0; background: #fafafa; color: #888; cursor: default; flex-direction: column; align-items: stretch; position: relative; box-shadow: none; }}
+            .costalero.bloqueado {{ border: 1px dashed #ff4757; background: #fff0f2; cursor: not-allowed; flex-direction: row; box-shadow: none; }}
             .costalero.sobrepeso {{ border: 2px solid #ff4757; background: #fff0f2; }}
             
             .btn-basura {{ background:none; border:none; cursor:pointer; padding:0 5px 0 0; font-size: 14px; }}
@@ -101,6 +112,24 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             .sug-item {{ padding: 6px; cursor: pointer; border-bottom: 1px solid #eee; color: var(--text-dark); font-size: 11px; text-align: left; }}
             .sug-item:hover {{ background: var(--bg-main); color: var(--color-granate); font-weight: bold; }}
 
+            /* ==========================================
+               ESTILOS NATIVOS DE IMPRESIÓN / PDF
+               ========================================== */
+            @media print {{
+                body {{ background: #fff !important; margin: 0; padding: 0; height: auto; overflow: visible; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }}
+                
+                /* Ocultamos la interfaz de la aplicación */
+                .header, .main-container {{ display: none !important; }}
+                
+                /* Mostramos el contenedor exclusivo para PDF y lo posicionamos normalmente */
+                #pdf-container {{ display: block !important; position: static !important; width: 100% !important; background: white !important; margin: 0 !important; padding: 20px !important; }}
+                
+                /* Forzar que Chrome/Safari impriman los fondos de color */
+                * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+                
+                .page-break {{ page-break-before: always !important; }}
+                .avoid-break {{ page-break-inside: avoid !important; }}
+            }}
         </style>
     </head>
     <body>
@@ -108,19 +137,19 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
         <div class="header">
             <div class="header-info">
                 <h1>📋 GESTIÓN DE ENSAYOS</h1>
-                <p>Modo interactivo y generación de actas PDF</p>
+                <p>Modo interactivo y generación de actas PDF (Motor Nativo)</p>
             </div>
             <div class="controles-btn">
                 <input type="date" id="fecha-ensayo" class="fecha-input" onchange="guardarEstado()">
                 
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
-                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR JSON</button>
-                <button class="btn-control btn-accion" onclick="descargarDatosJSON()">💾 DESCARGAR JSON</button>
+                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR DATOS</button>
+                <button class="btn-control btn-accion" onclick="descargarDatosJSON()">💾 DESCARGAR DATOS</button>
                 
                 <button class="btn-control btn-peligro" onclick="resetearEnsayo()">🗑️ VACIAR ENSAYO</button>
                 <button class="btn-control" onclick="toggleMenu()">↔️ OCULTAR MENÚ</button>
                 <button class="btn-control btn-accion" onclick="distribuirAsistentes()">⚡ AUTO-DISTRIBUIR</button>
-                <button class="btn-control btn-pdf" id="btn-generar-pdf" onclick="exportarAsistenciaPDF()">📄 EXPORTAR ACTA PDF</button>
+                <button class="btn-control btn-pdf" onclick="exportarAsistenciaPDF()">🖨️ IMPRIMIR / GUARDAR PDF</button>
             </div>
         </div>
 
@@ -144,7 +173,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             </div>
         </div>
 
-        <div id="pdf-container" style="display:none;"></div>
+        <div id="pdf-container" style="display: none;"></div>
 
         <script>
             const MASTER_LIST = {master_json};
@@ -256,7 +285,8 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 guardarEstado();
             }}
 
-            function hueco() {{ return {{nombre: "HUECO LIBRE", altura: 0, peso: 0, id: -1}}; }}
+            function hueco() {{ return {{nombre: "HUECO LIBRE", altura: 0, peso: 0, id: -1, bloqueado: false}}; }}
+            function bloqueadoObj() {{ return {{nombre: "BLOQUEADO", altura: 0, peso: 0, id: -2, bloqueado: true}}; }}
 
             function toggleMenu() {{ document.getElementById('panel-lateral').classList.toggle('oculto'); }}
 
@@ -329,24 +359,59 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 let ordenados = [...asistentes].sort((a,b) => b.altura - a.altura);
                 let turnosNombres = Object.keys(turnosData);
                 
-                turnosNombres.forEach((idT, index) => {{
-                    let chunk = ordenados.slice(index * 36, (index + 1) * 36);
-                    while(chunk.length < 36) chunk.push(hueco()); 
-                    
+                turnosNombres.forEach((idT) => {{
+                    // Recolectar las posiciones bloqueadas con candado
+                    let blockedSlots = [];
                     let varas = ["Izquierda", "Centro", "Derecha"];
+                    varas.forEach(v => {{
+                        ["Delante", "Detras"].forEach(sec => {{
+                            turnosData[idT][v][sec].forEach((p, i) => {{
+                                if (p.bloqueado) blockedSlots.push({{v: v, sec: sec, i: i}});
+                            }});
+                        }});
+                    }});
+
+                    let chunkLength = 36 - blockedSlots.length; 
+                    let chunk = ordenados.slice(0, chunkLength); 
+                    ordenados = ordenados.slice(chunkLength); 
+
+                    while(chunk.length < chunkLength) chunk.push(hueco()); 
+                    
                     let tData = {{
-                        "Izquierda": {{Delante:[], Detras:[]}},
-                        "Centro": {{Delante:[], Detras:[]}},
-                        "Derecha": {{Delante:[], Detras:[]}}
+                        "Izquierda": {{Delante:Array(6).fill(null), Detras:Array(6).fill(null)}},
+                        "Centro": {{Delante:Array(6).fill(null), Detras:Array(6).fill(null)}},
+                        "Derecha": {{Delante:Array(6).fill(null), Detras:Array(6).fill(null)}}
                     }};
+
+                    blockedSlots.forEach(bs => {{
+                        tData[bs.v][bs.sec][bs.i] = bloqueadoObj();
+                    }});
+
+                    let nullsDelante = 0; let nullsDetras = 0;
+                    varas.forEach(v => {{
+                        for(let i=0; i<6; i++) {{
+                            if(!tData[v].Delante[i]) nullsDelante++;
+                            if(!tData[v].Detras[i]) nullsDetras++;
+                        }}
+                    }});
+
+                    chunk.sort((a,b) => (a.altura===0?1:0) - (b.altura===0?1:0) || b.altura - a.altura);
+                    let paraDelante = chunk.slice(0, nullsDelante);
+                    let paraDetras = chunk.slice(nullsDelante);
                     
-                    let ps = chunk.slice();
-                    ps.sort((a,b) => (a.altura===0?1:0) - (b.altura===0?1:0) || b.altura - a.altura);
-                    for(let i=0; i<6; i++) {{ varas.forEach(v => tData[v].Delante.push(ps.shift())); }}
-                    
-                    ps.sort((a,b) => (a.altura===0?1:0) - (b.altura===0?1:0) || a.altura - b.altura);
-                    for(let i=0; i<6; i++) {{ varas.forEach(v => tData[v].Detras.push(ps.shift())); }}
-                    
+                    paraDetras.sort((a,b) => (a.altura===0?1:0) - (b.altura===0?1:0) || a.altura - b.altura);
+
+                    for(let i=0; i<6; i++) {{
+                        varas.forEach(v => {{
+                            if(!tData[v].Delante[i]) tData[v].Delante[i] = paraDelante.shift();
+                        }});
+                    }}
+                    for(let i=0; i<6; i++) {{
+                        varas.forEach(v => {{
+                            if(!tData[v].Detras[i]) tData[v].Detras[i] = paraDetras.shift();
+                        }});
+                    }}
+
                     turnosData[idT] = tData;
                 }});
                 
@@ -354,13 +419,11 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 guardarEstado();
             }}
 
-            // BUSCADOR INTEGRADO EN LOS HUECOS
             function buscarMini(ev, t, v, s, i) {{
                 const val = ev.target.value.toLowerCase();
                 const sugDiv = document.getElementById(`sug-${{t}}-${{v}}-${{s}}-${{i}}`);
                 if(val.length < 2) {{ sugDiv.style.display = 'none'; return; }}
                 
-                // Filtramos por el censo completo (MASTER_LIST)
                 const matches = MASTER_LIST.filter(p => p.nombre.toLowerCase().includes(val)).slice(0, 5);
                 sugDiv.innerHTML = '';
                 
@@ -373,7 +436,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                         div.onclick = () => {{ 
                             turnosData[t][v][s][i] = {{...m}}; 
                             
-                            // 💡 MAGIA: Si el costalero no estaba en la lista de asistentes del lateral, lo añadimos
                             let yaEsta = asistentes.some(a => a.id === m.id);
                             if (!yaEsta) {{
                                 asistentes.push({{...m}});
@@ -388,6 +450,18 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 }} else {{
                     sugDiv.style.display = 'none';
                 }}
+            }}
+
+            function bloquearHueco(t, v, s, i) {{
+                turnosData[t][v][s][i] = bloqueadoObj();
+                renderGrid();
+                guardarEstado();
+            }}
+
+            function desbloquearHueco(t, v, s, i) {{
+                turnosData[t][v][s][i] = hueco();
+                renderGrid();
+                guardarEstado();
             }}
 
             function renderGrid() {{
@@ -410,11 +484,12 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                             html += `<div class="seccion" ondragover="allow(event)">`;
                             
                             vData[sec].forEach((p, i) => {{
-                                const esVacio = p.altura === 0;
-                                const esSobrepeso = p.peso >= MAX_KG;
+                                const esVacio = p.altura === 0 && !p.bloqueado;
+                                const esBloqueado = p.bloqueado;
+                                const esSobrepeso = p.peso >= MAX_KG && !esBloqueado && !esVacio;
                                 
                                 let tickHombro = '';
-                                if (!esVacio) {{
+                                if (!esVacio && !esBloqueado) {{
                                     let pref = (p.pref_hombro || "").toLowerCase().trim();
                                     if (pref !== "") {{
                                         if (pref.includes("derech")) {{
@@ -430,11 +505,22 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                 }}
                                 
                                 html += `
-                                    <div class="costalero ${{esVacio ? 'vacio' : ''}} ${{esSobrepeso ? 'sobrepeso' : ''}}" 
-                                         draggable="${{!esVacio}}" ondragstart="drag(event, '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})" ondrop="drop(event, '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})">
-                                        ${{esVacio ? 
-                                            `<input type="text" class="search-p" placeholder="Buscar nombre..." onkeyup="buscarMini(event, '${{idT}}','${{vNom}}','${{sec}}',${{i}})">
+                                    <div class="costalero ${{esVacio ? 'vacio' : ''}} ${{esBloqueado ? 'bloqueado' : ''}} ${{esSobrepeso ? 'sobrepeso' : ''}}" 
+                                         draggable="${{!esVacio && !esBloqueado}}" ondragstart="drag(event, '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})" ondrop="drop(event, '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})">
+                                        
+                                        ${{ esBloqueado ? 
+                                            `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                                                <span style="color:#ff4757; font-weight:bold; font-size:11px;">🔒 BLOQUEADO</span>
+                                                <button title="Desbloquear" style="background:transparent; border:none; font-size:14px; cursor:pointer;" onclick="desbloquearHueco('${{idT}}','${{vNom}}','${{sec}}',${{i}})">🔓</button>
+                                            </div>` :
+                                            
+                                            esVacio ? 
+                                            `<div style="display:flex; width:100%; gap:5px;">
+                                                <input type="text" class="search-p" placeholder="Buscar nombre..." onkeyup="buscarMini(event, '${{idT}}','${{vNom}}','${{sec}}',${{i}})">
+                                                <button title="Bloquear posición" style="background:#fff; border:1px solid #ccc; border-radius:3px; cursor:pointer;" onclick="bloquearHueco('${{idT}}','${{vNom}}','${{sec}}',${{i}})">🔒</button>
+                                             </div>
                                              <div id="sug-${{idT}}-${{vNom}}-${{sec}}-${{i}}" class="sugerencias" style="display:none"></div>` :
+                                            
                                             `<span>
                                                 <button class="btn-basura" style="color:#ff4757;" onclick="vaciarHueco('${{idT}}','${{vNom}}','${{sec}}',${{i}})">🗑️</button>
                                                 <b style="color:var(--text-dark)">${{p.nombre}} ${{tickHombro}}</b>
@@ -456,11 +542,11 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             }}
 
             function calcularStats(p_list) {{
-                let filtrados = p_list.filter(p => p.altura > 0);
+                let filtrados = p_list.filter(p => p.altura > 0 && !p.bloqueado);
                 let m = filtrados.length > 0 ? filtrados.reduce((a, b) => a + b.altura, 0) / filtrados.length : 0;
                 let tV = 0; const base = PESO_TRONO / 36;
                 p_list.forEach(p => {{
-                    if(p.altura > 0) {{
+                    if(p.altura > 0 && !p.bloqueado) {{
                         p.peso = Math.min(MAX_KG, Math.max(0, base + ((p.altura - m) * (base * 0.05))));
                         tV += p.peso;
                     }} else p.peso = 0;
@@ -473,6 +559,8 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             function drag(ev, t, v, s, i) {{ dragging = {{ t, v, s, i }}; }}
             function drop(ev, t, v, s, i) {{
                 ev.preventDefault();
+                if (turnosData[t][v][s][i].bloqueado || turnosData[dragging.t][dragging.v][dragging.s][dragging.i].bloqueado) return;
+                
                 let orig = turnosData[dragging.t][dragging.v][dragging.s][dragging.i];
                 turnosData[dragging.t][dragging.v][dragging.s][dragging.i] = turnosData[t][v][s][i];
                 turnosData[t][v][s][i] = orig;
@@ -487,7 +575,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             }}
 
             // ==========================================
-            // EXPORTACIÓN A PDF (ESTILO MAYORDOMÍA)
+            // EXPORTACIÓN PDF (MOTOR NATIVO DEL NAVEGADOR)
             // ==========================================
             function exportarAsistenciaPDF() {{
                 if(asistentes.length === 0) {{
@@ -495,25 +583,23 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                     return;
                 }}
                 
-                const btn = document.getElementById('btn-generar-pdf');
-                btn.innerText = "⏳ GENERANDO ACTA...";
-                
                 let fechaInput = document.getElementById("fecha-ensayo").value;
                 let fechaFormateada = fechaInput ? fechaInput.split('-').reverse().join('/') : new Date().toLocaleDateString();
                 
-                // CONSTRUCCIÓN DEL HTML PARA EL PDF
+                let imgTag = "{img_b64}" ? `<img src="{img_b64}" alt="Logo" style="width: 80px; height: auto; margin-bottom: 10px;">` : "";
+
                 let htmlPDF = `
-                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; padding: 20px;">
+                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;">
                     
                     <div style="text-align: center; border-bottom: 2px solid #5c164e; padding-bottom: 15px; margin-bottom: 20px;">
-                        <img src="bandera_tercio_npj.jpg" alt="Logo" style="width: 80px; height: auto; margin-bottom: 10px;" onerror="this.style.display='none'">
+                        ${{imgTag}}
                         <h1 style="color: #5c164e; margin: 0; font-size: 20px; text-transform: uppercase;">OFS Muy Ilustre Mayordomía Ntro. Padre Jesús Nazareno</h1>
                         <h2 style="color: #b5952f; margin: 5px 0; font-size: 16px; text-transform: uppercase;">Acta Oficial de Ensayo</h2>
                         <p style="margin: 5px 0 0 0; font-size: 13px; font-weight: bold; color: #666;">Fecha del Ensayo: ${{fechaFormateada}}</p>
                     </div>
 
                     <h3 style="color: #5c164e; border-bottom: 1px solid #d4af37; padding-bottom: 5px; font-size: 16px;">1. LISTADO DE ASISTENCIA (${{asistentes.length}} Costaleros)</h3>
-                    <ul style="column-count: 3; column-gap: 20px; list-style:none; padding:0; margin:0 0 30px 0; font-size: 11px;">
+                    <ul style="column-count: 3; column-gap: 20px; list-style:none; padding:0; margin:0 0 30px 0; font-size: 12px;">
                 `;
                 
                 let asisNombres = [...asistentes].sort((a,b) => a.nombre.localeCompare(b.nombre));
@@ -525,12 +611,12 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 
                 htmlPDF += `</ul>`;
 
-                // SECCIÓN 2: DISTRIBUCIÓN
-                htmlPDF += `<h3 style="color: #5c164e; border-bottom: 1px solid #d4af37; padding-bottom: 5px; font-size: 16px; page-break-before: always;">2. DISTRIBUCIÓN DEL TRONO</h3>`;
+                htmlPDF += `<div class="page-break"></div>`;
+                htmlPDF += `<h3 style="color: #5c164e; border-bottom: 1px solid #d4af37; padding-bottom: 5px; font-size: 16px; margin-top:20px;">2. DISTRIBUCIÓN DEL TRONO</h3>`;
                 
                 for (const [idT, varas] of Object.entries(turnosData)) {{
                     htmlPDF += `
-                    <div style="border: 1px solid #d4af37; border-radius: 8px; margin-bottom: 25px; page-break-inside: avoid;">
+                    <div class="avoid-break" style="border: 1px solid #d4af37; border-radius: 8px; margin-bottom: 25px;">
                         <h3 style="background: #5c164e; color: #fff; padding: 8px; margin: 0; font-size: 14px; text-transform: uppercase; text-align: center;">${{idT}}</h3>
                         <div style="display: flex; width: 100%;">
                     `;
@@ -545,10 +631,11 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                             if(sec === "Delante") htmlPDF += `<div style="font-size: 10px; color: #5c164e; text-align: center; margin-bottom: 5px; font-weight: bold; background: #eee; padding: 3px; border-radius: 3px;">▲ DELANTE ▲</div>`;
                             if(sec === "Detras") htmlPDF += `<div style="font-size: 10px; color: #fff; text-align: center; margin: 8px 0; font-weight: bold; background: #5c164e; padding: 3px; border-radius: 3px;">▼ TRONO ▼</div>`;
                             
-                            htmlPDF += `<ul style="list-style: none; padding: 0; margin: 0; font-size: 10px;">`;
+                            htmlPDF += `<ul style="list-style: none; padding: 0; margin: 0; font-size: 11px;">`;
                             vData[sec].forEach(p => {{
-                                let esVacio = p.altura === 0;
-                                if(esVacio) {{
+                                if(p.bloqueado) {{
+                                    htmlPDF += `<li style="padding: 4px; margin-bottom: 2px; text-align:center; border: 1px dashed #ff4757; background: #fff0f2; color: #ff4757; font-style: italic;">🔒 Bloqueado</li>`;
+                                }} else if(p.altura === 0) {{
                                     htmlPDF += `<li style="padding: 4px; margin-bottom: 2px; text-align:center; border: 1px dashed #ccc; background: #fafafa; color: #aaa; font-style: italic;">-- Hueco Libre --</li>`;
                                 }} else {{
                                     htmlPDF += `<li style="padding: 4px; margin-bottom: 2px; border: 1px solid #ddd; display: flex; justify-content: space-between;">
@@ -566,22 +653,14 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 }}
                 htmlPDF += `</div>`;
 
+                // Inyectamos el HTML en el contenedor oculto
                 const container = document.getElementById('pdf-container');
                 container.innerHTML = htmlPDF;
-                container.style.display = 'block';
-
-                const opciones = {{
-                    margin:       10,
-                    filename:     `Acta_Ensayo_${{fechaFormateada.replace(/\\//g,'-')}}.pdf`,
-                    image:        {{ type: 'jpeg', quality: 0.98 }},
-                    html2canvas:  {{ scale: 2, useCORS: true }},
-                    jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'portrait' }}
-                }};
                 
-                html2pdf().set(opciones).from(container).save().then(() => {{
-                    container.style.display = 'none';
-                    btn.innerText = "📄 EXPORTAR ACTA PDF";
-                }});
+                // Damos tiempo a que se dibuje en el DOM oculto antes de invocar la impresora del SO
+                setTimeout(() => {{
+                    window.print();
+                }}, 200);
             }}
 
             window.onload = () => {{

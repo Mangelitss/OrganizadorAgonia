@@ -309,7 +309,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             <b style="color:#e8d08c;">LEYENDA AUTOMÁTICA:</b><br><br>
             <span style="color:#ffd700; margin-right:20px; font-weight:bold;">■ Amarillo: Dobla Trono (Turno A + B)</span>
             <span style="color:#00d2ff; margin-right:20px; font-weight:bold;">■ Azul: Carga Alterna (Trono y Cruz)</span>
-            <span style="color:#ff4757; margin-right:20px; font-weight:bold;">■ Rojo: Sobreesfuerzo (Carga Ambos Tramos Seguidos)</span>
+            <span style="color:#ff4757; margin-right:20px; font-weight:bold;">■ Rojo: Doble Carga (Carga 2 Tramos Seguidos)</span>
             <span style="color:#ffffff; background:#b30000; padding:2px 5px; font-weight:bold; border:1px dashed white;">■ ROJO PARPADEANTE: Imposible / Baja Censo / No Sale</span>
         </div>
 
@@ -598,8 +598,8 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 let st = estadoGlobal[id];
                 if (!st) return;
                 let tOcupados = st.tramos;
-                let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px;">📋 Hoja de Ruta: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
-                html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN DE IDA</h5><ul>`;
+                let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px;">📋 Hoja de Ruta de: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
+                html += `<div class="bloque-ruta"><h5>PROCESIÓN</h5><ul>`;
                 [
                     {{ num: 1, txt: "1. S.Francisco ➔ Gasolinera" }},
                     {{ num: 2, txt: "2. Gasolinera ➔ Monserrate" }}
@@ -652,13 +652,13 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 if (enCristo.length > 0 && enCruz.length > 0) {{
                     label = `💥 <strong style='color:#ff0000; animation: parpadeo 1s infinite;'>¡IMPOSIBLE! (${{enCristo.join('+')}} y ${{enCruz.join('+')}})</strong>`;
                 }} else if (enCristo.length > 0) {{
-                    label = `💪 <strong style='color:#e8d08c'>🕍 Trono (${{enCristo.join(" + ")}})</strong>`;
+                    label = `💪 <strong style='color:#e8d08c'>Trono (${{enCristo.join(" + ")}})</strong>`;
                 }} else if (enCruz.length > 0) {{
-                    label = `💪 <strong style='color:#00d2ff'>✝️ Cruz (${{enCruz.join('+')}})</strong>`;
+                    label = `💪 <strong style='color:#00d2ff'>Cruz (${{enCruz.join('+')}})</strong>`;
                 }}
                 
                 if(tOcupados.length === 2 && (enCristo.length > 0 || enCruz.length > 0)) {{
-                    label = label.replace("💪", "⚠️").replace("#e8d08c", "#ff4757").replace("#00d2ff", "#ff4757") + " [SOBREESFUERZO]";
+                    label = label.replace("💪", "⚠️").replace("#e8d08c", "#ff4757").replace("#00d2ff", "#ff4757") + " [DOBLE CARGA]";
                 }}
                 return `<li><span class="tramo-label">${{tr.txt}}</span> ${{label}}</li>`;
             }}
@@ -691,7 +691,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 for (const [tipo, turnos] of Object.entries(datos)) {{
                     if(tipo === "indicaciones" || tipo === "tipo_procesion") continue; 
                     
-                    let tituloBloque = tipo === "Trono" ? "🕍 TRONO PRINCIPAL" : "✝️ LA CRUZ";
+                    let tituloBloque = tipo === "Trono" ? "TRONO" : "CRUZ INSIGNIA ";
                     app.innerHTML += `<h1 style="color:#d4af37; border-bottom: 2px solid #d4af37; padding-bottom:10px; margin-top:40px;">${{tituloBloque}}</h1>`;
                     
                     for (const [idT, varas] of Object.entries(turnos)) {{
