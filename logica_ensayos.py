@@ -148,7 +148,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 
                 <button class="btn-control btn-peligro" onclick="resetearEnsayo()">🗑️ VACIAR ENSAYO</button>
                 <button class="btn-control" onclick="toggleMenu()">↔️ OCULTAR MENÚ</button>
-                <button class="btn-control btn-accion" onclick="distribuirAsistentes()">⚡ AUTO-DISTRIBUIR</button>
+                <button class="btn-control btn-accion" onclick="distribuirAsistentes()">⚡ AUTO-DISTRIBUIR V3.0</button>
                 <button class="btn-control btn-pdf" onclick="exportarAsistenciaPDF()">🖨️ IMPRIMIR / GUARDAR PDF</button>
             </div>
         </div>
@@ -350,17 +350,20 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 document.getElementById('lista-asistentes-ui').innerHTML = html;
             }}
 
+            // ALGORITMO AUTO-DISTRIBUCIÓN V3.0
             function distribuirAsistentes() {{
                 if (asistentes.length === 0) {{
                     alert("No hay asistentes. Pasa lista primero.");
                     return;
                 }}
 
+                // 1. ORDENAR TODOS POR ALTURA DE MAYOR A MENOR
                 let ordenados = [...asistentes].sort((a,b) => b.altura - a.altura);
                 let turnosNombres = Object.keys(turnosData);
                 
-                turnosNombres.forEach((idT) => {{
-                    // Recolectar las posiciones bloqueadas con candado
+                let genteTurnoA = []; 
+
+                turnosNombres.forEach((idT, indexT) => {{
                     let blockedSlots = [];
                     let varas = ["Izquierda", "Centro", "Derecha"];
                     varas.forEach(v => {{
@@ -372,8 +375,23 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                     }});
 
                     let chunkLength = 36 - blockedSlots.length; 
-                    let chunk = ordenados.slice(0, chunkLength); 
-                    ordenados = ordenados.slice(chunkLength); 
+                    let chunk = [];
+                    
+                    if (indexT === 0) {{
+                        chunk = ordenados.slice(0, chunkLength);
+                        ordenados = ordenados.slice(chunkLength);
+                        genteTurnoA = [...chunk]; 
+                    }} else {{
+                        chunk = ordenados.slice(0, chunkLength);
+                        ordenados = ordenados.slice(chunkLength);
+                        
+                        if (chunk.length < chunkLength) {{
+                            let faltan = chunkLength - chunk.length;
+                            let prestables = [...genteTurnoA].filter(p => p.altura > 0).sort((a,b) => a.altura - b.altura);
+                            let prestados = prestables.slice(0, faltan);
+                            chunk.push(...prestados.map(p => ({{...p}})));
+                        }}
+                    }}
 
                     while(chunk.length < chunkLength) chunk.push(hueco()); 
                     
@@ -401,13 +419,18 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                     
                     paraDetras.sort((a,b) => (a.altura===0?1:0) - (b.altura===0?1:0) || a.altura - b.altura);
 
+                    // ===============================================
+                    // LÓGICA ZIGZAG V3.0: Centro -> Derecha -> Izquierda
+                    // ===============================================
+                    let zigzag = ["Centro", "Derecha", "Izquierda"];
+                    
                     for(let i=0; i<6; i++) {{
-                        varas.forEach(v => {{
+                        zigzag.forEach(v => {{
                             if(!tData[v].Delante[i]) tData[v].Delante[i] = paraDelante.shift();
                         }});
                     }}
                     for(let i=0; i<6; i++) {{
-                        varas.forEach(v => {{
+                        zigzag.forEach(v => {{
                             if(!tData[v].Detras[i]) tData[v].Detras[i] = paraDetras.shift();
                         }});
                     }}
@@ -415,6 +438,85 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                     turnosData[idT] = tData;
                 }});
                 
+                // ===============================================
+                // FILTRO DE CORRECCIÓN DE HOMBROS (INTERCAMBIOS) V3.1
+                // CORRECCIÓN: Derecho va en Izquierda / Izquierdo va en Derecha
+                // ===============================================
+                turnosNombres.forEach((idT) => {{
+                    let tData = turnosData[idT];
+                    let varasLaterales = ["Izquierda", "Derecha"];
+                    
+                    varasLaterales.forEach(vNom => {{
+                        ["Delante", "Detras"].forEach(sec => {{
+                            for(let i=0; i<6; i++) {{
+                                let p1 = tData[vNom][sec][i];
+                                if (!p1 || p1.altura === 0 || p1.bloqueado) continue;
+                                
+                                let pref1 = (p1.pref_hombro || "").toLowerCase().trim();
+                                let mismatched = false;
+                                
+                                // OJO AQUÍ: 
+                                // Si está en la Izquierda y es de hombro Izquierdo -> CHOCA (debería ir en la Derecha)
+                                // Si está en la Derecha y es de hombro Derecho -> CHOCA (debería ir en la Izquierda)
+                                if (vNom === "Izquierda" && pref1.includes("izquierd")) mismatched = true;
+                                if (vNom === "Derecha" && pref1.includes("derech")) mismatched = true;
+                                
+                                if (mismatched) {{
+                                    let swapped = false;
+                                    let oppVara = (vNom === "Izquierda") ? "Derecha" : "Izquierda";
+                                    
+                                    // Función auxiliar adaptada a la regla real
+                                    const canGoTo = (p2, targetVara) => {{
+                                        let pref2 = (p2.pref_hombro || "").toLowerCase().trim();
+                                        if (pref2 === "" || pref2.includes("indiferente") || pref2.includes("ambos")) return true;
+                                        // Si el objetivo es Izquierda, aceptamos a los de hombro Derecho
+                                        if (targetVara === "Izquierda" && pref2.includes("derech")) return true;
+                                        // Si el objetivo es Derecha, aceptamos a los de hombro Izquierdo
+                                        if (targetVara === "Derecha" && pref2.includes("izquierd")) return true;
+                                        return false;
+                                    }};
+
+                                    // FASE 1: Buscar gemelo de altura en la vara contraria
+                                    ["Delante", "Detras"].forEach(sec2 => {{
+                                        if (swapped) return;
+                                        for(let j=0; j<6; j++) {{
+                                            let p2 = tData[oppVara][sec2][j];
+                                            if (p2 && !p2.bloqueado && p2.altura === p1.altura) {{
+                                                if (canGoTo(p2, vNom)) {{
+                                                    // Intercambio completado
+                                                    tData[vNom][sec][i] = p2;
+                                                    tData[oppVara][sec2][j] = p1;
+                                                    swapped = true;
+                                                    break;
+                                                }}
+                                            }}
+                                        }}
+                                    }});
+                                    
+                                    // FASE 2: Si no hubo suerte, buscar gemelo de altura en el Centro
+                                    if (!swapped) {{
+                                        ["Delante", "Detras"].forEach(sec2 => {{
+                                            if (swapped) return;
+                                            for(let j=0; j<6; j++) {{
+                                                let pCentro = tData["Centro"][sec2][j];
+                                                if (pCentro && !pCentro.bloqueado && pCentro.altura === p1.altura) {{
+                                                    if (canGoTo(pCentro, vNom)) {{
+                                                        // Intercambio completado
+                                                        tData[vNom][sec][i] = pCentro;
+                                                        tData["Centro"][sec2][j] = p1;
+                                                        swapped = true;
+                                                        break;
+                                                    }}
+                                                }}
+                                            }}
+                                        }});
+                                    }}
+                                }}
+                            }}
+                        }});
+                    }});
+                }});
+
                 renderGrid();
                 guardarEstado();
             }}
@@ -492,14 +594,15 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                 if (!esVacio && !esBloqueado) {{
                                     let pref = (p.pref_hombro || "").toLowerCase().trim();
                                     if (pref !== "") {{
+                                        // V3.1 Ticks visuales adaptados a la regla real
                                         if (pref.includes("derech")) {{
                                             if (vNom === "Izquierda") tickHombro = ' <span title="Hombro correcto" style="font-size:11px;">✅</span>';
                                             else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:11px;">❌</span>';
                                         }} else if (pref.includes("izquierd")) {{
                                             if (vNom === "Derecha") tickHombro = ' <span title="Hombro correcto" style="font-size:11px;">✅</span>';
                                             else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:11px;">❌</span>';
-                                        }} else if (pref.includes("ambos")) {{
-                                            tickHombro = ' <span title="Hombro correcto" style="font-size:11px;">✅</span>';
+                                        }} else if (pref.includes("ambos") || pref.includes("indiferente")) {{
+                                            tickHombro = ' <span title="Hombro indiferente" style="font-size:11px;">✅</span>';
                                         }}
                                     }}
                                 }}

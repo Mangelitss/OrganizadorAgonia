@@ -3,7 +3,7 @@ import os
 import json
 import datetime
 import webbrowser
-import shutil  # NUEVO: Para hacer las copias de seguridad de los archivos
+import shutil  
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from tkcalendar import DateEntry
@@ -105,7 +105,6 @@ class GestorCofradeAPP:
         self.ventana_login.title("Activación de Licencia - Gestor Cofrade")
         self.ventana_login.geometry("450x600") 
         self.ventana_login.configure(bg="#23061b") 
-        # VENTANA LOGIN REESCALABLE
         self.ventana_login.resizable(True, True)
         self.ventana_login.protocol("WM_DELETE_WINDOW", self.root.destroy)
         
@@ -611,6 +610,7 @@ class GestorCofradeAPP:
         btn_generar.pack(anchor="w")
         return f
 
+    # --- PANTALLA CENSO ---
     def crear_pantalla_censo(self):
         f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO, padx=30, pady=30)
         tk.Label(f, text="Gestión del Censo General", font=("Segoe UI", 22, "bold"), bg=C_GRIS_FONDO, fg=C_MORADO).pack(anchor="w")
@@ -625,7 +625,6 @@ class GestorCofradeAPP:
         btn_borrar = self.crear_boton_moderno(toolbar, "❌ Borrar", "#ff4757", "#ff6b81", C_BLANCO, command=self.borrar_costalero)
         btn_borrar.pack(side=tk.LEFT, padx=10)
         
-        # NUEVO BOTÓN: CARGAR CENSO EXTERNO
         btn_cargar = self.crear_boton_moderno(toolbar, "📂 Cargar Censo", "#17517e", "#1f6b9c", C_BLANCO, command=self.cargar_censo_externo)
         btn_cargar.pack(side=tk.LEFT, padx=10)
         
@@ -645,17 +644,20 @@ class GestorCofradeAPP:
         frame_tabla = tk.Frame(f, bg=C_BLANCO, highlightbackground="#e0e0e0", highlightthickness=1)
         frame_tabla.pack(fill=tk.BOTH, expand=True)
 
-        columnas = ("ID", "Nombre", "Altura", "Hombro", "Miércoles", "Viernes")
+        # SE AÑADE LA COLUMNA DE TELÉFONO AQUÍ
+        columnas = ("ID", "Nombre", "Telefono", "Altura", "Hombro", "Miércoles", "Viernes")
         self.tree = ttk.Treeview(frame_tabla, columns=columnas, show="headings")
         self.tree.heading("ID", text="ID")
         self.tree.heading("Nombre", text="Nombre del Costalero")
+        self.tree.heading("Telefono", text="Teléfono")
         self.tree.heading("Altura", text="Altura (cm)")
         self.tree.heading("Hombro", text="Preferencia")
         self.tree.heading("Miércoles", text="M. Santo")
         self.tree.heading("Viernes", text="V. Santo")
         
         self.tree.column("ID", width=50, anchor="center")
-        self.tree.column("Nombre", width=250)
+        self.tree.column("Nombre", width=220)
+        self.tree.column("Telefono", width=120, anchor="center")
         self.tree.column("Altura", width=100, anchor="center")
         self.tree.column("Hombro", width=120, anchor="center")
         self.tree.column("Miércoles", width=100, anchor="center")
@@ -668,9 +670,7 @@ class GestorCofradeAPP:
         
         return f
 
-    # --- NUEVA FUNCIÓN: CARGAR CENSO EXTERNO ---
     def cargar_censo_externo(self):
-        # 1. Pedimos al usuario que seleccione su archivo JSON
         archivo_nuevo = filedialog.askopenfilename(
             title="Seleccionar archivo de Censo Local (datos.json)",
             filetypes=[("Archivos JSON", "*.json")]
@@ -678,7 +678,6 @@ class GestorCofradeAPP:
         if not archivo_nuevo:
             return
 
-        # 2. Mostramos advertencia de sobreescritura
         confirmacion = messagebox.askyesno(
             "⚠️ Atención: Sobreescritura",
             "Vas a reemplazar el censo actual por el archivo seleccionado.\n\n"
@@ -688,7 +687,6 @@ class GestorCofradeAPP:
         if not confirmacion:
             return
 
-        # 3. Creamos la copia de seguridad del archivo actual
         archivo_actual = CONFIG['archivo_datos']
         if os.path.exists(archivo_actual):
             fecha_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -699,20 +697,16 @@ class GestorCofradeAPP:
                 messagebox.showerror("Error", f"No se pudo crear la copia de seguridad: {e}")
                 return
 
-        # 4. Intentamos leer y cargar el nuevo archivo
         try:
             with open(archivo_nuevo, 'r', encoding='utf-8') as f:
                 nuevos_datos = json.load(f)
             
-            # Validación básica para asegurarnos de que no nos han metido un archivo raro
             if not isinstance(nuevos_datos, list):
                 raise ValueError("El archivo no tiene la estructura de censo correcta.")
 
-            # 5. Sobreescribimos el archivo del sistema con los nuevos datos
             with open(archivo_actual, 'w', encoding='utf-8') as f:
                 json.dump(nuevos_datos, f, indent=4, ensure_ascii=False)
             
-            # 6. Actualizamos la tabla para que los vea
             self.actualizar_tabla_censo()
             
             msg = "Censo actualizado correctamente.\n\n"
@@ -736,8 +730,9 @@ class GestorCofradeAPP:
                 mi = "✅" if p.get("miercoles_santo") else "❌"
                 vi = "✅" if p.get("viernes_santo") else "❌"
                 hombro = p.get("pref_hombro", "")
+                telefono = p.get("telefono", "")
                 if not hombro: hombro = "Indiferente"
-                self.tree.insert("", tk.END, values=(p['id'], p['nombre'], p['altura'], hombro.capitalize(), mi, vi))
+                self.tree.insert("", tk.END, values=(p['id'], p['nombre'], telefono, p['altura'], hombro.capitalize(), mi, vi))
 
     def abrir_formulario_costalero(self, editar=False):
         datos = cargar_datos(CONFIG['archivo_datos'])
@@ -754,17 +749,17 @@ class GestorCofradeAPP:
 
         top = tk.Toplevel(self.root)
         top.title("Editar Costalero" if editar else "Nuevo Costalero")
-        top.geometry("400x480")
+        # Se ha ampliado el tamaño para que quepa el teléfono holgadamente
+        top.geometry("400x530")
         top.configure(bg=C_BLANCO)
         
-        # VENTANA FORMULARIO COSTALERO REESCALABLE
         top.resizable(True, True)
         top.transient(self.root) 
         top.grab_set()
 
         top.update_idletasks()
         x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (400 // 2)
-        y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (480 // 2)
+        y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (530 // 2)
         top.geometry(f"+{x}+{y}")
 
         tk.Label(top, text="📋 Ficha del Costalero", font=("Segoe UI", 16, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=(20, 20))
@@ -774,16 +769,21 @@ class GestorCofradeAPP:
 
         tk.Label(form_frame, text="Nombre Completo:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
         var_nombre = tk.StringVar(value=costalero['nombre'] if costalero else "")
-        tk.Entry(form_frame, textvariable=var_nombre, font=("Segoe UI", 12), relief="solid", bd=1).pack(fill=tk.X, pady=(2, 15))
+        tk.Entry(form_frame, textvariable=var_nombre, font=("Segoe UI", 12), relief="solid", bd=1).pack(fill=tk.X, pady=(2, 10))
+
+        # NUEVO CAMPO TELÉFONO
+        tk.Label(form_frame, text="Teléfono:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
+        var_telefono = tk.StringVar(value=costalero.get('telefono', '') if costalero else "")
+        tk.Entry(form_frame, textvariable=var_telefono, font=("Segoe UI", 12), relief="solid", bd=1).pack(fill=tk.X, pady=(2, 10))
 
         tk.Label(form_frame, text="Altura (en cm):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
         var_altura = tk.StringVar(value=str(costalero['altura']) if costalero else "")
-        tk.Entry(form_frame, textvariable=var_altura, font=("Segoe UI", 12), relief="solid", bd=1).pack(fill=tk.X, pady=(2, 15))
+        tk.Entry(form_frame, textvariable=var_altura, font=("Segoe UI", 12), relief="solid", bd=1).pack(fill=tk.X, pady=(2, 10))
 
         tk.Label(form_frame, text="Preferencia de Hombro:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
         var_hombro = tk.StringVar(value=costalero.get('pref_hombro', 'Indiferente') if costalero and costalero.get('pref_hombro') else "Indiferente")
         combo_hombro = ttk.Combobox(form_frame, textvariable=var_hombro, values=["Derecho", "Izquierdo", "Ambos", "Indiferente"], state="readonly", font=("Segoe UI", 11))
-        combo_hombro.pack(fill=tk.X, pady=(2, 20))
+        combo_hombro.pack(fill=tk.X, pady=(2, 15))
 
         tk.Label(form_frame, text="Disponibilidad para procesionar:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
         var_miercoles = tk.BooleanVar(value=costalero.get('miercoles_santo', True) if costalero else True)
@@ -805,6 +805,7 @@ class GestorCofradeAPP:
 
             if editar:
                 costalero['nombre'] = var_nombre.get().strip()
+                costalero['telefono'] = var_telefono.get().strip()
                 costalero['altura'] = int(var_altura.get())
                 costalero['pref_hombro'] = hombro_val
                 costalero['miercoles_santo'] = var_miercoles.get()
@@ -814,6 +815,7 @@ class GestorCofradeAPP:
                 datos.append({
                     "id": nuevo_id,
                     "nombre": var_nombre.get().strip(),
+                    "telefono": var_telefono.get().strip(),
                     "altura": int(var_altura.get()),
                     "pref_hombro": hombro_val,
                     "puede_repetir": True,
@@ -826,7 +828,7 @@ class GestorCofradeAPP:
                 top.destroy()
 
         btn_guardar = tk.Button(top, text="💾 GUARDAR CAMBIOS", bg=C_MORADO, fg=C_BLANCO, font=("Segoe UI", 12, "bold"), bd=0, cursor="hand2", command=guardar)
-        btn_guardar.pack(fill=tk.X, padx=40, pady=(25, 0), ipady=8)
+        btn_guardar.pack(fill=tk.X, padx=40, pady=(20, 0), ipady=8)
 
     def borrar_costalero(self):
         seleccion = self.tree.selection()
