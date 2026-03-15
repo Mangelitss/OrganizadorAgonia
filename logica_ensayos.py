@@ -117,16 +117,9 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                ========================================== */
             @media print {{
                 body {{ background: #fff !important; margin: 0; padding: 0; height: auto; overflow: visible; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }}
-                
-                /* Ocultamos la interfaz de la aplicación */
                 .header, .main-container {{ display: none !important; }}
-                
-                /* Mostramos el contenedor exclusivo para PDF y lo posicionamos normalmente */
                 #pdf-container {{ display: block !important; position: static !important; width: 100% !important; background: white !important; margin: 0 !important; padding: 20px !important; }}
-                
-                /* Forzar que Chrome/Safari impriman los fondos de color */
                 * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
-                
                 .page-break {{ page-break-before: always !important; }}
                 .avoid-break {{ page-break-inside: avoid !important; }}
             }}
@@ -148,7 +141,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 
                 <button class="btn-control btn-peligro" onclick="resetearEnsayo()">🗑️ VACIAR ENSAYO</button>
                 <button class="btn-control" onclick="toggleMenu()">↔️ OCULTAR MENÚ</button>
-                <button class="btn-control btn-accion" onclick="distribuirAsistentes()">⚡ AUTO-DISTRIBUIR V3.0</button>
+                <button class="btn-control btn-accion" onclick="distribuirAsistentes()">⚡ AUTO-DISTRIBUIR V3.1</button>
                 <button class="btn-control btn-pdf" onclick="exportarAsistenciaPDF()">🖨️ IMPRIMIR / GUARDAR PDF</button>
             </div>
         </div>
@@ -419,9 +412,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                     
                     paraDetras.sort((a,b) => (a.altura===0?1:0) - (b.altura===0?1:0) || a.altura - b.altura);
 
-                    // ===============================================
                     // LÓGICA ZIGZAG V3.0: Centro -> Derecha -> Izquierda
-                    // ===============================================
                     let zigzag = ["Centro", "Derecha", "Izquierda"];
                     
                     for(let i=0; i<6; i++) {{
@@ -439,13 +430,24 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 }});
                 
                 // ===============================================
-                // FILTRO DE CORRECCIÓN DE HOMBROS (INTERCAMBIOS) V3.1
-                // CORRECCIÓN: Derecho va en Izquierda / Izquierdo va en Derecha
+                // FILTRO DE CORRECCIÓN DE HOMBROS (INTERCAMBIOS)
                 // ===============================================
                 turnosNombres.forEach((idT) => {{
                     let tData = turnosData[idT];
-                    let varasLaterales = ["Izquierda", "Derecha"];
                     
+                    // Función auxiliar que comprueba si un costalero puede ir a una vara objetivo sin estropearlo
+                    const canGoTo = (p2, targetVara) => {{
+                        let pref2 = (p2.pref_hombro || "").toLowerCase().trim();
+                        if (pref2 === "" || pref2.includes("indiferente") || pref2.includes("ambos")) return true;
+                        // Derecho DEBE ir en Izquierda
+                        if (targetVara === "Izquierda" && pref2.includes("derech")) return true;
+                        // Izquierdo DEBE ir en Derecha
+                        if (targetVara === "Derecha" && pref2.includes("izquierd")) return true;
+                        return false;
+                    }};
+
+                    // FASES 1 y 2: Arreglar a los costaleros que han caído mal en los laterales
+                    let varasLaterales = ["Izquierda", "Derecha"];
                     varasLaterales.forEach(vNom => {{
                         ["Delante", "Detras"].forEach(sec => {{
                             for(let i=0; i<6; i++) {{
@@ -455,26 +457,13 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                 let pref1 = (p1.pref_hombro || "").toLowerCase().trim();
                                 let mismatched = false;
                                 
-                                // OJO AQUÍ: 
-                                // Si está en la Izquierda y es de hombro Izquierdo -> CHOCA (debería ir en la Derecha)
-                                // Si está en la Derecha y es de hombro Derecho -> CHOCA (debería ir en la Izquierda)
+                                // REGLA: Si está en Izquierda y su preferencia es Izquierdo -> CHOCA (Debería ir en Derecha)
                                 if (vNom === "Izquierda" && pref1.includes("izquierd")) mismatched = true;
                                 if (vNom === "Derecha" && pref1.includes("derech")) mismatched = true;
                                 
                                 if (mismatched) {{
                                     let swapped = false;
                                     let oppVara = (vNom === "Izquierda") ? "Derecha" : "Izquierda";
-                                    
-                                    // Función auxiliar adaptada a la regla real
-                                    const canGoTo = (p2, targetVara) => {{
-                                        let pref2 = (p2.pref_hombro || "").toLowerCase().trim();
-                                        if (pref2 === "" || pref2.includes("indiferente") || pref2.includes("ambos")) return true;
-                                        // Si el objetivo es Izquierda, aceptamos a los de hombro Derecho
-                                        if (targetVara === "Izquierda" && pref2.includes("derech")) return true;
-                                        // Si el objetivo es Derecha, aceptamos a los de hombro Izquierdo
-                                        if (targetVara === "Derecha" && pref2.includes("izquierd")) return true;
-                                        return false;
-                                    }};
 
                                     // FASE 1: Buscar gemelo de altura en la vara contraria
                                     ["Delante", "Detras"].forEach(sec2 => {{
@@ -483,7 +472,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                             let p2 = tData[oppVara][sec2][j];
                                             if (p2 && !p2.bloqueado && p2.altura === p1.altura) {{
                                                 if (canGoTo(p2, vNom)) {{
-                                                    // Intercambio completado
                                                     tData[vNom][sec][i] = p2;
                                                     tData[oppVara][sec2][j] = p1;
                                                     swapped = true;
@@ -501,7 +489,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                                 let pCentro = tData["Centro"][sec2][j];
                                                 if (pCentro && !pCentro.bloqueado && pCentro.altura === p1.altura) {{
                                                     if (canGoTo(pCentro, vNom)) {{
-                                                        // Intercambio completado
                                                         tData[vNom][sec][i] = pCentro;
                                                         tData["Centro"][sec2][j] = p1;
                                                         swapped = true;
@@ -515,6 +502,44 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                             }}
                         }});
                     }});
+
+                    // FASE 3: Limpiar la vara del Centro
+                    ["Delante", "Detras"].forEach(sec => {{
+                        for(let i=0; i<6; i++) {{
+                            let pCentro = tData["Centro"][sec][i];
+                            if (!pCentro || pCentro.altura === 0 || pCentro.bloqueado) continue;
+                            
+                            let prefCentro = (pCentro.pref_hombro || "").toLowerCase().trim();
+                            let targetVara = null;
+                            
+                            // Si tiene preferencia estricta, decidimos a qué lateral debería ir
+                            if (prefCentro.includes("derech")) targetVara = "Izquierda";
+                            else if (prefCentro.includes("izquierd")) targetVara = "Derecha";
+                            
+                            if (targetVara) {{
+                                let swapped = false;
+                                
+                                // Buscamos en su "vara ideal" a un gemelo de altura que sea "Indiferente"
+                                ["Delante", "Detras"].forEach(secLat => {{
+                                    if (swapped) return;
+                                    for(let j=0; j<6; j++) {{
+                                        let pLat = tData[targetVara][secLat][j];
+                                        if (pLat && !pLat.bloqueado && pLat.altura === pCentro.altura) {{
+                                            let prefLat = (pLat.pref_hombro || "").toLowerCase().trim();
+                                            // Si el del lateral es indiferente o ambos, lo mandamos al centro sin problema
+                                            if (prefLat === "" || prefLat.includes("indiferente") || prefLat.includes("ambos")) {{
+                                                tData["Centro"][sec][i] = pLat;
+                                                tData[targetVara][secLat][j] = pCentro;
+                                                swapped = true;
+                                                break;
+                                            }}
+                                        }}
+                                    }}
+                                }});
+                            }}
+                        }}
+                    }});
+
                 }});
 
                 renderGrid();
@@ -591,16 +616,21 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                 const esSobrepeso = p.peso >= MAX_KG && !esBloqueado && !esVacio;
                                 
                                 let tickHombro = '';
+                                let prefLetra = ''; // NUEVA LETRA SUTIL PARA EL HOMBRO
+                                
                                 if (!esVacio && !esBloqueado) {{
                                     let pref = (p.pref_hombro || "").toLowerCase().trim();
                                     if (pref !== "") {{
-                                        // V3.1 Ticks visuales adaptados a la regla real
                                         if (pref.includes("derech")) {{
+                                            prefLetra = ' <span style="color:#888; font-size:10px;">(D)</span>';
                                             if (vNom === "Izquierda") tickHombro = ' <span title="Hombro correcto" style="font-size:11px;">✅</span>';
-                                            else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:11px;">❌</span>';
+                                            else if (vNom === "Derecha") tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:11px;">❌</span>';
+                                            else if (vNom === "Centro") tickHombro = ' <span title="Debería ir en la Izquierda" style="font-size:11px;">⚠️</span>';
                                         }} else if (pref.includes("izquierd")) {{
+                                            prefLetra = ' <span style="color:#888; font-size:10px;">(I)</span>';
                                             if (vNom === "Derecha") tickHombro = ' <span title="Hombro correcto" style="font-size:11px;">✅</span>';
-                                            else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:11px;">❌</span>';
+                                            else if (vNom === "Izquierda") tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:11px;">❌</span>';
+                                            else if (vNom === "Centro") tickHombro = ' <span title="Debería ir en la Derecha" style="font-size:11px;">⚠️</span>';
                                         }} else if (pref.includes("ambos") || pref.includes("indiferente")) {{
                                             tickHombro = ' <span title="Hombro indiferente" style="font-size:11px;">✅</span>';
                                         }}
@@ -626,7 +656,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                             
                                             `<span>
                                                 <button class="btn-basura" style="color:#ff4757;" onclick="vaciarHueco('${{idT}}','${{vNom}}','${{sec}}',${{i}})">🗑️</button>
-                                                <b style="color:var(--text-dark)">${{p.nombre}} ${{tickHombro}}</b>
+                                                <b style="color:var(--text-dark)">${{p.nombre}}${{prefLetra}} ${{tickHombro}}</b>
                                             </span>
                                             <span>
                                                 <span style="color:var(--text-dark)">${{p.altura}}cm</span> 
@@ -741,8 +771,13 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                 }} else if(p.altura === 0) {{
                                     htmlPDF += `<li style="padding: 4px; margin-bottom: 2px; text-align:center; border: 1px dashed #ccc; background: #fafafa; color: #aaa; font-style: italic;">-- Hueco Libre --</li>`;
                                 }} else {{
+                                    let pdfLetra = '';
+                                    let prefPDF = (p.pref_hombro || "").toLowerCase().trim();
+                                    if (prefPDF.includes("derech")) pdfLetra = ' <span style="color:#888; font-size:9px;">(D)</span>';
+                                    else if (prefPDF.includes("izquierd")) pdfLetra = ' <span style="color:#888; font-size:9px;">(I)</span>';
+                                    
                                     htmlPDF += `<li style="padding: 4px; margin-bottom: 2px; border: 1px solid #ddd; display: flex; justify-content: space-between;">
-                                                    <b>${{p.nombre}}</b> <span style="color:#666;">${{p.altura}}cm</span>
+                                                    <b>${{p.nombre}}${{pdfLetra}}</b> <span style="color:#666;">${{p.altura}}cm</span>
                                                 </li>`;
                                 }}
                             }});
