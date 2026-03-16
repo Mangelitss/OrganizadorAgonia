@@ -600,18 +600,18 @@
                                 const esSobrepeso = p.peso >= MAX_KG && !esBloqueado && !esVacio;
                                 
                                 let tickHombro = '';
-                                let prefLetra = ''; // NUEVA LETRA SUTIL PARA EL HOMBRO
+                                let prefLetra = '';
                                 
                                 if (!esVacio && !esBloqueado) {
                                     let pref = (p.pref_hombro || "").toLowerCase().trim();
                                     if (pref !== "") {
                                         if (pref.includes("derech")) {
-                                            prefLetra = ' <span style="color:#888; font-size:10px;">(D)</span>';
+                                            prefLetra = ' <span style="color:#888; font-size:12px;">(D)</span>';
                                             if (vNom === "Izquierda") tickHombro = ' <span title="Hombro correcto" style="font-size:11px;">✅</span>';
                                             else if (vNom === "Derecha") tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:11px;">❌</span>';
                                             else if (vNom === "Centro") tickHombro = ' <span title="Debería ir en la Izquierda" style="font-size:11px;">⚠️</span>';
                                         } else if (pref.includes("izquierd")) {
-                                            prefLetra = ' <span style="color:#888; font-size:10px;">(I)</span>';
+                                            prefLetra = ' <span style="color:#888; font-size:12px;">(I)</span>';
                                             if (vNom === "Derecha") tickHombro = ' <span title="Hombro correcto" style="font-size:11px;">✅</span>';
                                             else if (vNom === "Izquierda") tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:11px;">❌</span>';
                                             else if (vNom === "Centro") tickHombro = ' <span title="Debería ir en la Derecha" style="font-size:11px;">⚠️</span>';
@@ -757,8 +757,8 @@
                                 } else {
                                     let pdfLetra = '';
                                     let prefPDF = (p.pref_hombro || "").toLowerCase().trim();
-                                    if (prefPDF.includes("derech")) pdfLetra = ' <span style="color:#888; font-size:9px;">(D)</span>';
-                                    else if (prefPDF.includes("izquierd")) pdfLetra = ' <span style="color:#888; font-size:9px;">(I)</span>';
+                                    if (prefPDF.includes("derech")) pdfLetra = ' <span style="color:#888; font-size:12px;">(D)</span>';
+                                    else if (prefPDF.includes("izquierd")) pdfLetra = ' <span style="color:#888; font-size:12px;">(I)</span>';
                                     
                                     htmlPDF += `<li style="padding: 4px; margin-bottom: 2px; border: 1px solid #ddd; display: flex; justify-content: space-between;">
                                                     <b>${p.nombre}${pdfLetra}</b> <span style="color:#666;">${p.altura}cm</span>

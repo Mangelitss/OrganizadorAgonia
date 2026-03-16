@@ -1,5 +1,7 @@
 import json
 import time
+import base64
+import os
 
 def cargar_datos_viernes(archivo='datos.json'):
     try:
@@ -101,38 +103,99 @@ def generar_cuadrillas_viernes(costaleros, es_par=True):
         res = {v: {"Delante": [], "Detras": []} for v in varas}
         reales = [p for p in personas if p.get('altura', 0) > 0]
         huecos = [p for p in personas if p.get('altura', 0) == 0]
-        reales.sort(key=lambda x: x.get('altura', 0), reverse=True)
         
-        for _ in range(6):
-            fila = []
-            for _ in range(3): fila.append(reales.pop(0) if reales else huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
-            asig = {"Izquierda": None, "Centro": None, "Derecha": None}
-            libres = []
-            for p in fila:
-                pref = str(p.get('pref_hombro', '')).lower()
-                if 'derech' in pref and asig["Izquierda"] is None: asig["Izquierda"] = p
-                elif 'izquierd' in pref and asig["Derecha"] is None: asig["Derecha"] = p
-                elif 'ambos' in pref and asig["Centro"] is None: asig["Centro"] = p
-                else: libres.append(p)
-            for v in varas:
-                if asig[v] is None and libres: asig[v] = libres.pop(0)
-            for v in varas: res[v]["Delante"].append(asig[v])
-            
-        reales.sort(key=lambda x: x.get('altura', 0))
-        for _ in range(6):
-            fila = []
-            for _ in range(3): fila.append(reales.pop(0) if reales else huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
-            asig = {"Izquierda": None, "Centro": None, "Derecha": None}
-            libres = []
-            for p in fila:
-                pref = str(p.get('pref_hombro', '')).lower()
-                if 'derech' in pref and asig["Izquierda"] is None: asig["Izquierda"] = p
-                elif 'izquierd' in pref and asig["Derecha"] is None: asig["Derecha"] = p
-                elif 'ambos' in pref and asig["Centro"] is None: asig["Centro"] = p
-                else: libres.append(p)
-            for v in varas:
-                if asig[v] is None and libres: asig[v] = libres.pop(0)
-            for v in varas: res[v]["Detras"].append(asig[v])
+        # 1. ZIGZAG INICIAL (Igual que en los ensayos V3.0)
+        reales.sort(key=lambda x: (x.get('altura',0)==0, -x.get('altura',0)))
+        para_delante = reales[:18]
+        para_detras = reales[18:]
+        para_detras.sort(key=lambda x: (x.get('altura',0)==0, x.get('altura',0)))
+        
+        zigzag = ["Centro", "Derecha", "Izquierda"]
+        for i in range(6):
+            for v in zigzag:
+                if para_delante: res[v]["Delante"].append(para_delante.pop(0))
+                elif huecos: res[v]["Delante"].append(huecos.pop(0))
+                else: res[v]["Delante"].append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
+                
+        for i in range(6):
+            for v in zigzag:
+                if para_detras: res[v]["Detras"].append(para_detras.pop(0))
+                elif huecos: res[v]["Detras"].append(huecos.pop(0))
+                else: res[v]["Detras"].append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
+
+        # 2. FILTRO INTELIGENTE DE HOMBROS (FASES 1, 2 Y 3)
+        def can_go_to(p2, target_vara):
+            pref2 = str(p2.get('pref_hombro', '')).lower().strip()
+            if not pref2 or "indiferente" in pref2 or "ambos" in pref2: return True
+            # Derecho en Izquierda, Izquierdo en Derecha
+            if target_vara == "Izquierda" and "derech" in pref2: return True
+            if target_vara == "Derecha" and "izquierd" in pref2: return True
+            return False
+
+        # FASE 1 y 2: Arreglar los extremos (Izquierda y Derecha)
+        for v_nom in ["Izquierda", "Derecha"]:
+            for sec in ["Delante", "Detras"]:
+                for i in range(6):
+                    p1 = res[v_nom][sec][i]
+                    if not p1 or p1.get('altura', 0) == 0: continue
+                    
+                    pref1 = str(p1.get('pref_hombro', '')).lower().strip()
+                    mismatched = False
+                    
+                    if v_nom == "Izquierda" and "izquierd" in pref1: mismatched = True
+                    if v_nom == "Derecha" and "derech" in pref1: mismatched = True
+                    
+                    if mismatched:
+                        swapped = False
+                        opp_vara = "Derecha" if v_nom == "Izquierda" else "Izquierda"
+                        
+                        # Fase 1: Gemelo en vara contraria
+                        for sec2 in ["Delante", "Detras"]:
+                            if swapped: break
+                            for j in range(6):
+                                p2 = res[opp_vara][sec2][j]
+                                if p2 and p2.get('altura') == p1.get('altura'):
+                                    if can_go_to(p2, v_nom):
+                                        res[v_nom][sec][i], res[opp_vara][sec2][j] = res[opp_vara][sec2][j], res[v_nom][sec][i]
+                                        swapped = True
+                                        break
+                        
+                        # Fase 2: Gemelo en el Centro
+                        if not swapped:
+                            for sec2 in ["Delante", "Detras"]:
+                                if swapped: break
+                                for j in range(6):
+                                    p_centro = res["Centro"][sec2][j]
+                                    if p_centro and p_centro.get('altura') == p1.get('altura'):
+                                        if can_go_to(p_centro, v_nom):
+                                            res[v_nom][sec][i], res["Centro"][sec2][j] = res["Centro"][sec2][j], res[v_nom][sec][i]
+                                            swapped = True
+                                            break
+
+        # FASE 3: Limpiar el Centro de preferencias estrictas
+        for sec in ["Delante", "Detras"]:
+            for i in range(6):
+                p_centro = res["Centro"][sec][i]
+                if not p_centro or p_centro.get('altura', 0) == 0: continue
+                
+                pref_centro = str(p_centro.get('pref_hombro', '')).lower().strip()
+                target_vara = None
+                
+                if "derech" in pref_centro: target_vara = "Izquierda"
+                elif "izquierd" in pref_centro: target_vara = "Derecha"
+                
+                if target_vara:
+                    swapped = False
+                    for sec_lat in ["Delante", "Detras"]:
+                        if swapped: break
+                        for j in range(6):
+                            p_lat = res[target_vara][sec_lat][j]
+                            if p_lat and p_lat.get('altura') == p_centro.get('altura'):
+                                pref_lat = str(p_lat.get('pref_hombro', '')).lower().strip()
+                                if not pref_lat or "indiferente" in pref_lat or "ambos" in pref_lat:
+                                    res["Centro"][sec][i], res[target_vara][sec_lat][j] = res[target_vara][sec_lat][j], res["Centro"][sec][i]
+                                    swapped = True
+                                    break
         return res
 
     def distribuir_cruz(personas):
@@ -781,19 +844,24 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                                     const esVacio = p.altura === 0;
                                     const esSobrepeso = p.peso >= MAX_KG;
                                     
-                                    let clExtra = ''; let nExtra = ''; let tagFinal = ''; let tickHombro = '';
+                                    let clExtra = ''; let nExtra = ''; let tagFinal = ''; 
+                                    let tickHombro = ''; let prefLetra = '';
 
                                     if (!esVacio) {{
                                         let pref = (p.pref_hombro || "").toLowerCase().trim();
                                         if (pref !== "") {{
                                             if (pref.includes("derech")) {{
-                                                if (vNom === "Izquierda") tickHombro = ' <span title="Hombro correcto" style="font-size:12px;">✅</span>';
-                                                else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:12px;">❌</span>';
+                                                prefLetra = ' <span style="color:#888; font-size:9px;">(D)</span>';
+                                                if (vNom === "Izquierda") tickHombro = ' <span title="Hombro correcto" style="font-size:11px;">✅</span>';
+                                                else if (vNom === "Derecha") tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:11px;">❌</span>';
+                                                else if (vNom === "Centro") tickHombro = ' <span title="Debería ir en la Izquierda" style="font-size:11px;">⚠️</span>';
                                             }} else if (pref.includes("izquierd")) {{
-                                                if (vNom === "Derecha") tickHombro = ' <span title="Hombro correcto" style="font-size:12px;">✅</span>';
-                                                else tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:12px;">❌</span>';
-                                            }} else if (pref.includes("ambos")) {{
-                                                tickHombro = ' <span title="Hombro correcto" style="font-size:12px;">✅</span>';
+                                                prefLetra = ' <span style="color:#888; font-size:9px;">(I)</span>';
+                                                if (vNom === "Derecha") tickHombro = ' <span title="Hombro correcto" style="font-size:11px;">✅</span>';
+                                                else if (vNom === "Izquierda") tickHombro = ' <span title="Hombro INCORRECTO" style="font-size:11px;">❌</span>';
+                                                else if (vNom === "Centro") tickHombro = ' <span title="Debería ir en la Derecha" style="font-size:11px;">⚠️</span>';
+                                            }} else if (pref.includes("ambos") || pref.includes("indiferente")) {{
+                                                tickHombro = ' <span title="Hombro indiferente" style="font-size:11px;">✅</span>';
                                             }}
                                         }}
 
@@ -820,7 +888,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                                                 `<span>
                                                     <button style="background:none; border:none; color:#00d2ff; cursor:pointer; padding:0 5px 0 0; font-size:14px;" onclick="abrirInfoModal(${{p.id}}); event.stopPropagation();">ℹ️</button>
                                                     <button style="background:none; border:none; color:#ff4757; cursor:pointer; padding:0 5px 0 0;" onclick="eliminar('${{tipo}}','${{idT}}','${{vNom}}','${{sec}}',${{i}})">🗑️</button>
-                                                    <span class="${{nExtra}}">${{p.nombre}} ${{tickHombro}} ${{tagFinal}}</span>
+                                                    <span class="${{nExtra}}">${{p.nombre}}${{prefLetra}} ${{tickHombro}} ${{tagFinal}}</span>
                                                 </span>
                                                 <span><span style="color:${{heatmapActivo?'#fff':'#d4af37'}}">${{p.altura}}cm</span> <b style="color:${{heatmapActivo?'#fff':'#e8d08c'}}; margin-left:5px">${{p.peso.toFixed(1)}}kg</b></span>`
                                             }}
