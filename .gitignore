@@ -6,6 +6,7 @@ dist/
 # Caché interno de Python
 __pycache__/
 *.pyc
+.pyc
 
 # Archivos temporales o locales de tu app (¡MUY IMPORTANTE!)
 licencia_local.json
