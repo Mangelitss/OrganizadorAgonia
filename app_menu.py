@@ -4,6 +4,7 @@ import json
 import datetime
 import webbrowser
 import shutil  
+import requests # AÑADIDO PARA LA CONEXIÓN A FIREBASE
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from tkcalendar import DateEntry
@@ -214,7 +215,7 @@ class GestorCofradeAPP:
             ("Ensayos", "📋"), 
             ("Calendario", "📅"), 
             ("Censo (Costaleros)", "👥"), 
-            ("Exportar PDF", "📄")
+            ("Publicar / PDF", "📤") # Cambiado el nombre de la pestaña
         ]
         
         for op, icon in opciones:
@@ -252,7 +253,7 @@ class GestorCofradeAPP:
         self.frames["Ensayos"] = self.crear_pantalla_ensayos()
         self.frames["Calendario"] = self.crear_pantalla_calendario()
         self.frames["Censo (Costaleros)"] = self.crear_pantalla_censo()
-        self.frames["Exportar PDF"] = self.crear_pantalla_pdf()
+        self.frames["Publicar / PDF"] = self.crear_pantalla_pdf()
 
     # --- PANTALLAS ---
     def crear_pantalla_inicio(self):
@@ -420,7 +421,6 @@ class GestorCofradeAPP:
             guardar_eventos(self.lista_eventos)
             self.refrescar_tabla_calendario()
 
-    # --- POPUP PARA AÑADIR / EDITAR CITA ---
     def abrir_formulario_evento(self, editar=False):
         evento = None
         idx_editar = -1
@@ -438,7 +438,6 @@ class GestorCofradeAPP:
         top.geometry("450x620")
         top.configure(bg=C_BLANCO)
         
-        # VENTANA FORMULARIO EVENTO REESCALABLE
         top.resizable(True, True)
         top.transient(self.root) 
         top.grab_set()
@@ -453,11 +452,9 @@ class GestorCofradeAPP:
         form = tk.Frame(top, bg=C_BLANCO)
         form.pack(padx=30, fill=tk.BOTH, expand=True)
 
-        # --- FECHA Y HORA (En la misma fila, alineación perfecta con pack) ---
         fila_fechahora = tk.Frame(form, bg=C_BLANCO)
         fila_fechahora.pack(fill=tk.X, pady=(0, 15))
 
-        # Bloque Fecha
         bloque_fecha = tk.Frame(fila_fechahora, bg=C_BLANCO)
         bloque_fecha.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
         tk.Label(bloque_fecha, text="Día del Evento:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
@@ -475,7 +472,6 @@ class GestorCofradeAPP:
                 cal_fecha.set_date(fecha_obj)
             except: pass
 
-        # Bloque Hora
         bloque_hora = tk.Frame(fila_fechahora, bg=C_BLANCO)
         bloque_hora.pack(side=tk.RIGHT, fill=tk.X, expand=True)
         tk.Label(bloque_hora, text="Hora:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
@@ -494,24 +490,20 @@ class GestorCofradeAPP:
                 var_hh.set(h_parts[0])
                 var_mm.set(h_parts[1])
 
-        # State 'normal' para que el usuario pueda escribir manualmente los minutos que quiera
         ttk.Combobox(caja_selectores, textvariable=var_hh, values=horas, width=4, font=("Segoe UI", 12), state="normal").pack(side=tk.LEFT, expand=True, fill=tk.X)
         tk.Label(caja_selectores, text=":", bg=C_BLANCO, font=("Segoe UI", 12, "bold")).pack(side=tk.LEFT, padx=2)
         ttk.Combobox(caja_selectores, textvariable=var_mm, values=minutos, width=4, font=("Segoe UI", 12), state="normal").pack(side=tk.LEFT, expand=True, fill=tk.X)
 
-        # --- MOTIVO ---
         tk.Label(form, text="Motivo (Puedes elegir o escribir uno):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
         var_motivo = tk.StringVar(value=evento.get('motivo', 'Ensayo') if evento else 'Ensayo')
         combo_motivo = ttk.Combobox(form, textvariable=var_motivo, values=["Ensayo", "Reunión de Costaleros", "Mudá del Trono", "Misa de Hermandad"], font=("Segoe UI", 12))
         combo_motivo.pack(fill=tk.X, pady=(0, 15))
 
-        # --- LUGAR ---
         tk.Label(form, text="Lugar:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
         var_lugar = tk.StringVar(value=evento.get('lugar', 'San Francisco') if evento else 'San Francisco')
         combo_lugar = ttk.Combobox(form, textvariable=var_lugar, values=["San Francisco", "Santuario de Monserrate", "Casa de Hermandad", "As de Oros"], font=("Segoe UI", 12))
         combo_lugar.pack(fill=tk.X, pady=(0, 15))
 
-        # --- INDICACIONES ---
         tk.Label(form, text="Indicaciones (Opcional):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
         text_ind = tk.Text(form, font=("Segoe UI", 11), height=4, relief="solid", bd=1, wrap=tk.WORD)
         text_ind.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
@@ -575,13 +567,17 @@ class GestorCofradeAPP:
         btn_guardar = tk.Button(top, text="💾 GUARDAR EVENTO", bg=C_MORADO, fg=C_BLANCO, font=("Segoe UI", 12, "bold"), bd=0, cursor="hand2", command=guardar)
         btn_guardar.pack(fill=tk.X, padx=30, pady=(0, 20), ipady=8)
 
+
+    # ==========================================
+    # NUEVA PANTALLA: CENTRO DE PUBLICACIÓN
+    # ==========================================
     def crear_pantalla_pdf(self):
         f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO)
         card = tk.Frame(f, bg=C_BLANCO, padx=40, pady=40, highlightbackground="#e0e0e0", highlightthickness=1)
-        card.place(relx=0.5, rely=0.45, anchor="center", width=650)
+        card.place(relx=0.5, rely=0.45, anchor="center", width=700)
         
-        tk.Label(card, text="Generador de PDF Oficial", font=("Segoe UI", 22, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(anchor="w", pady=(0, 10))
-        tk.Label(card, text="Selecciona para qué procesión vas a generar el informe oficial.", font=("Segoe UI", 12), bg=C_BLANCO, fg="#666").pack(anchor="w", pady=(0, 20))
+        tk.Label(card, text="📤 Centro de Exportación y Publicación", font=("Segoe UI", 22, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(anchor="w", pady=(0, 10))
+        tk.Label(card, text="Genera el acta oficial en PDF o publica el cuadrante en el Portal Web de la Agonía.", font=("Segoe UI", 12), bg=C_BLANCO, fg="#666").pack(anchor="w", pady=(0, 20))
         
         fila_anio = tk.Frame(card, bg=C_BLANCO)
         fila_anio.pack(fill=tk.X, pady=(0, 20))
@@ -596,18 +592,151 @@ class GestorCofradeAPP:
         
         ttk.Radiobutton(card, text="Miércoles Santo", variable=var_tipo, value="Miércoles Santo").pack(anchor="w", pady=5)
         ttk.Radiobutton(card, text="Viernes Santo", variable=var_tipo, value="Viernes Santo").pack(anchor="w", pady=5)
-        ttk.Radiobutton(card, text="Procesión Extraordinaria", variable=var_tipo, value="Procesión Extraordinaria").pack(anchor="w", pady=(5,30))
+        
+        # Variable de control del estado
+        estado_exportacion = {
+            "archivo_ruta": None,
+            "datos_json": None,
+            "revisado": False
+        }
 
-        def generar():
-            archivo = filedialog.askopenfilename(title="Selecciona el archivo descargado de la web", filetypes=[("Archivos JSON", "*.json")])
+        # --- PANEL DE CONTROL DE PUBLICACIÓN (Oculto al inicio) ---
+        panel_pub = tk.Frame(card, bg="#f4f6f8", bd=1, relief="solid", padx=20, pady=20)
+        
+        lbl_info_archivo = tk.Label(panel_pub, text="", font=("Segoe UI", 11, "bold"), bg="#f4f6f8", fg=C_MORADO)
+        lbl_info_archivo.pack(anchor="w", pady=(0, 15))
+
+        btn_vista_previa = tk.Button(panel_pub, text="👁️ 1. VISTA PREVIA E IMPRIMIR PDF", font=("Segoe UI", 12, "bold"), bg="#17517e", fg="white", cursor="hand2")
+        btn_vista_previa.pack(fill=tk.X, pady=5, ipady=5)
+
+        btn_publicar = tk.Button(panel_pub, text="🌐 2. PUBLICAR EN EL PORTAL WEB", font=("Segoe UI", 12, "bold"), bg="#27ae60", fg="white", cursor="hand2", state="disabled")
+        btn_publicar.pack(fill=tk.X, pady=5, ipady=5)
+        
+        tk.Label(panel_pub, text="* Es obligatorio revisar la vista previa (PDF) antes de poder publicar en internet.", font=("Segoe UI", 9, "italic"), bg="#f4f6f8", fg="#666").pack(anchor="w", pady=(0,15))
+
+        btn_despublicar = tk.Button(panel_pub, text="🗑️ DESPUBLICAR Y OCULTAR DE LA WEB", font=("Segoe UI", 10, "bold"), bg="#ff4757", fg="white", cursor="hand2")
+        btn_despublicar.pack(fill=tk.X, pady=(10,0), ipady=4)
+
+        # LÓGICA DE LOS BOTONES
+        def cargar_datos():
+            archivo = filedialog.askopenfilename(title="Selecciona el cuadrante final (.json)", filetypes=[("Archivos JSON", "*.json")])
             if archivo:
-                anio = int(entry_anio.get()) if entry_anio.get().isdigit() else datetime.datetime.now().year
-                exito, msg = crear_html_informe(var_tipo.get(), archivo, anio)
-                if exito: self.abrir_navegador(msg)
-                else: messagebox.showerror("Error", f"Error al generar: {msg}")
+                try:
+                    with open(archivo, 'r', encoding='utf-8') as f:
+                        datos = json.load(f)
+                    
+                    estado_exportacion["archivo_ruta"] = archivo
+                    estado_exportacion["datos_json"] = datos
+                    estado_exportacion["revisado"] = False
+                    
+                    # Validar coincidencia del archivo con la opción marcada
+                    t_proc = datos.get("tipo_procesion", "")
+                    if var_tipo.get() == "Viernes Santo" and t_proc != "viernes_santo":
+                        messagebox.showwarning("Atención", "Has marcado Viernes Santo pero has cargado un archivo del Miércoles Santo.\nEl PDF podría generarse mal.")
+                    elif var_tipo.get() == "Miércoles Santo" and t_proc != "miercoles_santo":
+                        messagebox.showwarning("Atención", "Has marcado Miércoles Santo pero has cargado un archivo del Viernes Santo.\nEl PDF podría generarse mal.")
+                    
+                    btn_publicar.config(state="disabled") 
+                    lbl_info_archivo.config(text=f"✅ Archivo cargado y listo:\n{os.path.basename(archivo)}")
+                    panel_pub.pack(fill=tk.X, pady=15)
+                    
+                except Exception as e:
+                    messagebox.showerror("Error", f"No se pudo leer el archivo:\n{e}")
 
-        btn_generar = self.crear_boton_moderno(card, "📂 SELECCIONAR DATOS Y GENERAR PDF", C_MORADO, C_MORADO_HOVER, C_BLANCO, command=generar)
-        btn_generar.pack(anchor="w")
+        def hacer_vista_previa():
+            if not estado_exportacion["archivo_ruta"]:
+                return
+            
+            anio = int(entry_anio.get()) if entry_anio.get().isdigit() else datetime.datetime.now().year
+            exito, msg = crear_html_informe(var_tipo.get(), estado_exportacion["archivo_ruta"], anio)
+            
+            if exito:
+                self.abrir_navegador(msg)
+                estado_exportacion["revisado"] = True
+                btn_publicar.config(state="normal") # ¡Se desbloquea el botón de publicar!
+                messagebox.showinfo("Revisión Necesaria", "Se ha abierto el borrador del PDF en tu navegador.\n\nRevísalo a fondo. Si ves que está todo perfecto, vuelve aquí y pulsa el botón verde de 'PUBLICAR EN EL PORTAL WEB'.")
+            else:
+                messagebox.showerror("Error", f"Error al generar la vista previa: {msg}")
+
+        def publicar():
+            if not estado_exportacion["revisado"]:
+                messagebox.showwarning("Aviso de Seguridad", "Por seguridad, el sistema exige que previsualices el PDF antes de mandarlo a internet.")
+                return
+                
+            datos_subir = estado_exportacion["datos_json"]
+            tipo_procesion_nube = "miercoles_santo" if var_tipo.get() == "Miércoles Santo" else "viernes_santo"
+            url_firebase = f"https://licencias-gestor-cofrade-default-rtdb.europe-west1.firebasedatabase.app/cuadrantes/agonia/{tipo_procesion_nube}.json"
+            
+            try:
+                btn_publicar.config(text="⏳ COMPROBANDO NUBE...", state="disabled")
+                self.root.update()
+                
+                # 1. Comprobamos si ya existe una publicación previa
+                resp_get = requests.get(url_firebase, timeout=5)
+                
+                if resp_get.status_code == 200 and resp_get.json() is not None:
+                    # Ya hay algo publicado
+                    confirmacion = messagebox.askyesno(
+                        "⚠️ ¡ATENCIÓN: SOBREESCRITURA!", 
+                        f"El sistema ha detectado que YA EXISTE un cuadrante del {var_tipo.get()} publicado en el Portal Web.\n\n¿Estás completamente seguro de que deseas SOBREESCRIBIRLO con la nueva versión que acabas de revisar?"
+                    )
+                    if not confirmacion:
+                        btn_publicar.config(text="🌐 2. PUBLICAR EN EL PORTAL WEB", state="normal")
+                        return
+                else:
+                    # No hay nada publicado
+                    confirmacion = messagebox.askyesno(
+                        "Confirmar Publicación", 
+                        f"Vas a hacer público en internet el cuadrante del {var_tipo.get()}.\nLos costaleros que tengan el enlace podrán verlo.\n\n¿Deseas continuar?"
+                    )
+                    if not confirmacion:
+                        btn_publicar.config(text="🌐 2. PUBLICAR EN EL PORTAL WEB", state="normal")
+                        return
+
+                # 2. Procedemos a publicar (PUT)
+                btn_publicar.config(text="⏳ SUBIENDO A LA NUBE...")
+                self.root.update()
+                
+                resp_put = requests.put(url_firebase, json=datos_subir, timeout=10)
+                
+                if resp_put.status_code == 200:
+                    messagebox.showinfo("✅ Publicación Exitosa", f"¡El cuadrante del {var_tipo.get()} ya está publicado en internet de forma segura!\n\nYa puedes compartir el enlace del Portal Web con los costaleros.")
+                else:
+                    messagebox.showerror("Error del Servidor", f"Ocurrió un problema en la nube al subir los datos.\nCódigo de error: {resp_put.status_code}")
+                    
+            except Exception as e:
+                messagebox.showerror("Error de Conexión", f"No se ha podido conectar con el Portal Web.\nRevisa tu conexión a internet.\n\nDetalle técnico: {str(e)}")
+            finally:
+                btn_publicar.config(text="🌐 2. PUBLICAR EN EL PORTAL WEB", state="normal")
+
+        def despublicar():
+            tipo_procesion_nube = "miercoles_santo" if var_tipo.get() == "Miércoles Santo" else "viernes_santo"
+            url_firebase = f"https://licencias-gestor-cofrade-default-rtdb.europe-west1.firebasedatabase.app/cuadrantes/agonia/{tipo_procesion_nube}.json"
+            
+            confirmacion = messagebox.askyesno(
+                "⚠️ Confirmar Despublicación", 
+                f"Estás a punto de ELIMINAR DE INTERNET el cuadrante público del {var_tipo.get()}.\n\nLos costaleros dejarán de tener acceso al mismo y verán un aviso de 'Cuadrante no disponible'.\n\n¿Estás completamente seguro?"
+            )
+            
+            if not confirmacion: 
+                return
+            
+            try:
+                resp_del = requests.delete(url_firebase, timeout=5)
+                if resp_del.status_code == 200:
+                    messagebox.showinfo("🗑️ Despublicación Correcta", f"El cuadrante del {var_tipo.get()} se ha eliminado correctamente de la web.\n\nLa información ya es privada de nuevo.")
+                else:
+                    messagebox.showerror("Error", f"No se pudo eliminar el archivo en la nube: {resp_del.status_code}")
+            except Exception as e:
+                messagebox.showerror("Error de Conexión", f"No se pudo conectar a la nube.\n{str(e)}")
+
+        # Asignamos las funciones a los botones
+        btn_vista_previa.config(command=hacer_vista_previa)
+        btn_publicar.config(command=publicar)
+        btn_despublicar.config(command=despublicar)
+
+        btn_cargar = self.crear_boton_moderno(card, "📂 1º SELECCIONAR CUADRANTE (.JSON)", C_MORADO, C_MORADO_HOVER, C_BLANCO, command=cargar_datos)
+        btn_cargar.pack(anchor="w", fill=tk.X)
         return f
 
     # --- PANTALLA CENSO ---
@@ -644,7 +773,6 @@ class GestorCofradeAPP:
         frame_tabla = tk.Frame(f, bg=C_BLANCO, highlightbackground="#e0e0e0", highlightthickness=1)
         frame_tabla.pack(fill=tk.BOTH, expand=True)
 
-        # SE AÑADE LA COLUMNA DE TELÉFONO AQUÍ
         columnas = ("ID", "Nombre", "Telefono", "Altura", "Hombro", "Miércoles", "Viernes")
         self.tree = ttk.Treeview(frame_tabla, columns=columnas, show="headings")
         self.tree.heading("ID", text="ID")
@@ -749,7 +877,6 @@ class GestorCofradeAPP:
 
         top = tk.Toplevel(self.root)
         top.title("Editar Costalero" if editar else "Nuevo Costalero")
-        # Se ha ampliado el tamaño para que quepa el teléfono holgadamente
         top.geometry("400x530")
         top.configure(bg=C_BLANCO)
         
@@ -771,7 +898,6 @@ class GestorCofradeAPP:
         var_nombre = tk.StringVar(value=costalero['nombre'] if costalero else "")
         tk.Entry(form_frame, textvariable=var_nombre, font=("Segoe UI", 12), relief="solid", bd=1).pack(fill=tk.X, pady=(2, 10))
 
-        # NUEVO CAMPO TELÉFONO
         tk.Label(form_frame, text="Teléfono:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
         var_telefono = tk.StringVar(value=costalero.get('telefono', '') if costalero else "")
         tk.Entry(form_frame, textvariable=var_telefono, font=("Segoe UI", 12), relief="solid", bd=1).pack(fill=tk.X, pady=(2, 10))
