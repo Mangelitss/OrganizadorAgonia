@@ -258,14 +258,93 @@ class GestorCofradeAPP:
     # --- PANTALLAS ---
     def crear_pantalla_inicio(self):
         f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO)
-        card = tk.Frame(f, bg=C_BLANCO, padx=50, pady=50, highlightbackground="#e0e0e0", highlightthickness=1)
-        card.place(relx=0.5, rely=0.5, anchor="center")
         
-        tk.Label(card, text="Sistema de Gestión Turnos Y Procesiones", font=("Georgia", 24, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=(0, 10))
-        tk.Label(card, text="OFS Muy Ilustre Mayordomía de Ntro. Padre Jesús Nazareno", font=("Georgia", 15), bg=C_BLANCO, fg="#666").pack(pady=5)
-        tk.Label(card, text="Tercio del Cristo de la Agonía y María Magdalena", font=("Georgia", 13), bg=C_BLANCO, fg="#666").pack(pady=5)
-        tk.Frame(card, height=2, bg=C_ORO, width=200).pack(pady=20)
-        tk.Label(card, text="Selecciona un módulo en el menú lateral izquierdo para empezar a trabajar.", font=("Segoe UI", 12), bg=C_BLANCO, fg="#888").pack(pady=10)
+        # --- 1. CANVAS PARA EL FONDO DINÁMICO ---
+        canvas_fondo = tk.Canvas(f, bg=C_GRIS_FONDO, highlightthickness=0)
+        canvas_fondo.place(relwidth=1, relheight=1)
+
+        try:
+            # Importamos ImageDraw para dibujar el "efecto cristal"
+            from PIL import Image, ImageTk, ImageEnhance, ImageDraw
+            import os
+            
+            ruta_imagen = "cristo_agonia.jpg" 
+            
+            if os.path.exists(ruta_imagen):
+                # Convertimos a RGBA para soportar transparencias
+                img_original = Image.open(ruta_imagen).convert("RGBA")
+                
+                def redimensionar_fondo(event):
+                    if event.width < 100 or event.height < 100: return
+                    
+                    # 1. Ajustar el tamaño del Cristo a la ventana
+                    ratio_img = img_original.width / img_original.height
+                    ratio_ventana = event.width / event.height
+                    
+                    if ratio_ventana > ratio_img:
+                        nuevo_ancho = event.width
+                        nuevo_alto = int(nuevo_ancho / ratio_img)
+                    else:
+                        nuevo_alto = event.height
+                        nuevo_ancho = int(nuevo_alto * ratio_img)
+                        
+                    img_redim = img_original.resize((nuevo_ancho, nuevo_alto), Image.LANCZOS)
+                    
+                    # 2. Oscurecer el fondo un poco (50%)
+                    enhancer = ImageEnhance.Brightness(img_redim)
+                    img_redim = enhancer.enhance(0.5) 
+                    
+                    # --- 3. EL TRUCO DE LA TRANSPARENCIA ---
+                    # Creamos una capa invisible del tamaño de la foto
+                    capa_transparente = Image.new('RGBA', img_redim.size, (0,0,0,0))
+                    draw = ImageDraw.Draw(capa_transparente)
+                    
+                    # Medidas de la tarjeta efecto cristal
+                    card_w, card_h = 800, 250
+                    img_cx, img_cy = nuevo_ancho // 2, nuevo_alto // 2
+                    
+                    x1 = img_cx - card_w // 2
+                    y1 = img_cy - card_h // 2
+                    x2 = img_cx + card_w // 2
+                    y2 = img_cy + card_h // 2
+                    
+                    # Dibujamos un rectángulo blanco con 82% de opacidad (210) y borde dorado
+                    draw.rectangle([x1, y1, x2, y2], fill=(255, 255, 255, 180), outline=(212, 175, 55, 255), width=4)
+                    
+                    # Fusionamos la capa semitransparente con la foto del Cristo
+                    img_final = Image.alpha_composite(img_redim, capa_transparente)
+                    
+                    # 4. Guardar y mostrar en pantalla
+                    f.img_tk = ImageTk.PhotoImage(img_final)
+                    canvas_fondo.delete("all")
+                    canvas_fondo.create_image(event.width/2, event.height/2, image=f.img_tk, anchor="center")
+                    
+                    # --- 5. DIBUJAR LOS TEXTOS FLOTANTES ---
+                    cx, cy = event.width // 2, event.height // 2
+                    
+                    canvas_fondo.create_text(cx, cy - 60, text="Sistema de Gestión Turnos y Procesiones", font=("Cinzel", 24, "bold"), fill=C_MORADO)
+                    canvas_fondo.create_text(cx, cy - 20, text="OFS Muy Ilustre Mayordomía de Ntro. Padre Jesús Nazareno", font=("Cinzel", 15), fill="#333333")
+                    canvas_fondo.create_text(cx, cy + 10, text="Tercio del Cristo de la Agonía y María Magdalena", font=("Cinzel", 13), fill="#333333")
+                    
+                    # La línea dorada separadora
+                    canvas_fondo.create_line(cx - 100, cy + 40, cx + 100, cy + 40, fill=C_ORO, width=2)
+                    
+                    canvas_fondo.create_text(cx, cy + 70, text="Selecciona un módulo en el menú lateral izquierdo para empezar a trabajar.", font=("Segoe UI", 12), fill="#555555")
+
+                f.bind("<Configure>", redimensionar_fondo)
+            else:
+                # Sistema de seguridad por si alguna vez borras la foto sin querer
+                card = tk.Frame(f, bg=C_BLANCO, padx=50, pady=50, highlightbackground=C_ORO, highlightthickness=2)
+                card.place(relx=0.5, rely=0.5, anchor="center")
+                tk.Label(card, text="Sistema de Gestión Turnos y Procesiones", font=("Georgia", 24, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=(0, 10))
+                tk.Label(card, text="OFS Muy Ilustre Mayordomía de Ntro. Padre Jesús Nazareno", font=("Georgia", 15), bg=C_BLANCO, fg="#666").pack(pady=5)
+                tk.Label(card, text="Tercio del Cristo de la Agonía y María Magdalena", font=("Georgia", 13), bg=C_BLANCO, fg="#666").pack(pady=5)
+                tk.Frame(card, height=2, bg=C_ORO, width=200).pack(pady=20)
+                tk.Label(card, text="Selecciona un módulo en el menú lateral izquierdo para empezar a trabajar.", font=("Segoe UI", 12), bg=C_BLANCO, fg="#888").pack(pady=10)
+
+        except Exception as e:
+            print("Error cargando imagen de fondo:", e)
+
         return f
 
     def crear_pantalla_procesion(self, titulo, html_file, func_generar, func_html, necesita_es_par):
