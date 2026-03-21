@@ -1258,5 +1258,15 @@
         "puede_repetir": true,
         "miercoles_santo": true,
         "viernes_santo": true
+    },
+    {
+        "id": 130,
+        "nombre": "Elena Cayuelas Belmonte",
+        "telefono": "",
+        "altura": 500,
+        "pref_hombro": "",
+        "puede_repetir": true,
+        "miercoles_santo": true,
+        "viernes_santo": true
     }
 ]
