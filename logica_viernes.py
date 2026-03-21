@@ -52,14 +52,12 @@ def generar_cuadrillas_viernes(costaleros, es_par=True):
     # ASIGNACIÓN QUIRÚRGICA CRUZ (PAR / IMPAR)
     # ==========================================
     if es_par:
-        # AÑO PAR: Trono en T1(A), T2(B), T3(A), T4(C)
         cruz_turnos[0].extend(extraer_seguro(disp_c, 8)) # T1: Cruz C
         cruz_turnos[1].extend(extraer_seguro(disp_c, 8)) # T2: Cruz C
         cruz_turnos[2].extend(extraer_seguro(disp_b, 4)) # T3: Cruz B(4) + C(4) [TRAMO MALDITO]
         cruz_turnos[2].extend(extraer_seguro(disp_c, 4))
         cruz_turnos[3].extend(extraer_seguro(disp_b, 8)) # T4: Cruz B
     else:
-        # AÑO IMPAR: Trono en T1(C), T2(A), T3(B), T4(A)
         cruz_turnos[0].extend(extraer_seguro(disp_b, 8)) # T1: Cruz B
         cruz_turnos[1].extend(extraer_seguro(disp_b, 4)) # T2: Cruz B(4) + C(4) [TRAMO MALDITO]
         cruz_turnos[1].extend(extraer_seguro(disp_c, 4))
@@ -70,7 +68,6 @@ def generar_cuadrillas_viernes(costaleros, es_par=True):
         while len(cruz_turnos[i]) < 8: 
             cruz_turnos[i].append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
 
-    # Etiquetado Dinámico de Dobles (Sobreesfuerzos en Cruz)
     cruz_counts = {}
     for t in range(4):
         for p in cruz_turnos[t]:
@@ -104,7 +101,6 @@ def generar_cuadrillas_viernes(costaleros, es_par=True):
         reales = [p for p in personas if p.get('altura', 0) > 0]
         huecos = [p for p in personas if p.get('altura', 0) == 0]
         
-        # 1. ZIGZAG INICIAL (Igual que en los ensayos V3.0)
         reales.sort(key=lambda x: (x.get('altura',0)==0, -x.get('altura',0)))
         para_delante = reales[:18]
         para_detras = reales[18:]
@@ -123,16 +119,13 @@ def generar_cuadrillas_viernes(costaleros, es_par=True):
                 elif huecos: res[v]["Detras"].append(huecos.pop(0))
                 else: res[v]["Detras"].append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
 
-        # 2. FILTRO INTELIGENTE DE HOMBROS (FASES 1, 2 Y 3)
         def can_go_to(p2, target_vara):
             pref2 = str(p2.get('pref_hombro', '')).lower().strip()
             if not pref2 or "indiferente" in pref2 or "ambos" in pref2: return True
-            # Derecho en Izquierda, Izquierdo en Derecha
             if target_vara == "Izquierda" and "derech" in pref2: return True
             if target_vara == "Derecha" and "izquierd" in pref2: return True
             return False
 
-        # FASE 1 y 2: Arreglar los extremos (Izquierda y Derecha)
         for v_nom in ["Izquierda", "Derecha"]:
             for sec in ["Delante", "Detras"]:
                 for i in range(6):
@@ -149,7 +142,6 @@ def generar_cuadrillas_viernes(costaleros, es_par=True):
                         swapped = False
                         opp_vara = "Derecha" if v_nom == "Izquierda" else "Izquierda"
                         
-                        # Fase 1: Gemelo en vara contraria
                         for sec2 in ["Delante", "Detras"]:
                             if swapped: break
                             for j in range(6):
@@ -160,7 +152,6 @@ def generar_cuadrillas_viernes(costaleros, es_par=True):
                                         swapped = True
                                         break
                         
-                        # Fase 2: Gemelo en el Centro
                         if not swapped:
                             for sec2 in ["Delante", "Detras"]:
                                 if swapped: break
@@ -172,7 +163,6 @@ def generar_cuadrillas_viernes(costaleros, es_par=True):
                                             swapped = True
                                             break
 
-        # FASE 3: Limpiar el Centro de preferencias estrictas
         for sec in ["Delante", "Detras"]:
             for i in range(6):
                 p_centro = res["Centro"][sec][i]
@@ -247,18 +237,13 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
     master_json = json.dumps(master_list)
     marca_tiempo = str(int(time.time()))
 
-    # ==========================================
-    # CÁLCULO DE TRAMOS Y TEXTOS SEGÚN AÑO
-    # ==========================================
     if es_par:
-        # AÑO PAR: Ida (A, B, A, C) | Regreso (A, B+C, A)
         tramos_trono_a = "[1, 3, 5, 7]"
         tramos_trono_b = "[2, 6]"
         tramos_trono_c = "[4, 6]"
         txt_t1, txt_t2, txt_t3, txt_t4 = "Turno A", "Turno B", "Turno A", "Turno C"
         txt_r1, txt_r2, txt_r3 = "Turno A", "Turnos B + C", "Turno A"
     else:
-        # AÑO IMPAR: Ida (C, A, B, A) | Regreso (B+C, A, B+C)
         tramos_trono_a = "[2, 4, 6]"
         tramos_trono_b = "[3, 5, 7]"
         tramos_trono_c = "[1, 5, 7]"
@@ -327,6 +312,8 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
             .btn-export:hover {{ background: #b5952f; color:#000; }}
             .btn-load {{ background: #17517e; border-color: #2980b9; }}
             .btn-load:hover {{ background: #1f6b9c; }}
+            .btn-danger {{ background: #b30000; border-color: #ff4d4d; }}
+            .btn-danger:hover {{ background: #ff4d4d; color: #fff; box-shadow: 0 0 8px rgba(255, 77, 77, 0.4); }}
             
             .stats-box {{ background: #0c0209; padding: 8px; border-radius: 4px; font-size: 10px; color: #d4af37; margin-top: 5px; border-left: 3px solid #d4af37; }}
             input.search-p {{ background: #0c0209; border: 1px solid #3d0c2e; color: #d4af37; padding: 5px; width: 100%; font-size: 10px; border-radius: 3px; outline: none; box-sizing: border-box; }}
@@ -348,6 +335,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
             </div>
             <div>
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
+                <button class="btn-control btn-danger" onclick="vaciarCuadrante()">🗑️ VACIAR CUADRANTE</button>
                 <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR DATOS</button>
                 <button id="btn-heatmap" class="btn-control" onclick="toggleHeatmap()">🧊 Mapa Peso: OFF</button>
                 <button class="btn-control btn-export" onclick="descargarDatosJSON()">💾 DESCARGAR DATOS</button>
@@ -478,6 +466,27 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                 document.body.appendChild(dlAnchorElem);
                 dlAnchorElem.click();
                 dlAnchorElem.remove();
+            }}
+            
+            function vaciarCuadrante() {{
+                if(confirm("⚠️ ¿Estás completamente seguro de que quieres VACIAR el cuadrante?\\n\\nTodos los costaleros serán eliminados de sus puestos y tendrás que asignarlos manualmente de nuevo.\\n(Si te equivocas, puedes cargar de nuevo un archivo guardado).")) {{
+                    for (let tipo of ["Trono", "Cruz"]) {{
+                        if (!datos[tipo]) continue;
+                        for (let t of Object.keys(datos[tipo])) {{
+                            for (let v of Object.keys(datos[tipo][t])) {{
+                                for (let sec of ["Delante", "Detras"]) {{
+                                    if(datos[tipo][t][v][sec]) {{
+                                        for (let i = 0; i < datos[tipo][t][v][sec].length; i++) {{
+                                            datos[tipo][t][v][sec][i] = {{"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1}};
+                                        }}
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }}
+                    guardarMemoria();
+                    render();
+                }}
             }}
 
             function cargarJSON(event) {{
@@ -883,7 +892,7 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                                              style="${{bgStyle}}" title="Hombro: ${{p.pref_hombro || 'Indiferente'}}"
                                              draggable="${{!esVacio}}" ondragstart="drag(event, '${{tipo}}', '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})" ondrop="drop(event, '${{tipo}}', '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})">
                                             ${{esVacio ? 
-                                                `<input type="text" class="search-p" placeholder="Escribir nombre..." onkeyup="buscarMini(event, '${{tipo}}','${{idT}}','${{vNom}}','${{sec}}',${{i}})">
+                                                `<input type="text" class="search-p" placeholder="Nombre o altura (ej: 180)..." onkeyup="buscarMini(event, '${{tipo}}','${{idT}}','${{vNom}}','${{sec}}',${{i}})">
                                                  <div id="sug-${{tipo}}-${{idT}}-${{vNom}}-${{sec}}-${{i}}" class="sugerencias" style="display:none"></div>` :
                                                 `<span>
                                                     <button style="background:none; border:none; color:#00d2ff; cursor:pointer; padding:0 5px 0 0; font-size:14px;" onclick="abrirInfoModal(${{p.id}}); event.stopPropagation();">ℹ️</button>
@@ -918,10 +927,15 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
             }}
 
             function buscarMini(ev, tipo, t, v, s, i) {{
-                const val = ev.target.value.toLowerCase();
+                const val = ev.target.value.toLowerCase().trim();
                 const sugDiv = document.getElementById(`sug-${{tipo}}-${{t}}-${{v}}-${{s}}-${{i}}`);
                 if(val.length < 2) {{ sugDiv.style.display = 'none'; return; }}
-                const matches = MASTER_LIST.filter(p => p.nombre.toLowerCase().includes(val)).slice(0, 5);
+                
+                const matches = MASTER_LIST.filter(p => 
+                    p.nombre.toLowerCase().includes(val) || 
+                    (p.altura && p.altura.toString().includes(val))
+                ).slice(0, 8);
+                
                 sugDiv.innerHTML = '';
                 if(matches.length > 0) {{
                     sugDiv.style.display = 'block';

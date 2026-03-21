@@ -293,6 +293,8 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             .btn-export:hover {{ background: #b5952f; color:#000; }}
             .btn-load {{ background: #17517e; border-color: #2980b9; }}
             .btn-load:hover {{ background: #1f6b9c; }}
+            .btn-danger {{ background: #b30000; border-color: #ff4d4d; }}
+            .btn-danger:hover {{ background: #ff4d4d; color: #fff; box-shadow: 0 0 8px rgba(255, 77, 77, 0.4); }}
             
             .stats-box {{ background: #0c0209; padding: 8px; border-radius: 4px; font-size: 10px; color: #d4af37; margin-top: 5px; border-left: 3px solid #d4af37; }}
             input.search-p {{ background: #0c0209; border: 1px solid #3d0c2e; color: #d4af37; padding: 5px; width: 100%; font-size: 10px; border-radius: 3px; outline: none; box-sizing: border-box; }}
@@ -315,6 +317,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             </div>
             <div>
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
+                <button class="btn-control btn-danger" onclick="vaciarCuadrante()">🗑️ VACIAR CUADRANTE</button>
                 <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR DATOS</button>
                 <button id="btn-heatmap" class="btn-control" onclick="toggleHeatmap()">🧊 Mapa Peso: OFF</button>
                 <button class="btn-control btn-export" onclick="descargarDatosJSON()">💾 DESCARGAR DATOS</button>
@@ -431,6 +434,27 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 document.body.appendChild(dlAnchorElem);
                 dlAnchorElem.click();
                 dlAnchorElem.remove();
+            }}
+
+            function vaciarCuadrante() {{
+                if(confirm("⚠️ ¿Estás completamente seguro de que quieres VACIAR el cuadrante?\\n\\nTodos los costaleros serán eliminados de sus puestos y tendrás que asignarlos manualmente de nuevo.\\n(Si te equivocas, puedes cargar de nuevo un archivo guardado).")) {{
+                    for (let tipo of ["Trono", "Cruz"]) {{
+                        if (!datos[tipo]) continue;
+                        for (let t of Object.keys(datos[tipo])) {{
+                            for (let v of Object.keys(datos[tipo][t])) {{
+                                for (let sec of ["Delante", "Detras"]) {{
+                                    if(datos[tipo][t][v][sec]) {{
+                                        for (let i = 0; i < datos[tipo][t][v][sec].length; i++) {{
+                                            datos[tipo][t][v][sec][i] = {{"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1}};
+                                        }}
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }}
+                    guardarMemoria();
+                    render();
+                }}
             }}
 
             function cargarJSON(event) {{
@@ -811,7 +835,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                                              style="${{bgStyle}}" title="Hombro: ${{p.pref_hombro || 'Indiferente'}}"
                                              draggable="${{!esVacio}}" ondragstart="drag(event, '${{tipo}}', '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})" ondrop="drop(event, '${{tipo}}', '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})">
                                             ${{esVacio ? 
-                                                `<input type="text" class="search-p" placeholder="Escribir nombre..." onkeyup="buscarMini(event, '${{tipo}}','${{idT}}','${{vNom}}','${{sec}}',${{i}})">
+                                                `<input type="text" class="search-p" placeholder="Nombre o altura (ej: 180)..." onkeyup="buscarMini(event, '${{tipo}}','${{idT}}','${{vNom}}','${{sec}}',${{i}})">
                                                  <div id="sug-${{tipo}}-${{idT}}-${{vNom}}-${{sec}}-${{i}}" class="sugerencias" style="display:none"></div>` :
                                                 `<span>
                                                     <button style="background:none; border:none; color:#00d2ff; cursor:pointer; padding:0 5px 0 0; font-size:14px;" onclick="abrirInfoModal(${{p.id}}); event.stopPropagation();">ℹ️</button>
@@ -846,10 +870,16 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             }}
 
             function buscarMini(ev, tipo, t, v, s, i) {{
-                const val = ev.target.value.toLowerCase();
+                const val = ev.target.value.toLowerCase().trim();
                 const sugDiv = document.getElementById(`sug-${{tipo}}-${{t}}-${{v}}-${{s}}-${{i}}`);
                 if(val.length < 2) {{ sugDiv.style.display = 'none'; return; }}
-                const matches = MASTER_LIST.filter(p => p.nombre.toLowerCase().includes(val)).slice(0, 5);
+                
+                // Búsqueda ampliada: Nombre o Altura
+                const matches = MASTER_LIST.filter(p => 
+                    p.nombre.toLowerCase().includes(val) || 
+                    (p.altura && p.altura.toString().includes(val))
+                ).slice(0, 8);
+                
                 sugDiv.innerHTML = '';
                 if(matches.length > 0) {{
                     sugDiv.style.display = 'block';
