@@ -343,7 +343,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 document.getElementById('lista-asistentes-ui').innerHTML = html;
             }}
 
-            // ALGORITMO AUTO-DISTRIBUCIÓN V3.0
+            // ALGORITMO AUTO-DISTRIBUCIÓN V3.1 (Soporte dinámico N turnos)
             function distribuirAsistentes() {{
                 if (asistentes.length === 0) {{
                     alert("No hay asistentes. Pasa lista primero.");
@@ -354,7 +354,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 let ordenados = [...asistentes].sort((a,b) => b.altura - a.altura);
                 let turnosNombres = Object.keys(turnosData);
                 
-                let genteTurnoA = []; 
+                let gentePorTurno = []; 
 
                 turnosNombres.forEach((idT, indexT) => {{
                     let blockedSlots = [];
@@ -370,21 +370,18 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                     let chunkLength = 36 - blockedSlots.length; 
                     let chunk = [];
                     
-                    if (indexT === 0) {{
-                        chunk = ordenados.slice(0, chunkLength);
-                        ordenados = ordenados.slice(chunkLength);
-                        genteTurnoA = [...chunk]; 
-                    }} else {{
-                        chunk = ordenados.slice(0, chunkLength);
-                        ordenados = ordenados.slice(chunkLength);
-                        
-                        if (chunk.length < chunkLength) {{
-                            let faltan = chunkLength - chunk.length;
-                            let prestables = [...genteTurnoA].filter(p => p.altura > 0).sort((a,b) => a.altura - b.altura);
-                            let prestados = prestables.slice(0, faltan);
-                            chunk.push(...prestados.map(p => ({{...p}})));
-                        }}
+                    chunk = ordenados.slice(0, chunkLength);
+                    ordenados = ordenados.slice(chunkLength);
+                    
+                    // Si faltan personas y no es el primer turno, pide prestado al turno INMEDIATAMENTE ANTERIOR
+                    if (chunk.length < chunkLength && indexT > 0) {{
+                        let faltan = chunkLength - chunk.length;
+                        let prestables = [...gentePorTurno[indexT - 1]].filter(p => p.altura > 0).sort((a,b) => a.altura - b.altura);
+                        let prestados = prestables.slice(0, faltan);
+                        chunk.push(...prestados.map(p => ({{...p}})));
                     }}
+
+                    gentePorTurno[indexT] = [...chunk];
 
                     while(chunk.length < chunkLength) chunk.push(hueco()); 
                     
