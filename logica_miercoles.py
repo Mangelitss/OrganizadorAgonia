@@ -457,17 +457,21 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 }}
             }}
 
-            function cargarJSON(event) {{
-                const file = event.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function(e) {{
-                    try {{
-                        const loadedData = JSON.parse(e.target.result);
-                        
-                        // BLOQUEO ANTIDESPISTES: Detecta si es de otro día
-                        if (loadedData.tipo_procesion && loadedData.tipo_procesion !== "miercoles_santo") {{
-                            alert("❌ ERROR: Este archivo pertenece a otra procesión. No puedes cargarlo aquí.");
+            function vaciarTurno(tipo, idT) {{
+                if(confirm(`⚠️ ¿Vaciar solo el ${{idT}} (${{tipo}})?\\n\\nSolo se eliminarán los costaleros de ese turno. El resto del cuadrante no se toca.`)) {{
+                    for (let v of Object.keys(datos[tipo][idT])) {{
+                        for (let sec of ["Delante", "Detras"]) {{
+                            if (datos[tipo][idT][v][sec]) {{
+                                for (let i = 0; i < datos[tipo][idT][v][sec].length; i++) {{
+                                    datos[tipo][idT][v][sec][i] = {{"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1}};
+                                }}
+                            }}
+                        }}
+                    }}
+                    guardarMemoria();
+                    render();
+                }}
+            }}
                             event.target.value = '';
                             return;
                         }} else if (!loadedData.tipo_procesion && loadedData.Trono && loadedData.Trono["Turno C"]) {{
@@ -783,7 +787,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                     
                     for (const [idT, varas] of Object.entries(turnos)) {{
                         let gridClass = tipo === "Cruz" ? "grid-cruz" : "grid-trono";
-                        let html = `<div class="turno-container"><h2>${{idT}}</h2><div class="${{gridClass}}">`;
+                        let html = `<div class="turno-container"><h2 style="display:flex; justify-content:space-between; align-items:center;">${{idT}} <button class="btn-control btn-danger" style="font-size:10px; padding:4px 12px; text-transform:none; letter-spacing:0;" onclick="vaciarTurno('${{tipo}}', '${{idT}}')">🗑️ Vaciar turno</button></h2><div class="${{gridClass}}">`;
                         
                         for (const [vNom, vData] of Object.entries(varas)) {{
                             const statsVara = calcularStats(vData.Delante.concat(vData.Detras), tipo);

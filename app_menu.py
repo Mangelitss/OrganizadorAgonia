@@ -191,6 +191,64 @@ class GestorCofradeAPP:
         from pathlib import Path
         webbrowser.open(Path(archivo_html).resolve().as_uri())
 
+    def mostrar_toast(self, mensaje, duracion=2000, color=None):
+        """Notificación flotante en la parte inferior que desaparece sola."""
+        if color is None:
+            color = C_MORADO
+        try:
+            toast = tk.Toplevel(self.root)
+            toast.overrideredirect(True)
+            toast.configure(bg=color)
+            toast.attributes('-topmost', True)
+            tk.Label(toast, text=mensaje, bg=color, fg=C_BLANCO,
+                     font=("Segoe UI", 11, "bold"), padx=22, pady=13).pack()
+            toast.update_idletasks()
+            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (toast.winfo_width() // 2)
+            y = self.root.winfo_y() + self.root.winfo_height() - 80
+            toast.geometry(f"+{x}+{y}")
+            self.root.after(duracion, lambda: toast.destroy() if toast.winfo_exists() else None)
+        except Exception:
+            pass
+
+    def mostrar_ficha_guardada(self, nombre, altura, telefono, hombro, miercoles, viernes, editar=False):
+        """Popup centrado que muestra los datos guardados y se cierra solo a los 3 segundos."""
+        try:
+            popup = tk.Toplevel(self.root)
+            popup.overrideredirect(True)
+            popup.configure(bg=C_MORADO)
+            popup.attributes('-topmost', True)
+
+            inner = tk.Frame(popup, bg=C_BLANCO, padx=28, pady=22)
+            inner.pack(padx=2, pady=2)
+
+            titulo = "✏️  Costalero actualizado" if editar else "✅  Costalero añadido al censo"
+            tk.Label(inner, text=titulo, font=("Segoe UI", 13, "bold"),
+                     bg=C_BLANCO, fg=C_MORADO).pack(anchor="w", pady=(0, 12))
+
+            mi_txt = "✅ Sí" if miercoles else "❌ No"
+            vi_txt = "✅ Sí" if viernes else "❌ No"
+            hombro_txt = hombro if hombro else "Indiferente"
+
+            lineas = (
+                f"  👤  {nombre}\n"
+                f"  📏  Altura de hombro: {altura} cm\n"
+                f"  📱  Teléfono: {telefono or '—'}\n"
+                f"  💪  Hombro preferido: {hombro_txt}\n"
+                f"  🕯️  Miércoles Santo: {mi_txt}     ✝️  Viernes Santo: {vi_txt}"
+            )
+            tk.Label(inner, text=lineas, font=("Segoe UI", 11),
+                     bg=C_BLANCO, fg="#333", justify="left").pack(anchor="w")
+            tk.Label(inner, text="Se cierra automáticamente en 3 segundos…",
+                     font=("Segoe UI", 9, "italic"), bg=C_BLANCO, fg="#aaa").pack(anchor="e", pady=(12, 0))
+
+            popup.update_idletasks()
+            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (popup.winfo_width() // 2)
+            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (popup.winfo_height() // 2)
+            popup.geometry(f"+{x}+{y}")
+            self.root.after(3000, lambda: popup.destroy() if popup.winfo_exists() else None)
+        except Exception:
+            pass
+
     def crear_boton_moderno(self, parent, text, bg_color, hover_color, text_color, icon="", command=None, width=30):
         btn_frame = tk.Frame(parent, bg=bg_color, cursor="hand2")
         lbl = tk.Label(btn_frame, text=f"{icon}  {text}" if icon else text, 
@@ -395,6 +453,29 @@ class GestorCofradeAPP:
                 
             func_html(datos, master_list, anio, es_par, CONFIG['peso_trono_kg'], CONFIG['peso_cruz_kg'], CONFIG['limite_peso_persona'])
             self.abrir_navegador(html_file)
+
+            # Detectar costaleros del censo que no han quedado en ningún hueco
+            def extraer_ids(obj):
+                ids = set()
+                if isinstance(obj, dict):
+                    if 'id' in obj and obj['id'] != -1 and obj.get('altura', 0) > 0:
+                        ids.add(obj['id'])
+                    for v in obj.values():
+                        ids |= extraer_ids(v)
+                elif isinstance(obj, list):
+                    for item in obj:
+                        ids |= extraer_ids(item)
+                return ids
+
+            ids_asignados = extraer_ids(datos)
+            sin_asignar = [p for p in master_list if p.get('id', -1) not in ids_asignados and p.get('id', -1) != -1]
+
+            if sin_asignar:
+                nombres = "\n".join(f"  • {p['nombre']} ({p['altura']} cm)" for p in sin_asignar)
+                messagebox.showwarning(
+                    f"⚠️ Costaleros sin asignar — {titulo}",
+                    f"Los siguientes costaleros del censo están marcados para el {titulo} pero no han quedado en ningún hueco del cuadrante.\n\nPuedes añadirlos manualmente en el visualizador:\n\n{nombres}"
+                )
 
         def abrir_anterior():
             if os.path.exists(html_file): self.abrir_navegador(html_file)
@@ -659,6 +740,11 @@ class GestorCofradeAPP:
             guardar_eventos(self.lista_eventos)
             self.refrescar_tabla_calendario()
             top.destroy()
+            accion = "actualizado" if editar else "añadido"
+            self.mostrar_toast(f"✅  Evento {accion} correctamente")
+
+        # Atajos de teclado
+        top.bind("<Escape>", lambda e: top.destroy())
 
         btn_guardar = tk.Button(top, text="💾 GUARDAR EVENTO", bg=C_MORADO, fg=C_BLANCO, font=("Segoe UI", 12, "bold"), bd=0, cursor="hand2", command=guardar)
         btn_guardar.pack(fill=tk.X, padx=30, pady=(0, 20), ipady=8)
@@ -835,11 +921,185 @@ class GestorCofradeAPP:
         btn_cargar.pack(anchor="w", fill=tk.X)
         return f
 
+    def exportar_censo_pdf(self):
+        """Genera un HTML del censo con botón de descarga PDF y lo abre en el navegador."""
+        import unicodedata
+        datos = cargar_datos(CONFIG['archivo_datos'])
+        if not datos:
+            messagebox.showwarning("Aviso", "El censo está vacío.")
+            return
+
+        datos.sort(key=lambda x: unicodedata.normalize('NFD', x.get('nombre', '')).encode('ascii','ignore').decode().lower())
+
+        filas_html = ""
+        for p in datos:
+            mi = "✅" if p.get('miercoles_santo') else "❌"
+            vi = "✅" if p.get('viernes_santo') else "❌"
+            hombro = p.get('pref_hombro', '') or "Indiferente"
+            tel = p.get('telefono', '') or "—"
+            filas_html += f"""
+            <tr>
+                <td style="text-align:center">{p['id']}</td>
+                <td>{p['nombre']}</td>
+                <td style="text-align:center">{p['altura']} cm</td>
+                <td style="text-align:center">{tel}</td>
+                <td style="text-align:center">{hombro.capitalize()}</td>
+                <td style="text-align:center">{mi}</td>
+                <td style="text-align:center">{vi}</td>
+            </tr>"""
+
+        n_mi = sum(1 for p in datos if p.get('miercoles_santo'))
+        n_vi = sum(1 for p in datos if p.get('viernes_santo'))
+        fecha_hoy = datetime.datetime.now().strftime("%d/%m/%Y")
+
+        html = f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Censo de Costaleros</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Open+Sans:wght@400;600&display=swap');
+        body {{ font-family: 'Open Sans', sans-serif; background: #f4f6f8; margin: 0; padding: 20px; }}
+        .btn-pdf {{ background: #4F1243; color: #fff; padding: 12px 28px; border: none; border-radius: 5px; font-size: 14px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 20px; display: block; }}
+        .container {{ max-width: 900px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,.1); border-top: 8px solid #4F1243; }}
+        h1 {{ color: #4F1243; font-family: 'Cinzel', serif; font-size: 18px; text-transform: uppercase; margin: 0 0 4px; }}
+        h2 {{ color: #b5952f; font-size: 14px; margin: 0 0 6px; letter-spacing: 1px; }}
+        .fecha {{ color: #888; font-size: 12px; margin-bottom: 20px; }}
+        .resumen {{ display: flex; gap: 20px; margin-bottom: 20px; }}
+        .stat {{ background: #f4f6f8; padding: 10px 20px; border-radius: 6px; border-left: 4px solid #4F1243; font-size: 13px; }}
+        .stat b {{ font-size: 22px; display: block; color: #4F1243; }}
+        table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
+        th {{ background: #d4af37; color: #333; padding: 10px; text-align: left; }}
+        td {{ padding: 8px 10px; border-bottom: 1px solid #eee; }}
+        tr:nth-child(even) td {{ background: #fafafa; }}
+        @media print {{ .btn-pdf {{ display: none !important; }} body {{ background: #fff; padding: 0; }} .container {{ box-shadow: none; border-top: none; }} }}
+    </style>
+</head>
+<body>
+    <button class="btn-pdf" onclick="generarPDF()">📥 DESCARGAR PDF</button>
+    <div class="container" id="censo-content">
+        <h1>OFS Muy Ilustre Mayordomía de Nuestro Padre Jesús Nazareno</h1>
+        <h2>Censo Oficial de Costaleros — Tercio del Cristo de la Agonía</h2>
+        <p class="fecha">Generado el {fecha_hoy}</p>
+        <div class="resumen">
+            <div class="stat"><b>{len(datos)}</b> Costaleros en censo</div>
+            <div class="stat"><b>{n_mi}</b> 🕯️ Miércoles Santo</div>
+            <div class="stat"><b>{n_vi}</b> ✝️ Viernes Santo</div>
+        </div>
+        <table>
+            <thead><tr><th>ID</th><th>Nombre</th><th>Altura</th><th>Teléfono</th><th>Hombro</th><th>M. Santo</th><th>V. Santo</th></tr></thead>
+            <tbody>{filas_html}</tbody>
+        </table>
+    </div>
+    <script>
+        function generarPDF() {{
+            const opt = {{ margin: 10, filename: 'Censo_Agonia.pdf', image: {{ type: 'jpeg', quality: 0.98 }}, html2canvas: {{ scale: 2 }}, jsPDF: {{ unit: 'mm', format: 'a4', orientation: 'landscape' }} }};
+            html2pdf().set(opt).from(document.getElementById('censo-content')).save();
+        }}
+    </script>
+</body>
+</html>"""
+
+        with open("censo_exportado.html", "w", encoding="utf-8") as f:
+            f.write(html)
+        self.abrir_navegador("censo_exportado.html")
+        self._ultimo_formato = "PDF"
+
+    def exportar_censo_excel(self):
+        """Exporta el censo a un archivo .xlsx con openpyxl."""
+        try:
+            import openpyxl
+            from openpyxl.styles import Font, PatternFill, Alignment
+        except ImportError:
+            messagebox.showerror("Módulo no instalado",
+                "Para exportar a Excel necesitas instalar openpyxl.\n\n"
+                "Abre una terminal y ejecuta:\n    pip install openpyxl\n\nLuego vuelve a intentarlo.")
+            return
+
+        datos = cargar_datos(CONFIG['archivo_datos'])
+        if not datos:
+            messagebox.showwarning("Aviso", "El censo está vacío.")
+            return
+
+        import unicodedata
+        datos.sort(key=lambda x: unicodedata.normalize('NFD', x.get('nombre', '')).encode('ascii','ignore').decode().lower())
+
+        archivo = filedialog.asksaveasfilename(
+            title="Guardar Excel del Censo",
+            defaultextension=".xlsx",
+            filetypes=[("Excel", "*.xlsx")],
+            initialfile="Censo_Agonia.xlsx"
+        )
+        if not archivo:
+            return
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Censo Costaleros"
+
+        # Estilos
+        color_morado = "4F1243"
+        color_oro    = "D4AF37"
+        fill_cabecera = PatternFill("solid", fgColor=color_oro)
+        fill_alterno  = PatternFill("solid", fgColor="F9F9F9")
+        font_cabecera = Font(bold=True, color="333333", size=11)
+        font_titulo   = Font(bold=True, color=color_morado, size=13)
+
+        # Título
+        ws.merge_cells("A1:G1")
+        ws["A1"] = "Censo de Costaleros — OFS Mayordomía de Ntro. Padre Jesús Nazareno"
+        ws["A1"].font = font_titulo
+        ws["A1"].alignment = Alignment(horizontal="center")
+
+        ws.merge_cells("A2:G2")
+        ws["A2"] = f"Generado el {datetime.datetime.now().strftime('%d/%m/%Y')}   |   Total: {len(datos)} costaleros"
+        ws["A2"].alignment = Alignment(horizontal="center")
+        ws["A2"].font = Font(italic=True, color="888888", size=10)
+
+        # Cabeceras
+        cabeceras = ["ID", "Nombre", "Altura (cm)", "Teléfono", "Hombro preferido", "Miércoles Santo", "Viernes Santo"]
+        for col, cab in enumerate(cabeceras, 1):
+            c = ws.cell(row=4, column=col, value=cab)
+            c.font = font_cabecera
+            c.fill = fill_cabecera
+            c.alignment = Alignment(horizontal="center")
+
+        # Datos
+        for fila, p in enumerate(datos, 5):
+            valores = [
+                p.get('id'),
+                p.get('nombre', ''),
+                p.get('altura', 0),
+                p.get('telefono', '') or '',
+                (p.get('pref_hombro', '') or 'Indiferente').capitalize(),
+                "Sí" if p.get('miercoles_santo') else "No",
+                "Sí" if p.get('viernes_santo') else "No",
+            ]
+            for col, val in enumerate(valores, 1):
+                c = ws.cell(row=fila, column=col, value=val)
+                c.alignment = Alignment(horizontal="center" if col != 2 else "left")
+                if fila % 2 == 0:
+                    c.fill = fill_alterno
+
+        # Anchos de columna
+        anchos = [6, 35, 12, 16, 18, 16, 14]
+        for col, ancho in enumerate(anchos, 1):
+            ws.column_dimensions[openpyxl.utils.get_column_letter(col)].width = ancho
+
+        try:
+            wb.save(archivo)
+            self._ultimo_formato = "Excel"
+            self.mostrar_toast("✅  Excel guardado correctamente", color="#27ae60")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo guardar el archivo:\n{e}")
+
     # --- PANTALLA CENSO ---
     def crear_pantalla_censo(self):
         # Estado del ordenado: columna activa y dirección
         self._censo_sort_col = "Nombre"
         self._censo_sort_rev = False
+        self._ultimo_formato = "PDF"   # último formato de exportación usado
 
         f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO, padx=30, pady=30)
         tk.Label(f, text="Gestión del Censo General", font=("Segoe UI", 22, "bold"), bg=C_GRIS_FONDO, fg=C_MORADO).pack(anchor="w")
@@ -862,6 +1122,37 @@ class GestorCofradeAPP:
         self.entry_busqueda = tk.Entry(search_frame, font=("Segoe UI", 11), width=25, relief="solid", bd=1)
         self.entry_busqueda.pack(side=tk.LEFT)
         self.entry_busqueda.bind("<KeyRelease>", self.actualizar_tabla_censo)
+
+        # --- SPLIT BUTTON EXPORTAR ---
+        def exportar_ultimo():
+            if self._ultimo_formato == "Excel":
+                self.exportar_censo_excel()
+            else:
+                self.exportar_censo_pdf()
+
+        def mostrar_menu_exportar(event=None):
+            menu_exp = tk.Menu(self.root, tearoff=0)
+            menu_exp.add_command(label="📄  Exportar como PDF",   command=self.exportar_censo_pdf)
+            menu_exp.add_command(label="📊  Exportar como Excel", command=self.exportar_censo_excel)
+            w = btn_exp_main
+            menu_exp.post(w.winfo_rootx(), w.winfo_rooty() + w.winfo_height())
+
+        split_frame = tk.Frame(toolbar, bg=C_MORADO, cursor="hand2")
+        split_frame.pack(side=tk.LEFT, padx=10)
+
+        btn_exp_main = tk.Button(split_frame, text="📤  Exportar", bg=C_MORADO, fg=C_BLANCO,
+                                  font=("Segoe UI", 11, "bold"), bd=0, padx=14, pady=10,
+                                  activebackground=C_MORADO_HOVER, activeforeground=C_BLANCO,
+                                  cursor="hand2", command=exportar_ultimo)
+        btn_exp_main.pack(side=tk.LEFT)
+
+        tk.Frame(split_frame, width=1, bg=C_MORADO_HOVER).pack(side=tk.LEFT, fill=tk.Y, pady=4)
+
+        btn_exp_arrow = tk.Button(split_frame, text="▼", bg=C_MORADO, fg=C_BLANCO,
+                                   font=("Segoe UI", 9), bd=0, padx=8, pady=10,
+                                   activebackground=C_MORADO_HOVER, activeforeground=C_BLANCO,
+                                   cursor="hand2", command=mostrar_menu_exportar)
+        btn_exp_arrow.pack(side=tk.LEFT)
 
         # --- FILA DE FILTROS Y CONTADOR ---
         filtros_frame = tk.Frame(f, bg=C_GRIS_FONDO)
@@ -1037,6 +1328,9 @@ class GestorCofradeAPP:
             self._lbl_contador.config(text=texto)
 
     def abrir_formulario_costalero(self, editar=False):
+        import unicodedata
+        def norm(s): return unicodedata.normalize('NFD', str(s)).encode('ascii','ignore').decode().lower().strip()
+
         datos = cargar_datos(CONFIG['archivo_datos'])
         costalero = None
         
@@ -1053,7 +1347,6 @@ class GestorCofradeAPP:
         top.title("Editar Costalero" if editar else "Nuevo Costalero")
         top.geometry("400x530")
         top.configure(bg=C_BLANCO)
-        
         top.resizable(True, True)
         top.transient(self.root) 
         top.grab_set()
@@ -1076,7 +1369,7 @@ class GestorCofradeAPP:
         var_telefono = tk.StringVar(value=costalero.get('telefono', '') if costalero else "")
         tk.Entry(form_frame, textvariable=var_telefono, font=("Segoe UI", 12), relief="solid", bd=1).pack(fill=tk.X, pady=(2, 10))
 
-        tk.Label(form_frame, text="Altura (en cm):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
+        tk.Label(form_frame, text="Altura de hombro (en cm):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
         var_altura = tk.StringVar(value=str(costalero['altura']) if costalero else "")
         tk.Entry(form_frame, textvariable=var_altura, font=("Segoe UI", 12), relief="solid", bd=1).pack(fill=tk.X, pady=(2, 10))
 
@@ -1087,54 +1380,88 @@ class GestorCofradeAPP:
 
         tk.Label(form_frame, text="Disponibilidad para procesionar:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
         var_miercoles = tk.BooleanVar(value=costalero.get('miercoles_santo', True) if costalero else True)
-        var_viernes = tk.BooleanVar(value=costalero.get('viernes_santo', True) if costalero else True)
-        
+        var_viernes   = tk.BooleanVar(value=costalero.get('viernes_santo',   True) if costalero else True)
         chk_style = ttk.Style()
         chk_style.configure("TCheckbutton", background=C_BLANCO, font=("Segoe UI", 11))
-        
         ttk.Checkbutton(form_frame, text="Sale el Miércoles Santo", variable=var_miercoles).pack(anchor="w", pady=2)
-        ttk.Checkbutton(form_frame, text="Sale el Viernes Santo", variable=var_viernes).pack(anchor="w", pady=2)
+        ttk.Checkbutton(form_frame, text="Sale el Viernes Santo",   variable=var_viernes).pack(anchor="w", pady=2)
 
         def guardar():
-            if not var_nombre.get().strip() or not var_altura.get().isdigit():
+            nombre = var_nombre.get().strip()
+            altura_str = var_altura.get().strip()
+
+            # Validación básica
+            if not nombre or not altura_str.isdigit():
                 messagebox.showwarning("Error", "Revisa los campos. El nombre no puede estar vacío y la altura debe ser un número.")
                 return
 
+            # Validación teléfono
             tel = var_telefono.get().strip()
             if tel:
                 tel_limpio = tel.replace(" ", "").replace("-", "").replace("+", "")
                 if not tel_limpio.isdigit() or len(tel_limpio) < 9:
-                    messagebox.showwarning("Teléfono incorrecto", "El teléfono no parece válido.\nDebe tener al menos 9 dígitos y solo puede contener números, espacios, guiones o el signo +.")
+                    messagebox.showwarning("Teléfono incorrecto",
+                        "El teléfono no parece válido.\nDebe tener al menos 9 dígitos y solo puede contener números, espacios, guiones o el signo +.")
                     return
-            
+
+            # Validación altura (aviso si fuera del rango típico)
+            altura_val = int(altura_str)
+            if altura_val < 100 or altura_val > 200:
+                messagebox.showerror("Altura inválida",
+                    f"La altura '{altura_val} cm' no parece correcta.\nRecuerda que es la altura de hombro, que suele estar entre 120 y 175 cm aproximadamente.")
+                return
+            if not (115 <= altura_val <= 180):
+                continuar = messagebox.askyesno("Altura atípica",
+                    f"La altura de hombro '{altura_val} cm' está fuera del rango habitual (115–180 cm).\n\n¿Es correcta y deseas guardarla igualmente?")
+                if not continuar:
+                    return
+
+            # Detección de duplicados (solo en nuevo)
+            if not editar:
+                nombre_norm = norm(nombre)
+                for p in datos:
+                    if norm(p.get('nombre', '')) == nombre_norm:
+                        continuar = messagebox.askyesno("⚠️ Posible duplicado",
+                            f"Ya existe un costalero con un nombre muy similar:\n\n  → {p['nombre']} (ID {p['id']})\n\n¿Estás seguro de que es una persona distinta y quieres añadirlo?")
+                        if not continuar:
+                            return
+                        break
+
             hombro_val = var_hombro.get()
             if hombro_val == "Indiferente": hombro_val = ""
 
             if editar:
-                costalero['nombre'] = var_nombre.get().strip()
-                costalero['telefono'] = var_telefono.get().strip()
-                costalero['altura'] = int(var_altura.get())
-                costalero['pref_hombro'] = hombro_val
+                costalero['nombre']          = nombre
+                costalero['telefono']        = tel
+                costalero['altura']          = altura_val
+                costalero['pref_hombro']     = hombro_val
                 costalero['miercoles_santo'] = var_miercoles.get()
-                costalero['viernes_santo'] = var_viernes.get()
+                costalero['viernes_santo']   = var_viernes.get()
             else:
                 nuevo_id = max([p.get('id', 0) for p in datos], default=0) + 1
                 datos.append({
-                    "id": nuevo_id,
-                    "nombre": var_nombre.get().strip(),
-                    "telefono": var_telefono.get().strip(),
-                    "altura": int(var_altura.get()),
-                    "pref_hombro": hombro_val,
+                    "id": nuevo_id, "nombre": nombre, "telefono": tel,
+                    "altura": altura_val, "pref_hombro": hombro_val,
                     "puede_repetir": True,
                     "miercoles_santo": var_miercoles.get(),
-                    "viernes_santo": var_viernes.get()
+                    "viernes_santo":   var_viernes.get()
                 })
 
             if self.guardar_censo(datos):
                 self.actualizar_tabla_censo()
                 top.destroy()
+                self.mostrar_ficha_guardada(
+                    nombre, altura_val, tel,
+                    hombro_val, var_miercoles.get(), var_viernes.get(),
+                    editar=editar
+                )
 
-        btn_guardar = tk.Button(top, text="💾 GUARDAR CAMBIOS", bg=C_MORADO, fg=C_BLANCO, font=("Segoe UI", 12, "bold"), bd=0, cursor="hand2", command=guardar)
+        # Atajos de teclado: Enter guarda, Escape cierra
+        top.bind("<Return>",  lambda e: guardar())
+        top.bind("<Escape>",  lambda e: top.destroy())
+
+        btn_guardar = tk.Button(top, text="💾 GUARDAR CAMBIOS", bg=C_MORADO, fg=C_BLANCO,
+                                 font=("Segoe UI", 12, "bold"), bd=0, cursor="hand2", command=guardar)
         btn_guardar.pack(fill=tk.X, padx=40, pady=(20, 0), ipady=8)
 
     def borrar_costalero(self):
