@@ -307,9 +307,56 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             textarea.indicaciones-input {{ width: 100%; height: 70px; background: #0c0209; color: #d4af37; border: 1px solid #3d0c2e; border-radius: 5px; padding: 10px; font-family: inherit; margin-bottom: 15px; outline: none; resize: vertical; box-sizing: border-box; }}
             textarea.indicaciones-input:focus {{ border-color: #d4af37; }}
             .texto-indicaciones {{ font-size: 13px; color: #f8f0f5; white-space: pre-wrap; font-family: inherit; line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }}
+            /* PANEL LATERAL CENSO */
+            #sidebar-toggle {{
+                position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+                background: #d4af37; color: #0c0209; border: none; cursor: pointer;
+                padding: 12px 7px; border-radius: 8px 0 0 8px; z-index: 200;
+                font-size: 11px; font-weight: bold; writing-mode: vertical-rl;
+                letter-spacing: 1px; transition: right 0.3s ease; box-shadow: -3px 0 8px rgba(0,0,0,0.4);
+            }}
+            #sidebar-toggle.abierto {{ right: 290px; }}
+            #sidebar {{
+                position: fixed; right: 0; top: 0; height: 100vh; width: 290px;
+                background: #1a0514; border-left: 2px solid #d4af37;
+                z-index: 150; transform: translateX(100%);
+                transition: transform 0.3s ease;
+                display: flex; flex-direction: column; overflow: hidden;
+                box-shadow: -5px 0 20px rgba(0,0,0,0.6);
+            }}
+            #sidebar.abierto {{ transform: translateX(0); }}
+            #sidebar-header {{ padding: 15px; border-bottom: 1px solid #3d0c2e; background: #23061b; }}
+            #sidebar-header h3 {{ color: #d4af37; margin: 0 0 10px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
+            #sidebar-search {{
+                width: 100%; background: #0c0209; border: 1px solid #3d0c2e;
+                color: #d4af37; padding: 8px; border-radius: 4px; font-size: 12px;
+                outline: none; box-sizing: border-box;
+            }}
+            #sidebar-search:focus {{ border-color: #d4af37; }}
+            #sidebar-contador {{ font-size: 10px; color: #a37c95; margin-top: 6px; }}
+            #sidebar-lista {{ flex: 1; overflow-y: auto; padding: 8px; }}
+            .sidebar-item {{
+                background: #3d0c2e; border: 1px solid #571342; margin: 3px 0;
+                padding: 7px 10px; border-radius: 4px; cursor: grab;
+                font-size: 11px; color: #f8f0f5;
+                display: flex; justify-content: space-between; align-items: center;
+                transition: background 0.2s; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+                user-select: none;
+            }}
+            .sidebar-item:hover {{ background: #571342; border-color: #d4af37; }}
+            .sidebar-item.ya-asignado {{ opacity: 0.38; border-style: dashed; cursor: grab; }}
         </style>
     </head>
     <body>
+        <button id="sidebar-toggle" onclick="toggleSidebar()">👥 CENSO</button>
+        <div id="sidebar">
+            <div id="sidebar-header">
+                <h3>👥 Costaleros — Miércoles Santo</h3>
+                <input type="text" id="sidebar-search" placeholder="Buscar nombre o altura..." oninput="renderSidebar()">
+                <div id="sidebar-contador"></div>
+            </div>
+            <div id="sidebar-lista"></div>
+        </div>
         <div class="controles">
             <div>
                 <div style="font-size:18px; font-weight:bold; color:#d4af37;">MIÉRCOLES SANTO - GESTOR DE TURNOS</div>
@@ -905,20 +952,84 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
 
             let dragging = null;
             function allow(ev) {{ ev.preventDefault(); }}
-            function drag(ev, tipo, t, v, s, i) {{ dragging = {{ tipo, t, v, s, i }}; }}
+            function drag(ev, tipo, t, v, s, i) {{ dragging = {{ source: 'slot', tipo, t, v, s, i }}; }}
             function drop(ev, tipo, t, v, s, i) {{
                 ev.preventDefault();
-                let orig = datos[dragging.tipo][dragging.t][dragging.v][dragging.s][dragging.i];
-                datos[dragging.tipo][dragging.t][dragging.v][dragging.s][dragging.i] = datos[tipo][t][v][s][i];
-                datos[tipo][t][v][s][i] = orig;
-                render(); guardarMemoria(); 
+                if (!dragging) return;
+                if (dragging.source === 'sidebar') {{
+                    datos[tipo][t][v][s][i] = {{...dragging.persona}};
+                }} else {{
+                    let orig = datos[dragging.tipo][dragging.t][dragging.v][dragging.s][dragging.i];
+                    datos[dragging.tipo][dragging.t][dragging.v][dragging.s][dragging.i] = datos[tipo][t][v][s][i];
+                    datos[tipo][t][v][s][i] = orig;
+                }}
+                render(); guardarMemoria();
+                if (sidebarAbierto) renderSidebar();
             }}
             function eliminar(tipo, t, v, s, i) {{
                 if (confirm(`¿Quitar a esta persona?`)) {{
                     datos[tipo][t][v][s][i] = {{"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1}};
-                    render(); guardarMemoria(); 
+                    render(); guardarMemoria();
+                    if (sidebarAbierto) renderSidebar();
                 }}
             }}
+
+            // ==========================================
+            // PANEL LATERAL CENSO
+            // ==========================================
+            let sidebarAbierto = false;
+            function toggleSidebar() {{
+                sidebarAbierto = !sidebarAbierto;
+                document.getElementById('sidebar').classList.toggle('abierto', sidebarAbierto);
+                document.getElementById('sidebar-toggle').classList.toggle('abierto', sidebarAbierto);
+                document.getElementById('sidebar-toggle').textContent = sidebarAbierto ? '✕ CERRAR' : '👥 CENSO';
+                if (sidebarAbierto) renderSidebar();
+            }}
+
+            function normalizarSidebar(s) {{
+                return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            }}
+
+            function getIdsAsignados() {{
+                const ids = new Set();
+                for (let tipo of ['Trono', 'Cruz']) {{
+                    if (!datos[tipo]) continue;
+                    for (let t of Object.values(datos[tipo])) {{
+                        for (let v of Object.values(t)) {{
+                            for (let sec of ['Delante', 'Detras']) {{
+                                if (v[sec]) v[sec].forEach(p => {{ if (p.id && p.id !== -1) ids.add(p.id); }});
+                            }}
+                        }}
+                    }}
+                }}
+                return ids;
+            }}
+
+            function renderSidebar() {{
+                const val = normalizarSidebar(document.getElementById('sidebar-search').value.trim());
+                const idsAsig = getIdsAsignados();
+                let lista = MASTER_LIST.filter(p => !val || normalizarSidebar(p.nombre).includes(val) || (p.altura && p.altura.toString().includes(val)));
+                lista.sort((a, b) => {{
+                    const aA = idsAsig.has(a.id), bA = idsAsig.has(b.id);
+                    if (aA !== bA) return aA ? 1 : -1;
+                    return b.altura - a.altura;
+                }});
+                const div = document.getElementById('sidebar-lista');
+                div.innerHTML = '';
+                lista.forEach(p => {{
+                    const yaAsig = idsAsig.has(p.id);
+                    const item = document.createElement('div');
+                    item.className = 'sidebar-item' + (yaAsig ? ' ya-asignado' : '');
+                    item.draggable = true;
+                    item.title = yaAsig ? 'Ya asignado en el cuadrante' : 'Arrastra a cualquier hueco';
+                    item.innerHTML = `<span>${{p.nombre}}</span><span style="color:#d4af37;font-weight:bold;">${{p.altura}}cm</span>`;
+                    item.ondragstart = () => {{ dragging = {{ source: 'sidebar', persona: {{...p}} }}; }};
+                    div.appendChild(item);
+                }});
+                const asig = MASTER_LIST.filter(p => idsAsig.has(p.id)).length;
+                document.getElementById('sidebar-contador').textContent = `${{asig}} de ${{MASTER_LIST.length}} asignados`;
+            }}
+
             window.onload = init; 
         </script>
     </body>
