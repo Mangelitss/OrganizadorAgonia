@@ -1144,7 +1144,7 @@
         "nombre": "Sandra Cañete Murcia",
         "telefono": "",
         "altura": 139,
-        "pref_hombro": "Izquierdo",
+        "pref_hombro": "Ambos",
         "puede_repetir": true,
         "miercoles_santo": true,
         "viernes_santo": true
@@ -1274,6 +1274,16 @@
         "nombre": "Irene Nortes Valero",
         "telefono": "",
         "altura": 139,
+        "pref_hombro": "",
+        "puede_repetir": true,
+        "miercoles_santo": true,
+        "viernes_santo": true
+    },
+    {
+        "id": 133,
+        "nombre": "EJEMPLO",
+        "telefono": "676666666",
+        "altura": 200,
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,

@@ -10,7 +10,7 @@ from tkinter import ttk, messagebox, filedialog
 from tkcalendar import DateEntry
 
 # Importamos las lógicas independientes
-from logica_trono import cargar_datos, generar_turnos_base, generar_html_interactivo
+from logica_trono import cargar_datos
 from logica_miercoles import generar_cuadrillas_miercoles, generar_html_miercoles
 from logica_viernes import generar_cuadrillas_viernes, generar_html_viernes
 from logica_ensayos import generar_html_ensayo
@@ -81,7 +81,7 @@ class GestorCofradeAPP:
         self.verificar_sesion()
 
     def verificar_sesion(self):
-        import os, json
+        import os, json, base64
         archivo_sesion = "licencia_local.json"
         
         if os.path.exists(archivo_sesion):
@@ -89,12 +89,23 @@ class GestorCofradeAPP:
                 with open(archivo_sesion, "r") as f:
                     datos = json.load(f)
                     user = datos.get("usuario")
-                    pwd = datos.get("password")
+                    # Descodificamos la contraseña ofuscada
+                    pwd = base64.b64decode(datos.get("password", "").encode()).decode()
                 
                 valido, mensaje = comprobar_licencia(user, pwd)
                 
                 if valido:
                     self.root.deiconify()
+                    return
+                elif "conexión" in mensaje.lower() or "internet" in mensaje.lower():
+                    # Sin internet pero con sesión guardada: permitir acceso en modo offline
+                    self.root.deiconify()
+                    messagebox.showwarning(
+                        "Modo sin conexión",
+                        "⚠️ No se ha podido verificar la licencia online.\n\n"
+                        "Se ha concedido acceso con la sesión guardada localmente.\n"
+                        "Algunas funciones online pueden no estar disponibles."
+                    )
                     return
             except Exception:
                 pass 
@@ -155,9 +166,10 @@ class GestorCofradeAPP:
         valido, mensaje = comprobar_licencia(usuario, password)
         
         if valido:
-            import json
+            import json, base64
+            pwd_ofuscado = base64.b64encode(password.encode()).decode()
             with open("licencia_local.json", "w") as f:
-                json.dump({"usuario": usuario, "password": password}, f)
+                json.dump({"usuario": usuario, "password": pwd_ofuscado}, f)
                 
             self.ventana_login.destroy()
             self.root.deiconify() 
@@ -176,8 +188,8 @@ class GestorCofradeAPP:
             return False
 
     def abrir_navegador(self, archivo_html):
-        ruta_absoluta = os.path.abspath(archivo_html)
-        webbrowser.open(f"file://{ruta_absoluta}")
+        from pathlib import Path
+        webbrowser.open(Path(archivo_html).resolve().as_uri())
 
     def crear_boton_moderno(self, parent, text, bg_color, hover_color, text_color, icon="", command=None, width=30):
         btn_frame = tk.Frame(parent, bg=bg_color, cursor="hand2")
@@ -268,9 +280,14 @@ class GestorCofradeAPP:
             from PIL import Image, ImageTk, ImageEnhance, ImageDraw
             import os
             
-            ruta_imagen = "cristo_agonia.jpg" 
+            ruta_imagen = None
+            for ext in ["jpg", "JPG", "jpeg", "JPEG"]:
+                candidato = f"cristo_agonia.{ext}"
+                if os.path.exists(candidato):
+                    ruta_imagen = candidato
+                    break
             
-            if os.path.exists(ruta_imagen):
+            if ruta_imagen and os.path.exists(ruta_imagen):
                 # Convertimos a RGBA para soportar transparencias
                 img_original = Image.open(ruta_imagen).convert("RGBA")
                 
@@ -697,7 +714,7 @@ class GestorCofradeAPP:
         btn_despublicar.pack(fill=tk.X, pady=(10,0), ipady=4)
 
         # LÓGICA DE LOS BOTONES
-        def cargar_datos():
+        def cargar_archivo_cuadrante():
             archivo = filedialog.askopenfilename(title="Selecciona el cuadrante final (.json)", filetypes=[("Archivos JSON", "*.json")])
             if archivo:
                 try:
@@ -814,12 +831,16 @@ class GestorCofradeAPP:
         btn_publicar.config(command=publicar)
         btn_despublicar.config(command=despublicar)
 
-        btn_cargar = self.crear_boton_moderno(card, "📂 1º SELECCIONAR CUADRANTE (.JSON)", C_MORADO, C_MORADO_HOVER, C_BLANCO, command=cargar_datos)
+        btn_cargar = self.crear_boton_moderno(card, "📂 1º SELECCIONAR CUADRANTE (.JSON)", C_MORADO, C_MORADO_HOVER, C_BLANCO, command=cargar_archivo_cuadrante)
         btn_cargar.pack(anchor="w", fill=tk.X)
         return f
 
     # --- PANTALLA CENSO ---
     def crear_pantalla_censo(self):
+        # Estado del ordenado: columna activa y dirección
+        self._censo_sort_col = "Nombre"
+        self._censo_sort_rev = False
+
         f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO, padx=30, pady=30)
         tk.Label(f, text="Gestión del Censo General", font=("Segoe UI", 22, "bold"), bg=C_GRIS_FONDO, fg=C_MORADO).pack(anchor="w")
         
@@ -832,7 +853,6 @@ class GestorCofradeAPP:
         btn_editar.pack(side=tk.LEFT, padx=10)
         btn_borrar = self.crear_boton_moderno(toolbar, "❌ Borrar", "#ff4757", "#ff6b81", C_BLANCO, command=self.borrar_costalero)
         btn_borrar.pack(side=tk.LEFT, padx=10)
-        
         btn_cargar = self.crear_boton_moderno(toolbar, "📂 Cargar Censo", "#17517e", "#1f6b9c", C_BLANCO, command=self.cargar_censo_externo)
         btn_cargar.pack(side=tk.LEFT, padx=10)
         
@@ -843,6 +863,22 @@ class GestorCofradeAPP:
         self.entry_busqueda.pack(side=tk.LEFT)
         self.entry_busqueda.bind("<KeyRelease>", self.actualizar_tabla_censo)
 
+        # --- FILA DE FILTROS Y CONTADOR ---
+        filtros_frame = tk.Frame(f, bg=C_GRIS_FONDO)
+        filtros_frame.pack(fill=tk.X, pady=(0, 8))
+
+        tk.Label(filtros_frame, text="Filtrar:", bg=C_GRIS_FONDO, font=("Segoe UI", 10, "bold"), fg="#555").pack(side=tk.LEFT, padx=(0, 8))
+        self._var_filtro_mi = tk.BooleanVar(value=False)
+        self._var_filtro_vi = tk.BooleanVar(value=False)
+        chk_mi = ttk.Checkbutton(filtros_frame, text="Solo Miércoles Santo", variable=self._var_filtro_mi, command=self.actualizar_tabla_censo)
+        chk_mi.pack(side=tk.LEFT, padx=(0, 15))
+        chk_vi = ttk.Checkbutton(filtros_frame, text="Solo Viernes Santo", variable=self._var_filtro_vi, command=self.actualizar_tabla_censo)
+        chk_vi.pack(side=tk.LEFT)
+
+        self._lbl_contador = tk.Label(filtros_frame, text="", bg=C_GRIS_FONDO, font=("Segoe UI", 10), fg="#555")
+        self._lbl_contador.pack(side=tk.RIGHT)
+
+        # --- TABLA ---
         style = ttk.Style()
         style.theme_use("clam")
         style.configure("Treeview.Heading", font=('Segoe UI', 11, 'bold'), background=C_ORO, foreground=C_TEXTO, relief="flat")
@@ -854,21 +890,31 @@ class GestorCofradeAPP:
 
         columnas = ("ID", "Nombre", "Telefono", "Altura", "Hombro", "Miércoles", "Viernes")
         self.tree = ttk.Treeview(frame_tabla, columns=columnas, show="headings")
-        self.tree.heading("ID", text="ID")
-        self.tree.heading("Nombre", text="Nombre del Costalero")
-        self.tree.heading("Telefono", text="Teléfono")
-        self.tree.heading("Altura", text="Altura (cm)")
-        self.tree.heading("Hombro", text="Preferencia")
-        self.tree.heading("Miércoles", text="M. Santo")
-        self.tree.heading("Viernes", text="V. Santo")
-        
-        self.tree.column("ID", width=50, anchor="center")
-        self.tree.column("Nombre", width=220)
-        self.tree.column("Telefono", width=120, anchor="center")
-        self.tree.column("Altura", width=100, anchor="center")
-        self.tree.column("Hombro", width=120, anchor="center")
+
+        # Cabeceras clicables — las que tienen sentido ordenar
+        def cmd_sort(col):
+            if self._censo_sort_col == col:
+                self._censo_sort_rev = not self._censo_sort_rev
+            else:
+                self._censo_sort_col = col
+                self._censo_sort_rev = False
+            self.actualizar_tabla_censo()
+
+        self.tree.heading("ID",        text="ID",                  command=lambda: cmd_sort("ID"))
+        self.tree.heading("Nombre",    text="Nombre del Costalero",command=lambda: cmd_sort("Nombre"))
+        self.tree.heading("Telefono",  text="Teléfono")
+        self.tree.heading("Altura",    text="Altura (cm)",         command=lambda: cmd_sort("Altura"))
+        self.tree.heading("Hombro",    text="Preferencia")
+        self.tree.heading("Miércoles", text="M. Santo",            command=lambda: cmd_sort("Miércoles"))
+        self.tree.heading("Viernes",   text="V. Santo",            command=lambda: cmd_sort("Viernes"))
+
+        self.tree.column("ID",        width=50,  anchor="center")
+        self.tree.column("Nombre",    width=220)
+        self.tree.column("Telefono",  width=120, anchor="center")
+        self.tree.column("Altura",    width=100, anchor="center")
+        self.tree.column("Hombro",    width=120, anchor="center")
         self.tree.column("Miércoles", width=100, anchor="center")
-        self.tree.column("Viernes", width=100, anchor="center")
+        self.tree.column("Viernes",   width=100, anchor="center")
         
         scrollbar = ttk.Scrollbar(frame_tabla, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=scrollbar.set)
@@ -929,17 +975,62 @@ class GestorCofradeAPP:
             self.tree.delete(item)
             
         datos = cargar_datos(CONFIG['archivo_datos'])
-        filtro = self.entry_busqueda.get().lower() if hasattr(self, 'entry_busqueda') else ""
-        datos.sort(key=lambda x: x.get('nombre', ''))
-        
+        filtro_texto = self.entry_busqueda.get().lower() if hasattr(self, 'entry_busqueda') else ""
+
+        # Filtros de procesión
+        filtro_mi = self._var_filtro_mi.get() if hasattr(self, '_var_filtro_mi') else False
+        filtro_vi = self._var_filtro_vi.get() if hasattr(self, '_var_filtro_vi') else False
+        if filtro_mi: datos = [p for p in datos if p.get('miercoles_santo')]
+        if filtro_vi: datos = [p for p in datos if p.get('viernes_santo')]
+
+        # Filtro de búsqueda por texto
+        if filtro_texto:
+            datos = [p for p in datos if filtro_texto in p.get('nombre', '').lower() or str(p.get('id', '')) == filtro_texto]
+
+        # Ordenado por columna activa
+        col  = getattr(self, '_censo_sort_col', 'Nombre')
+        rev  = getattr(self, '_censo_sort_rev', False)
+        if col == "ID":        datos.sort(key=lambda x: x.get('id', 0),                  reverse=rev)
+        elif col == "Nombre":  datos.sort(key=lambda x: x.get('nombre', '').lower(),      reverse=rev)
+        elif col == "Altura":  datos.sort(key=lambda x: x.get('altura', 0),               reverse=rev)
+        elif col == "Miércoles": datos.sort(key=lambda x: x.get('miercoles_santo', False),reverse=rev)
+        elif col == "Viernes": datos.sort(key=lambda x: x.get('viernes_santo', False),    reverse=rev)
+
+        # Actualizar indicadores ▲▼ en las cabeceras
+        etiquetas = {
+            "ID":        "ID",
+            "Nombre":    "Nombre del Costalero",
+            "Altura":    "Altura (cm)",
+            "Miércoles": "M. Santo",
+            "Viernes":   "V. Santo",
+        }
+        for c, texto_base in etiquetas.items():
+            if c == col:
+                indicador = " ▼" if rev else " ▲"
+                self.tree.heading(c, text=texto_base + indicador)
+            else:
+                self.tree.heading(c, text=texto_base)
+
+        # Insertar filas
         for p in datos:
-            if filtro in p.get('nombre', '').lower() or str(p.get('id', '')) == filtro:
-                mi = "✅" if p.get("miercoles_santo") else "❌"
-                vi = "✅" if p.get("viernes_santo") else "❌"
-                hombro = p.get("pref_hombro", "")
-                telefono = p.get("telefono", "")
-                if not hombro: hombro = "Indiferente"
-                self.tree.insert("", tk.END, values=(p['id'], p['nombre'], telefono, p['altura'], hombro.capitalize(), mi, vi))
+            mi = "✅" if p.get("miercoles_santo") else "❌"
+            vi = "✅" if p.get("viernes_santo") else "❌"
+            hombro = p.get("pref_hombro", "") or "Indiferente"
+            telefono = p.get("telefono", "")
+            self.tree.insert("", tk.END, values=(p['id'], p['nombre'], telefono, p['altura'], hombro.capitalize(), mi, vi))
+
+        # Actualizar contador
+        if hasattr(self, '_lbl_contador'):
+            total_censo = cargar_datos(CONFIG['archivo_datos'])
+            total     = len(total_censo)
+            n_mi      = sum(1 for p in total_censo if p.get('miercoles_santo'))
+            n_vi      = sum(1 for p in total_censo if p.get('viernes_santo'))
+            mostrando = len(datos)
+            if mostrando < total:
+                texto = f"Mostrando {mostrando} de {total}  |  🕯️ Miércoles: {n_mi}  |  ✝️ Viernes: {n_vi}"
+            else:
+                texto = f"Total: {total} costaleros  |  🕯️ Miércoles: {n_mi}  |  ✝️ Viernes: {n_vi}"
+            self._lbl_contador.config(text=texto)
 
     def abrir_formulario_costalero(self, editar=False):
         datos = cargar_datos(CONFIG['archivo_datos'])
@@ -1004,6 +1095,13 @@ class GestorCofradeAPP:
             if not var_nombre.get().strip() or not var_altura.get().isdigit():
                 messagebox.showwarning("Error", "Revisa los campos. El nombre no puede estar vacío y la altura debe ser un número.")
                 return
+
+            tel = var_telefono.get().strip()
+            if tel:
+                tel_limpio = tel.replace(" ", "").replace("-", "").replace("+", "")
+                if not tel_limpio.isdigit() or len(tel_limpio) < 9:
+                    messagebox.showwarning("Teléfono incorrecto", "El teléfono no parece válido.\nDebe tener al menos 9 dígitos y solo puede contener números, espacios, guiones o el signo +.")
+                    return
             
             hombro_val = var_hombro.get()
             if hombro_val == "Indiferente": hombro_val = ""

@@ -58,6 +58,9 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             .btn-pdf {{ background: #5c164e; color: #fff; border-color: #5c164e; }}
             .btn-pdf:hover {{ background: #7a1b67; color: #fff; }}
 
+            .btn-sync {{ background: #00d2ff; border-color: #00a8cc; color: #000; }}
+            .btn-sync:hover {{ background: #00a8cc; color: #fff; box-shadow: 0 0 8px rgba(0, 210, 255, 0.4); }}
+
             /* MAIN LAYOUT */
             .main-container {{ display: flex; flex-grow: 1; overflow: hidden; }}
             
@@ -133,12 +136,13 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 <p>Modo interactivo y generación de actas PDF (Motor Nativo)</p>
             </div>
             <div class="controles-btn">
-                <input type="date" id="fecha-ensayo" class="fecha-input" onchange="guardarEstado()">
+                <input type="date" id="fecha-ensayo" class="fecha-input">
                 
                 <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
                 <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR DATOS</button>
                 <button class="btn-control btn-accion" onclick="descargarDatosJSON()">💾 DESCARGAR DATOS</button>
                 
+                <button class="btn-control btn-sync" onclick="sincronizarAlturasManualmente()">🔄 ACTUALIZAR ALTURAS</button>
                 <button class="btn-control btn-peligro" onclick="resetearEnsayo()">🗑️ VACIAR ENSAYO</button>
                 <button class="btn-control" onclick="toggleMenu()">↔️ OCULTAR MENÚ</button>
                 <button class="btn-control btn-accion" onclick="distribuirAsistentes()">⚡ AUTO-DISTRIBUIR V3.1</button>
@@ -177,38 +181,46 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             let asistentes = []; 
             let turnosData = {{}};  
 
-            // ==========================================
-            // SISTEMA DE AUTOGUARDADO Y ARCHIVOS JSON
-            // ==========================================
-            function guardarEstado() {{
-                localStorage.setItem('ensayo_asistentes_agonia', JSON.stringify(asistentes));
-                localStorage.setItem('ensayo_turnos_agonia', JSON.stringify(turnosData));
-                localStorage.setItem('ensayo_fecha_agonia', document.getElementById('fecha-ensayo').value);
-            }}
+            // Diccionario rápido del censo maestro para las verificaciones
+            let censoDic = {{}};
+            MASTER_LIST.forEach(p => censoDic[p.id] = p);
 
-            function cargarEstado() {{
-                let savedAsistentes = localStorage.getItem('ensayo_asistentes_agonia');
-                let savedTurnos = localStorage.getItem('ensayo_turnos_agonia');
-                let savedFecha = localStorage.getItem('ensayo_fecha_agonia');
-                
-                if (savedAsistentes && savedTurnos) {{
-                    asistentes = JSON.parse(savedAsistentes);
-                    turnosData = JSON.parse(savedTurnos);
-                    if(savedFecha) document.getElementById('fecha-ensayo').value = savedFecha;
-                    
-                    renderPanelAsistentes();
-                    renderGrid();
-                    return true;
-                }}
-                return false;
-            }}
+            // ==========================================
+            // DESCARGA LIGERA Y CARGA INTELIGENTE
+            // ==========================================
 
             function descargarDatosJSON() {{
+                // Creamos una copia ligera para guardar
                 let exportData = {{
                     fecha: document.getElementById('fecha-ensayo').value,
-                    asistentes: asistentes,
-                    turnosData: turnosData
+                    asistentes: [],
+                    turnosData: {{}}
                 }};
+
+                // Asistentes ligeros
+                asistentes.forEach(a => {{
+                    exportData.asistentes.push({{
+                        id: a.id,
+                        nombre: a.nombre
+                    }});
+                }});
+
+                // Turnos ligeros
+                for (const [idT, varas] of Object.entries(turnosData)) {{
+                    exportData.turnosData[idT] = {{}};
+                    for (const [vNom, vData] of Object.entries(varas)) {{
+                        exportData.turnosData[idT][vNom] = {{ "Delante": [], "Detras": [] }};
+                        
+                        ["Delante", "Detras"].forEach(sec => {{
+                            vData[sec].forEach(p => {{
+                                let p_ligero = {{ id: p.id, nombre: p.nombre }};
+                                if (p.bloqueado) p_ligero.bloqueado = true;
+                                exportData.turnosData[idT][vNom][sec].push(p_ligero);
+                            }});
+                        }});
+                    }}
+                }}
+
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
                 const dlAnchorElem = document.createElement('a');
                 dlAnchorElem.setAttribute("href", dataStr);
@@ -228,18 +240,76 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 reader.onload = function(e) {{
                     try {{
                         const data = JSON.parse(e.target.result);
-                        if(data.turnosData && data.asistentes) {{
-                            turnosData = data.turnosData;
-                            asistentes = data.asistentes;
-                            if(data.fecha) document.getElementById('fecha-ensayo').value = data.fecha;
-                            
-                            guardarEstado();
-                            renderPanelAsistentes();
-                            renderGrid();
-                            alert("✅ Configuración de ensayo cargada correctamente.");
-                        }} else {{
+                        if(!data.turnosData || !data.asistentes) {{
                             alert("❌ El archivo no parece ser un ensayo válido.");
+                            event.target.value = '';
+                            return;
                         }}
+
+                        let erroresCriticos = [];
+
+                        // 1. Reconstruir Asistentes comprobando el Censo Oficial
+                        let asistentesReconstruidos = [];
+                        data.asistentes.forEach(a => {{
+                            let pMaster = censoDic[a.id];
+                            if (!pMaster) {{
+                                erroresCriticos.push(`El ID de '${{a.nombre}}' ya no existe en el censo.`);
+                            }} else if (pMaster.nombre !== a.nombre) {{
+                                erroresCriticos.push(`Discrepancia de ID: El archivo dice '${{a.nombre}}' pero la base de datos dice '${{pMaster.nombre}}'.`);
+                            }} else {{
+                                // Todo cuadra: cogemos los datos vitales actuales
+                                asistentesReconstruidos.push({{...pMaster}});
+                            }}
+                        }});
+
+                        // 2. Reconstruir Turnos comprobando el Censo Oficial
+                        let turnosReconstruidos = {{}};
+                        for (const [idT, varas] of Object.entries(data.turnosData)) {{
+                            turnosReconstruidos[idT] = {{}};
+                            for (const [vNom, vData] of Object.entries(varas)) {{
+                                turnosReconstruidos[idT][vNom] = {{ "Delante": [], "Detras": [] }};
+                                
+                                ["Delante", "Detras"].forEach(sec => {{
+                                    vData[sec].forEach(p => {{
+                                        if (p.id === -1) {{
+                                            turnosReconstruidos[idT][vNom][sec].push(hueco());
+                                        }} else if (p.id === -2 || p.bloqueado) {{
+                                            turnosReconstruidos[idT][vNom][sec].push(bloqueadoObj());
+                                        }} else {{
+                                            let pMaster = censoDic[p.id];
+                                            if (!pMaster) {{
+                                                erroresCriticos.push(`El ID de '${{p.nombre}}' (puesto en ${{vNom}} ${{sec}}) ya no existe.`);
+                                                turnosReconstruidos[idT][vNom][sec].push(hueco());
+                                            }} else if (pMaster.nombre !== p.nombre) {{
+                                                erroresCriticos.push(`El ID asignado a '${{p.nombre}}' en ${{vNom}} ahora le pertenece a '${{pMaster.nombre}}'.`);
+                                                turnosReconstruidos[idT][vNom][sec].push(hueco());
+                                            }} else {{
+                                                // Todo cuadra: Inyectamos su altura y preferencias actuales
+                                                turnosReconstruidos[idT][vNom][sec].push({{...pMaster}});
+                                            }}
+                                        }}
+                                    }});
+                                }});
+                            }}
+                        }}
+
+                        // Verificamos si la carga ha sido limpia
+                        if (erroresCriticos.length > 0) {{
+                            alert("⚠️ ATENCIÓN - ERRORES DETECTADOS AL CRUZAR CON EL CENSO OFICIAL:\\n\\n" + 
+                                  erroresCriticos.join("\\n") + 
+                                  "\\n\\nLas personas con error han sido eliminadas del ensayo y sus huecos liberados. Por favor, revisa el censo general.");
+                        }} else {{
+                            alert("✅ Ensayo cargado con éxito. Todas las alturas han sido sincronizadas automáticamente con el censo oficial.");
+                        }}
+
+                        // Aplicamos los datos verificados
+                        turnosData = turnosReconstruidos;
+                        asistentes = asistentesReconstruidos;
+                        if(data.fecha) document.getElementById('fecha-ensayo').value = data.fecha;
+                        
+                        renderPanelAsistentes();
+                        renderGrid();
+
                     }} catch (error) {{
                         alert("❌ Error al leer el archivo JSON.");
                     }}
@@ -248,11 +318,61 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 reader.readAsText(file);
             }}
 
+            // ==========================================
+            // BOTÓN ACTUALIZAR ALTURAS MANUALMENTE
+            // ==========================================
+            function sincronizarAlturasManualmente() {{
+                let cambiosDetectados = 0;
+                let nombresCambiados = [];
+
+                // 1. Revisar asistentes
+                asistentes.forEach(a => {{
+                    let pMaster = censoDic[a.id];
+                    if (pMaster) {{
+                        if (a.altura !== pMaster.altura || a.pref_hombro !== pMaster.pref_hombro) {{
+                            a.altura = pMaster.altura;
+                            a.pref_hombro = pMaster.pref_hombro;
+                            if(!nombresCambiados.includes(a.nombre)) nombresCambiados.push(a.nombre);
+                            cambiosDetectados++;
+                        }}
+                    }}
+                }});
+
+                // 2. Revisar cuadrante
+                for (let t in turnosData) {{
+                    for (let v in turnosData[t]) {{
+                        for (let sec in turnosData[t][v]) {{
+                            let arr = turnosData[t][v][sec];
+                            for(let i=0; i<arr.length; i++) {{
+                                let p = arr[i];
+                                if(p && p.id !== -1 && p.id !== -2) {{
+                                    let pMaster = censoDic[p.id];
+                                    if (pMaster && (p.altura !== pMaster.altura || p.pref_hombro !== pMaster.pref_hombro)) {{
+                                        p.altura = pMaster.altura;
+                                        p.pref_hombro = pMaster.pref_hombro;
+                                        if(!nombresCambiados.includes(p.nombre)) nombresCambiados.push(p.nombre);
+                                        cambiosDetectados++;
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+
+                if(cambiosDetectados > 0) {{
+                    renderPanelAsistentes();
+                    renderGrid();
+                    alert(`⚠️ SE HAN ACTUALIZADO ALTURAS O PREFERENCIAS\\n\\nPersonas afectadas:\\n- ${{nombresCambiados.join("\\n- ")}}\\n\\nSe recomienda realizar una Auto-Distribución para corregir sus posiciones en la vara.`);
+                }} else {{
+                    alert(`✅ Todo está al día. No hay diferencias de altura ni preferencias entre el ensayo actual y la base de datos general.`);
+                }}
+            }}
+
+            // ==========================================
+            // LÓGICA CORE DEL ENSAYO
+            // ==========================================
             function resetearEnsayo() {{
-                if (confirm("⚠️ ¿Estás seguro de vaciar el ensayo? Perderás la lista actual si no has descargado el JSON.")) {{
-                    localStorage.removeItem('ensayo_asistentes_agonia');
-                    localStorage.removeItem('ensayo_turnos_agonia');
-                    localStorage.removeItem('ensayo_fecha_agonia');
+                if (confirm("⚠️ ¿Estás seguro de vaciar el ensayo? Perderás toda la configuración actual.")) {{
                     asistentes = [];
                     turnosData = {{}};
                     document.getElementById('fecha-ensayo').valueAsDate = new Date();
@@ -261,9 +381,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 }}
             }}
 
-            // ==========================================
-            // LÓGICA CORE DEL ENSAYO
-            // ==========================================
             function inicializarTurnos() {{
                 let letras = ["A", "B", "C", "D", "E", "F"];
                 for(let i=0; i<NUM_TURNOS; i++) {{
@@ -275,7 +392,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                     }};
                 }}
                 renderGrid();
-                guardarEstado();
             }}
 
             function hueco() {{ return {{nombre: "HUECO LIBRE", altura: 0, peso: 0, id: -1, bloqueado: false}}; }}
@@ -288,7 +404,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 const resDiv = document.getElementById('resultados-busqueda');
                 if (val.length < 2) {{ resDiv.innerHTML = ''; return; }}
 
-                const matches = MASTER_LIST.filter(p => p.nombre.toLowerCase().includes(val) || p.altura.toString().includes(val));
+                const matches = MASTER_LIST.filter(p => p.nombre.toLowerCase().includes(val) || (p.altura && p.altura.toString().includes(val)));
                 
                 let html = '';
                 matches.forEach(m => {{
@@ -309,7 +425,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 document.getElementById('input-busqueda').value = '';
                 document.getElementById('resultados-busqueda').innerHTML = '';
                 renderPanelAsistentes();
-                guardarEstado(); 
             }}
 
             function quitarAsistente(id) {{
@@ -326,7 +441,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 }}
                 renderPanelAsistentes();
                 renderGrid();
-                guardarEstado();
             }}
 
             function renderPanelAsistentes() {{
@@ -343,17 +457,14 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 document.getElementById('lista-asistentes-ui').innerHTML = html;
             }}
 
-            // ALGORITMO AUTO-DISTRIBUCIÓN V3.1 (Soporte dinámico N turnos)
             function distribuirAsistentes() {{
                 if (asistentes.length === 0) {{
                     alert("No hay asistentes. Pasa lista primero.");
                     return;
                 }}
 
-                // 1. ORDENAR TODOS POR ALTURA DE MAYOR A MENOR
                 let ordenados = [...asistentes].sort((a,b) => b.altura - a.altura);
                 let turnosNombres = Object.keys(turnosData);
-                
                 let gentePorTurno = []; 
 
                 turnosNombres.forEach((idT, indexT) => {{
@@ -373,7 +484,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                     chunk = ordenados.slice(0, chunkLength);
                     ordenados = ordenados.slice(chunkLength);
                     
-                    // Si faltan personas y no es el primer turno, pide prestado al turno INMEDIATAMENTE ANTERIOR
                     if (chunk.length < chunkLength && indexT > 0) {{
                         let faltan = chunkLength - chunk.length;
                         let prestables = [...gentePorTurno[indexT - 1]].filter(p => p.altura > 0).sort((a,b) => a.altura - b.altura);
@@ -409,7 +519,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                     
                     paraDetras.sort((a,b) => (a.altura===0?1:0) - (b.altura===0?1:0) || a.altura - b.altura);
 
-                    // LÓGICA ZIGZAG V3.0: Centro -> Derecha -> Izquierda
                     let zigzag = ["Centro", "Derecha", "Izquierda"];
                     
                     for(let i=0; i<6; i++) {{
@@ -426,24 +535,17 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                     turnosData[idT] = tData;
                 }});
                 
-                // ===============================================
-                // FILTRO DE CORRECCIÓN DE HOMBROS (INTERCAMBIOS)
-                // ===============================================
                 turnosNombres.forEach((idT) => {{
                     let tData = turnosData[idT];
                     
-                    // Función auxiliar que comprueba si un costalero puede ir a una vara objetivo sin estropearlo
                     const canGoTo = (p2, targetVara) => {{
                         let pref2 = (p2.pref_hombro || "").toLowerCase().trim();
                         if (pref2 === "" || pref2.includes("indiferente") || pref2.includes("ambos")) return true;
-                        // Derecho DEBE ir en Izquierda
                         if (targetVara === "Izquierda" && pref2.includes("derech")) return true;
-                        // Izquierdo DEBE ir en Derecha
                         if (targetVara === "Derecha" && pref2.includes("izquierd")) return true;
                         return false;
                     }};
 
-                    // FASES 1 y 2: Arreglar a los costaleros que han caído mal en los laterales
                     let varasLaterales = ["Izquierda", "Derecha"];
                     varasLaterales.forEach(vNom => {{
                         ["Delante", "Detras"].forEach(sec => {{
@@ -454,7 +556,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                 let pref1 = (p1.pref_hombro || "").toLowerCase().trim();
                                 let mismatched = false;
                                 
-                                // REGLA: Si está en Izquierda y su preferencia es Izquierdo -> CHOCA (Debería ir en Derecha)
                                 if (vNom === "Izquierda" && pref1.includes("izquierd")) mismatched = true;
                                 if (vNom === "Derecha" && pref1.includes("derech")) mismatched = true;
                                 
@@ -462,7 +563,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                     let swapped = false;
                                     let oppVara = (vNom === "Izquierda") ? "Derecha" : "Izquierda";
 
-                                    // FASE 1: Buscar gemelo de altura en la vara contraria
                                     ["Delante", "Detras"].forEach(sec2 => {{
                                         if (swapped) return;
                                         for(let j=0; j<6; j++) {{
@@ -478,7 +578,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                         }}
                                     }});
                                     
-                                    // FASE 2: Si no hubo suerte, buscar gemelo de altura en el Centro
                                     if (!swapped) {{
                                         ["Delante", "Detras"].forEach(sec2 => {{
                                             if (swapped) return;
@@ -500,7 +599,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                         }});
                     }});
 
-                    // FASE 3: Limpiar la vara del Centro
                     ["Delante", "Detras"].forEach(sec => {{
                         for(let i=0; i<6; i++) {{
                             let pCentro = tData["Centro"][sec][i];
@@ -509,21 +607,18 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                             let prefCentro = (pCentro.pref_hombro || "").toLowerCase().trim();
                             let targetVara = null;
                             
-                            // Si tiene preferencia estricta, decidimos a qué lateral debería ir
                             if (prefCentro.includes("derech")) targetVara = "Izquierda";
                             else if (prefCentro.includes("izquierd")) targetVara = "Derecha";
                             
                             if (targetVara) {{
                                 let swapped = false;
                                 
-                                // Buscamos en su "vara ideal" a un gemelo de altura que sea "Indiferente"
                                 ["Delante", "Detras"].forEach(secLat => {{
                                     if (swapped) return;
                                     for(let j=0; j<6; j++) {{
                                         let pLat = tData[targetVara][secLat][j];
                                         if (pLat && !pLat.bloqueado && pLat.altura === pCentro.altura) {{
                                             let prefLat = (pLat.pref_hombro || "").toLowerCase().trim();
-                                            // Si el del lateral es indiferente o ambos, lo mandamos al centro sin problema
                                             if (prefLat === "" || prefLat.includes("indiferente") || prefLat.includes("ambos")) {{
                                                 tData["Centro"][sec][i] = pLat;
                                                 tData[targetVara][secLat][j] = pCentro;
@@ -540,7 +635,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 }});
 
                 renderGrid();
-                guardarEstado();
             }}
 
             function buscarMini(ev, t, v, s, i) {{
@@ -548,7 +642,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 const sugDiv = document.getElementById(`sug-${{t}}-${{v}}-${{s}}-${{i}}`);
                 if(val.length < 2) {{ sugDiv.style.display = 'none'; return; }}
                 
-                const matches = MASTER_LIST.filter(p => p.nombre.toLowerCase().includes(val)).slice(0, 5);
+                const matches = MASTER_LIST.filter(p => p.nombre.toLowerCase().includes(val) || (p.altura && p.altura.toString().includes(val))).slice(0, 8);
                 sugDiv.innerHTML = '';
                 
                 if(matches.length > 0) {{
@@ -567,7 +661,6 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                             
                             renderPanelAsistentes();
                             renderGrid(); 
-                            guardarEstado(); 
                         }};
                         sugDiv.appendChild(div);
                     }});
@@ -579,13 +672,11 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             function bloquearHueco(t, v, s, i) {{
                 turnosData[t][v][s][i] = bloqueadoObj();
                 renderGrid();
-                guardarEstado();
             }}
 
             function desbloquearHueco(t, v, s, i) {{
                 turnosData[t][v][s][i] = hueco();
                 renderGrid();
-                guardarEstado();
             }}
 
             function renderGrid() {{
@@ -595,7 +686,17 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 for (const [idT, varas] of Object.entries(turnosData)) {{
                     let html = `<div class="turno-container"><h2>${{idT}}</h2><div class="grid-trono">`;
                     
-                    for (const [vNom, vData] of Object.entries(varas)) {{
+                    const ordenVaras = ["Izquierda", "Centro", "Derecha"];
+                    const varasOrdenadas = Object.keys(varas).sort((a, b) => {{
+                        let indexA = ordenVaras.indexOf(a);
+                        let indexB = ordenVaras.indexOf(b);
+                        if(indexA === -1) indexA = 999;
+                        if(indexB === -1) indexB = 999;
+                        return indexA - indexB;
+                    }});
+                    
+                    for (const vNom of varasOrdenadas) {{
+                        const vData = varas[vNom];
                         const statsVara = calcularStats(vData.Delante.concat(vData.Detras));
                         
                         html += `<div class="vara"><h3>VARA ${{vNom.toUpperCase()}}</h3>`;
@@ -646,7 +747,7 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                                             
                                             esVacio ? 
                                             `<div style="display:flex; width:100%; gap:5px;">
-                                                <input type="text" class="search-p" placeholder="Buscar nombre..." onkeyup="buscarMini(event, '${{idT}}','${{vNom}}','${{sec}}',${{i}})">
+                                                <input type="text" class="search-p" placeholder="Nombre o altura..." onkeyup="buscarMini(event, '${{idT}}','${{vNom}}','${{sec}}',${{i}})">
                                                 <button title="Bloquear posición" style="background:#fff; border:1px solid #ccc; border-radius:3px; cursor:pointer;" onclick="bloquearHueco('${{idT}}','${{vNom}}','${{sec}}',${{i}})">🔒</button>
                                              </div>
                                              <div id="sug-${{idT}}-${{vNom}}-${{sec}}-${{i}}" class="sugerencias" style="display:none"></div>` :
@@ -695,13 +796,11 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                 turnosData[dragging.t][dragging.v][dragging.s][dragging.i] = turnosData[t][v][s][i];
                 turnosData[t][v][s][i] = orig;
                 renderGrid();
-                guardarEstado();
             }}
             
             function vaciarHueco(t, v, s, i) {{
                 turnosData[t][v][s][i] = hueco();
                 renderGrid();
-                guardarEstado();
             }}
 
             // ==========================================
@@ -751,7 +850,17 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
                         <div style="display: flex; width: 100%;">
                     `;
                     
-                    for (const [vNom, vData] of Object.entries(varas)) {{
+                    const ordenVaras = ["Izquierda", "Centro", "Derecha"];
+                    const varasOrdenadas = Object.keys(varas).sort((a, b) => {{
+                        let indexA = ordenVaras.indexOf(a);
+                        let indexB = ordenVaras.indexOf(b);
+                        if(indexA === -1) indexA = 999;
+                        if(indexB === -1) indexB = 999;
+                        return indexA - indexB;
+                    }});
+                    
+                    for (const vNom of varasOrdenadas) {{
+                        const vData = varas[vNom];
                         htmlPDF += `
                             <div style="flex: 1; padding: 10px; border-right: 1px solid #eee;">
                                 <h4 style="text-align: center; color: #5c164e; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin: 0 0 10px 0; font-size: 12px; font-weight: bold; text-transform: uppercase;">VARA ${{vNom}}</h4>
@@ -799,11 +908,8 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             }}
 
             window.onload = () => {{
-                let cargado = cargarEstado();
-                if(!cargado) {{
-                    document.getElementById('fecha-ensayo').valueAsDate = new Date();
-                    inicializarTurnos();
-                }}
+                document.getElementById('fecha-ensayo').valueAsDate = new Date();
+                inicializarTurnos();
             }};
         </script>
     </body>

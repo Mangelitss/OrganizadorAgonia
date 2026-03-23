@@ -75,69 +75,6 @@ def generar_turnos_base(costaleros, n_config, plazas_a):
 
 import datetime
 
-def generar_miercoles_santo(costaleros, anio_manual=None):
-    # 1. Lógica del año (Par / Impar)
-    anio_actual = anio_manual if anio_manual else datetime.datetime.now().year
-    es_par = (anio_actual % 2 == 0)
-    
-    # 2. Ordenar el censo por altura
-    pool = sorted(costaleros, key=lambda x: x['altura'], reverse=True)
-    
-    # Rellenar con "HUECOS" si no hay gente suficiente para Trono (72) + Cruz (16) = 88 personas
-    while len(pool) < 88:
-        pool.append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0})
-        
-    # 3. Separar Bloques
-    turno_a_personas = pool[:36]
-    turno_b_personas = pool[36:72]
-    cruz_turno_1 = pool[72:80]
-    cruz_turno_2 = pool[80:88]
-    
-    # 4. Asignación de Ruta Trono Principal (San Francisco -> Gasolinera -> Monserrate)
-    if es_par:
-        tramo_1_trono = {"nombre_tramo": "San Francisco ➔ Gasolinera", "turno": "Turno B", "personas": turno_b_personas}
-        tramo_2_trono = {"nombre_tramo": "Gasolinera ➔ Monserrate", "turno": "Turno A", "personas": turno_a_personas}
-    else:
-        tramo_1_trono = {"nombre_tramo": "San Francisco ➔ Gasolinera", "turno": "Turno A", "personas": turno_a_personas}
-        tramo_2_trono = {"nombre_tramo": "Gasolinera ➔ Monserrate", "turno": "Turno B", "personas": turno_b_personas}
-
-    # 5. Formatear la Cruz (4 varales x 2 personas)
-    def estructurar_cruz(lista_8_personas):
-        return {
-            "Delanteros": {
-                "Izquierda": lista_8_personas[0:2],
-                "Derecha": lista_8_personas[2:4]
-            },
-            "Traseros": {
-                "Izquierda": lista_8_personas[4:6],
-                "Derecha": lista_8_personas[6:8]
-            }
-        }
-
-    resultado_miercoles = {
-        "metadatos": {
-            "procesion": "Miércoles Santo",
-            "año": anio_actual,
-            "es_par": es_par
-        },
-        "itinerario_trono": {
-            "Tramo 1 (Salida)": tramo_1_trono,
-            "Tramo 2 (Regreso)": tramo_2_trono
-        },
-        "itinerario_cruz": {
-            "Tramo 1 (Salida ➔ Monserrate)": {
-                "turno": "Turno 1", 
-                "estructura": estructurar_cruz(cruz_turno_1)
-            },
-            "Tramo 2 (Monserrate ➔ Encierro)": {
-                "turno": "Turno 2", 
-                "estructura": estructurar_cruz(cruz_turno_2)
-            }
-        }
-    }
-    
-    return resultado_miercoles
-
 def generar_html_interactivo(turnos, master_list, peso_trono, limite_peso):
     turnos_json = json.dumps(turnos)
     master_json = json.dumps(master_list)

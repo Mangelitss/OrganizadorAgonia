@@ -15,11 +15,41 @@ def cargar_eventos():
         return []
 
 def guardar_eventos(eventos):
+    # Backup automático antes de sobreescribir
+    if os.path.exists(ARCHIVO_CALENDARIO):
+        try:
+            import shutil
+            fecha_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup = f"calendario_backup_{fecha_str}.json"
+            shutil.copy(ARCHIVO_CALENDARIO, backup)
+            # Conservamos solo los 5 backups más recientes
+            backups = sorted([
+                f for f in os.listdir(".")
+                if f.startswith("calendario_backup_") and f.endswith(".json")
+            ])
+            for viejo in backups[:-5]:
+                try: os.remove(viejo)
+                except: pass
+        except:
+            pass
     with open(ARCHIVO_CALENDARIO, "w", encoding="utf-8") as f:
         json.dump(eventos, f, indent=4, ensure_ascii=False)
 
 def generar_html_calendario(eventos):
     fecha_hoy = datetime.datetime.now().strftime("%d/%m/%Y")
+    
+    # Ordenamos los eventos por fecha (mes y día)
+    _MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+    def _clave_fecha(ev):
+        try:
+            partes = ev.get('fecha', '').split(' de ')
+            dia = int(partes[0])
+            mes = _MESES.index(partes[1]) + 1
+            return (mes, dia)
+        except:
+            return (99, 99)
+    eventos = sorted(eventos, key=_clave_fecha)
     
     img_b64 = ""
     if os.path.exists("bandera_tercio_npj.png"):
