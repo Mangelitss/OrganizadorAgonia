@@ -971,11 +971,15 @@ class GestorCofradeAPP:
             messagebox.showerror("Error de Formato", f"El archivo seleccionado no es válido o está dañado:\n{e}")
 
     def actualizar_tabla_censo(self, event=None):
+        import unicodedata
+        def normalizar(s):
+            return unicodedata.normalize('NFD', str(s)).encode('ascii', 'ignore').decode().lower()
+
         for item in self.tree.get_children():
             self.tree.delete(item)
             
         datos = cargar_datos(CONFIG['archivo_datos'])
-        filtro_texto = self.entry_busqueda.get().lower() if hasattr(self, 'entry_busqueda') else ""
+        filtro_texto = normalizar(self.entry_busqueda.get()) if hasattr(self, 'entry_busqueda') else ""
 
         # Filtros de procesión
         filtro_mi = self._var_filtro_mi.get() if hasattr(self, '_var_filtro_mi') else False
@@ -983,18 +987,18 @@ class GestorCofradeAPP:
         if filtro_mi: datos = [p for p in datos if p.get('miercoles_santo')]
         if filtro_vi: datos = [p for p in datos if p.get('viernes_santo')]
 
-        # Filtro de búsqueda por texto
+        # Filtro de búsqueda por texto (sin tildes)
         if filtro_texto:
-            datos = [p for p in datos if filtro_texto in p.get('nombre', '').lower() or str(p.get('id', '')) == filtro_texto]
+            datos = [p for p in datos if filtro_texto in normalizar(p.get('nombre', '')) or str(p.get('id', '')) == filtro_texto]
 
         # Ordenado por columna activa
         col  = getattr(self, '_censo_sort_col', 'Nombre')
         rev  = getattr(self, '_censo_sort_rev', False)
-        if col == "ID":        datos.sort(key=lambda x: x.get('id', 0),                  reverse=rev)
-        elif col == "Nombre":  datos.sort(key=lambda x: x.get('nombre', '').lower(),      reverse=rev)
-        elif col == "Altura":  datos.sort(key=lambda x: x.get('altura', 0),               reverse=rev)
-        elif col == "Miércoles": datos.sort(key=lambda x: x.get('miercoles_santo', False),reverse=rev)
-        elif col == "Viernes": datos.sort(key=lambda x: x.get('viernes_santo', False),    reverse=rev)
+        if col == "ID":          datos.sort(key=lambda x: x.get('id', 0),                    reverse=rev)
+        elif col == "Nombre":    datos.sort(key=lambda x: normalizar(x.get('nombre', '')),    reverse=rev)
+        elif col == "Altura":    datos.sort(key=lambda x: x.get('altura', 0),                 reverse=rev)
+        elif col == "Miércoles": datos.sort(key=lambda x: x.get('miercoles_santo', False),    reverse=rev)
+        elif col == "Viernes":   datos.sort(key=lambda x: x.get('viernes_santo', False),      reverse=rev)
 
         # Actualizar indicadores ▲▼ en las cabeceras
         etiquetas = {

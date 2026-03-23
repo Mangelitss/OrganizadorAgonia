@@ -749,13 +749,16 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
             }}
 
             function actualizarBuscador() {{
-                const val = document.getElementById('input-buscador').value.toLowerCase();
+                function normalizar(s) {{
+                    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                }}
+                const val = normalizar(document.getElementById('input-buscador').value);
                 const resDiv = document.getElementById('resultado-itinerario');
                 if (val.length < 3) {{ resDiv.style.display = 'none'; return; }}
 
                 let idFound = null;
                 for (let id in estadoGlobal) {{
-                    if (estadoGlobal[id].nombre.toLowerCase().includes(val)) {{ idFound = id; break; }}
+                    if (normalizar(estadoGlobal[id].nombre).includes(val)) {{ idFound = id; break; }}
                 }}
 
                 if (idFound) {{
@@ -927,12 +930,15 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
             }}
 
             function buscarMini(ev, tipo, t, v, s, i) {{
-                const val = ev.target.value.toLowerCase().trim();
+                function normalizar(s) {{
+                    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                }}
+                const val = normalizar(ev.target.value.trim());
                 const sugDiv = document.getElementById(`sug-${{tipo}}-${{t}}-${{v}}-${{s}}-${{i}}`);
                 if(val.length < 2) {{ sugDiv.style.display = 'none'; return; }}
                 
                 const matches = MASTER_LIST.filter(p => 
-                    p.nombre.toLowerCase().includes(val) || 
+                    normalizar(p.nombre).includes(val) || 
                     (p.altura && p.altura.toString().includes(val))
                 ).slice(0, 8);
                 

@@ -400,11 +400,14 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             function toggleMenu() {{ document.getElementById('panel-lateral').classList.toggle('oculto'); }}
 
             function buscarEnCenso() {{
-                const val = document.getElementById('input-busqueda').value.toLowerCase();
+                function normalizar(s) {{
+                    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                }}
+                const val = normalizar(document.getElementById('input-busqueda').value);
                 const resDiv = document.getElementById('resultados-busqueda');
                 if (val.length < 2) {{ resDiv.innerHTML = ''; return; }}
 
-                const matches = MASTER_LIST.filter(p => p.nombre.toLowerCase().includes(val) || (p.altura && p.altura.toString().includes(val)));
+                const matches = MASTER_LIST.filter(p => normalizar(p.nombre).includes(val) || (p.altura && p.altura.toString().includes(val)));
                 
                 let html = '';
                 matches.forEach(m => {{
@@ -638,11 +641,14 @@ def generar_html_ensayo(num_turnos, master_list, peso_trono, limite_peso):
             }}
 
             function buscarMini(ev, t, v, s, i) {{
-                const val = ev.target.value.toLowerCase();
+                function normalizar(s) {{
+                    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                }}
+                const val = normalizar(ev.target.value);
                 const sugDiv = document.getElementById(`sug-${{t}}-${{v}}-${{s}}-${{i}}`);
                 if(val.length < 2) {{ sugDiv.style.display = 'none'; return; }}
                 
-                const matches = MASTER_LIST.filter(p => p.nombre.toLowerCase().includes(val) || (p.altura && p.altura.toString().includes(val))).slice(0, 8);
+                const matches = MASTER_LIST.filter(p => normalizar(p.nombre).includes(val) || (p.altura && p.altura.toString().includes(val))).slice(0, 8);
                 sugDiv.innerHTML = '';
                 
                 if(matches.length > 0) {{
