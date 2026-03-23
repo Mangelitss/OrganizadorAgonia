@@ -53,17 +53,6 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
     for i in range(2):
         while len(cruz_turnos[i]) < 8:
             cruz_turnos[i].append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
-            
-    # Marcado visual para el JS y el PDF
-    ids_cruz = {p.get('id', -1) for t in [0, 1] for p in cruz_turnos[t] if p.get('id', -1) != -1}
-    ids_trono = {p.get('id', -1) for p in turno_a_personas + turno_b_personas if p.get('id', -1) != -1}
-    
-    for p in turno_b_personas:
-        if p.get('id', -1) in ids_cruz: p['nombre'] = p.get('nombre', '') + " (C)"
-        
-    for t in [0, 1]:
-        for p in cruz_turnos[t]:
-            if p.get('id', -1) in ids_trono: p['nombre'] = p.get('nombre', '') + " (C)"
 
     # ==========================================
     # DISTRIBUCIÓN AVANZADA: ALTURA + HOMBRO (FASES 1, 2 Y 3)
@@ -519,10 +508,20 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                     render();
                 }}
             }}
+
+            function cargarJSON(event) {{
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {{
+                    try {{
+                        const loadedData = JSON.parse(e.target.result);
+                        
+                        if (loadedData.tipo_procesion && loadedData.tipo_procesion !== "miercoles_santo") {{
+                            alert("❌ ERROR: Este archivo pertenece a otra procesión. No puedes cargarlo aquí.");
                             event.target.value = '';
                             return;
                         }} else if (!loadedData.tipo_procesion && loadedData.Trono && loadedData.Trono["Turno C"]) {{
-                            // Compatibilidad con archivos antiguos de viernes
                             alert("❌ ERROR: Este archivo pertenece al Viernes Santo. No puedes cargarlo aquí.");
                             event.target.value = '';
                             return;
@@ -1022,7 +1021,13 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                     item.className = 'sidebar-item' + (yaAsig ? ' ya-asignado' : '');
                     item.draggable = true;
                     item.title = yaAsig ? 'Ya asignado en el cuadrante' : 'Arrastra a cualquier hueco';
-                    item.innerHTML = `<span>${{p.nombre}}</span><span style="color:#d4af37;font-weight:bold;">${{p.altura}}cm</span>`;
+                    
+                    let prefLetra = '';
+                    let pref = (p.pref_hombro || "").toLowerCase().trim();
+                    if (pref.includes("derech")) prefLetra = ' <span style="color:#888; font-size:10px;">(D)</span>';
+                    else if (pref.includes("izquierd")) prefLetra = ' <span style="color:#888; font-size:10px;">(I)</span>';
+                    
+                    item.innerHTML = `<span>${{p.nombre}}${{prefLetra}}</span><span style="color:#d4af37;font-weight:bold;">${{p.altura}}cm</span>`;
                     item.ondragstart = () => {{ dragging = {{ source: 'sidebar', persona: {{...p}} }}; }};
                     div.appendChild(item);
                 }});

@@ -68,33 +68,6 @@ def generar_cuadrillas_viernes(costaleros, es_par=True):
         while len(cruz_turnos[i]) < 8: 
             cruz_turnos[i].append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
 
-    cruz_counts = {}
-    for t in range(4):
-        for p in cruz_turnos[t]:
-            pid = p.get('id', -1)
-            if pid != -1:
-                cruz_counts[pid] = cruz_counts.get(pid, 0) + 1
-                
-    for t in range(4):
-        for p in cruz_turnos[t]:
-            pid = p.get('id', -1)
-            if pid != -1:
-                if cruz_counts[pid] > 1: p['nombre'] = p.get('nombre', '').replace(' (C-Doble)','').replace(' (C)','') + " (C-Doble)"
-                else: p['nombre'] = p.get('nombre', '').replace(' (C-Doble)','').replace(' (C)','') + " (C)"
-
-    for p in turno_b:
-        pid = p.get('id', -1)
-        if pid in cruz_counts:
-            if cruz_counts[pid] > 1: p['nombre'] = p.get('nombre', '').replace(' (C-Doble)','').replace(' (C)','') + " (C-Doble)"
-            else: p['nombre'] = p.get('nombre', '').replace(' (C-Doble)','').replace(' (C)','') + " (C)"
-            
-    for p in turno_c:
-        pid = p.get('id', -1)
-        if pid != -1 and "(R)" not in p.get('nombre', ''):
-            if pid in cruz_counts:
-                if cruz_counts[pid] > 1: p['nombre'] = p.get('nombre', '').replace(' (C-Doble)','').replace(' (C)','') + " (C-Doble)"
-                else: p['nombre'] = p.get('nombre', '').replace(' (C-Doble)','').replace(' (C)','') + " (C)"
-
     def distribuir_trono(personas):
         varas = ["Izquierda", "Centro", "Derecha"]
         res = {v: {"Delante": [], "Detras": []} for v in varas}
@@ -1087,7 +1060,13 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
                     item.className = 'sidebar-item' + (yaAsig ? ' ya-asignado' : '');
                     item.draggable = true;
                     item.title = yaAsig ? 'Ya asignado en el cuadrante' : 'Arrastra a cualquier hueco';
-                    item.innerHTML = `<span>${{p.nombre}}</span><span style="color:#d4af37;font-weight:bold;">${{p.altura}}cm</span>`;
+                    
+                    let prefLetra = '';
+                    let pref = (p.pref_hombro || "").toLowerCase().trim();
+                    if (pref.includes("derech")) prefLetra = ' <span style="color:#888; font-size:10px;">(D)</span>';
+                    else if (pref.includes("izquierd")) prefLetra = ' <span style="color:#888; font-size:10px;">(I)</span>';
+                    
+                    item.innerHTML = `<span>${{p.nombre}}${{prefLetra}}</span><span style="color:#d4af37;font-weight:bold;">${{p.altura}}cm</span>`;
                     item.ondragstart = () => {{ dragging = {{ source: 'sidebar', persona: {{...p}} }}; }};
                     div.appendChild(item);
                 }});

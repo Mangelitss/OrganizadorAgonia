@@ -17,6 +17,7 @@ from logica_ensayos import generar_html_ensayo
 from logica_informes import crear_html_informe
 from logica_licencia import comprobar_licencia
 from logica_calendario import cargar_eventos, guardar_eventos, generar_html_calendario
+from logica_viacrucis import generar_datos_viacrucis, generar_html_viacrucis
 
 # ==========================================
 # CONFIGURACIÓN Y COLORES
@@ -282,6 +283,7 @@ class GestorCofradeAPP:
             ("Inicio", "🏠"), 
             ("Miércoles Santo", "🕯️"), 
             ("Viernes Santo", "✝️"), 
+            ("Vía Crucis", "⛪"), 
             ("Ensayos", "📋"), 
             ("Calendario", "📅"), 
             ("Censo (Costaleros)", "👥"), 
@@ -320,6 +322,7 @@ class GestorCofradeAPP:
         self.frames["Inicio"] = self.crear_pantalla_inicio()
         self.frames["Miércoles Santo"] = self.crear_pantalla_procesion("Miércoles Santo", "visualizador_miercoles.html", generar_cuadrillas_miercoles, generar_html_miercoles, True)
         self.frames["Viernes Santo"] = self.crear_pantalla_procesion("Viernes Santo", "visualizador_viernes.html", generar_cuadrillas_viernes, generar_html_viernes, True)
+        self.frames["Vía Crucis"] = self.crear_pantalla_viacrucis()
         self.frames["Ensayos"] = self.crear_pantalla_ensayos()
         self.frames["Calendario"] = self.crear_pantalla_calendario()
         self.frames["Censo (Costaleros)"] = self.crear_pantalla_censo()
@@ -491,6 +494,105 @@ class GestorCofradeAPP:
         btn_abrir = self.crear_boton_moderno(btn_frame, "ABRIR CUADRANTE ANTERIOR", "#17517e", "#1f6b9c", C_BLANCO, command=abrir_anterior)
         btn_abrir.pack(side=tk.LEFT)
         tk.Label(card, text="* Generar un nuevo cuadrante sobreescribirá la ultima modificación sin guardar.", font=("Segoe UI", 10, "italic"), bg=C_BLANCO, fg="#888").pack(anchor="w", pady=(30, 0))
+        return f
+
+    def crear_pantalla_viacrucis(self):
+        f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO)
+        
+        tk.Label(f, text="⛪ Gestor de Vía Crucis", font=("Segoe UI", 22, "bold"), bg=C_GRIS_FONDO, fg=C_MORADO).pack(anchor="w", padx=30, pady=(30, 10))
+        
+        card = tk.Frame(f, bg=C_BLANCO, padx=20, pady=20, highlightbackground="#e0e0e0", highlightthickness=1)
+        card.pack(fill=tk.BOTH, expand=True, padx=30, pady=(0, 30))
+        
+        config_frame = tk.Frame(card, bg=C_BLANCO)
+        config_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        tk.Label(config_frame, text="Número de Tramos/Relevos:", bg=C_BLANCO, font=("Segoe UI", 11, "bold")).pack(side=tk.LEFT)
+        entry_tramos = tk.Entry(config_frame, font=("Segoe UI", 12), width=5, relief="solid", bd=1)
+        entry_tramos.insert(0, "4")
+        entry_tramos.pack(side=tk.LEFT, padx=10)
+        
+        var_auto = tk.BooleanVar(value=True)
+        ttk.Checkbutton(config_frame, text="Autocompletar turnos (por altura)", variable=var_auto).pack(side=tk.LEFT, padx=20)
+        
+        tk.Label(card, text="☑ Selecciona los costaleros que asistirán haciendo clic en cualquier parte de su fila:", bg=C_BLANCO, font=("Segoe UI", 11, "bold")).pack(anchor="w", pady=(10, 5))
+        
+        frame_tabla = tk.Frame(card, bg=C_BLANCO)
+        frame_tabla.pack(fill=tk.BOTH, expand=True)
+        
+        columnas = ("Sel", "Nombre", "Altura", "Hombro", "ID")
+        self.tree_viacrucis = ttk.Treeview(frame_tabla, columns=columnas, show="headings", selectmode="none")
+        self.tree_viacrucis.heading("Sel", text="✔")
+        self.tree_viacrucis.heading("Nombre", text="Nombre")
+        self.tree_viacrucis.heading("Altura", text="Altura")
+        self.tree_viacrucis.heading("Hombro", text="Hombro")
+        self.tree_viacrucis.heading("ID", text="ID")
+        
+        self.tree_viacrucis.column("Sel", width=50, anchor="center")
+        self.tree_viacrucis.column("Nombre", width=250)
+        self.tree_viacrucis.column("Altura", width=100, anchor="center")
+        self.tree_viacrucis.column("Hombro", width=120, anchor="center")
+        self.tree_viacrucis.column("ID", width=0, stretch=tk.NO)
+        
+        self.tree_viacrucis.tag_configure("selected", background=C_ORO, foreground=C_TEXTO)
+        self.tree_viacrucis.tag_configure("unselected", background=C_BLANCO, foreground=C_TEXTO)
+
+        scroll = ttk.Scrollbar(frame_tabla, orient=tk.VERTICAL, command=self.tree_viacrucis.yview)
+        self.tree_viacrucis.configure(yscroll=scroll.set)
+        scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree_viacrucis.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        def toggle_selection(event):
+            region = self.tree_viacrucis.identify("region", event.x, event.y)
+            if region == "cell":
+                item = self.tree_viacrucis.identify_row(event.y)
+                if item:
+                    vals = list(self.tree_viacrucis.item(item, "values"))
+                    if vals[0] == "☐":
+                        vals[0] = "☑"
+                        self.tree_viacrucis.item(item, values=vals, tags=("selected",))
+                    else:
+                        vals[0] = "☐"
+                        self.tree_viacrucis.item(item, values=vals, tags=("unselected",))
+                        
+        self.tree_viacrucis.bind("<ButtonRelease-1>", toggle_selection)
+        
+        datos = cargar_datos(CONFIG['archivo_datos'])
+        import unicodedata
+        datos.sort(key=lambda x: unicodedata.normalize('NFD', x.get('nombre', '')).encode('ascii','ignore').decode().lower())
+        for d in datos:
+            hombro = str(d.get('pref_hombro', '')).capitalize()
+            if not hombro or hombro == "Indiferente": hombro = "-"
+            self.tree_viacrucis.insert("", "end", values=("☐", d.get('nombre',''), f"{d.get('altura','')} cm", hombro, d.get('id','')), tags=("unselected",))
+                
+        def generar():
+            ids_sel = []
+            for item in self.tree_viacrucis.get_children():
+                if self.tree_viacrucis.item(item, "values")[0] == "☑":
+                    ids_sel.append(int(self.tree_viacrucis.item(item, "values")[4]))
+                    
+            if not ids_sel:
+                if not messagebox.askyesno("Atención", "No has seleccionado a ningún costalero.\n\n¿Quieres generar los tramos del Vía Crucis completamente vacíos para rellenarlos a mano?"):
+                    return
+            
+            lista_seleccionados = [d for d in datos if d.get('id') in ids_sel]
+            
+            tramos = int(entry_tramos.get()) if entry_tramos.get().isdigit() else 4
+            
+            datos_gen = generar_datos_viacrucis(lista_seleccionados, tramos, var_auto.get() and len(ids_sel) > 0)
+            generar_html_viacrucis(datos_gen, datos, ids_sel)
+            self.abrir_navegador("visualizador_viacrucis.html")
+            
+        def abrir_anterior():
+            if os.path.exists("visualizador_viacrucis.html"): self.abrir_navegador("visualizador_viacrucis.html")
+            else: messagebox.askyesno("No encontrado", "No existe ningún Vía Crucis anterior guardado.")
+
+        btn_frame = tk.Frame(card, bg=C_BLANCO)
+        btn_frame.pack(fill=tk.X, pady=15)
+        btn_generar = self.crear_boton_moderno(btn_frame, "GENERAR VÍA CRUCIS", C_ORO, C_ORO_HOVER, C_TEXTO, command=generar)
+        btn_generar.pack(side=tk.LEFT, padx=(0, 10))
+        btn_abrir = self.crear_boton_moderno(btn_frame, "ABRIR ANTERIOR", "#17517e", "#1f6b9c", C_BLANCO, command=abrir_anterior)
+        btn_abrir.pack(side=tk.LEFT)
         return f
 
     def crear_pantalla_ensayos(self):
