@@ -1281,12 +1281,12 @@
     },
     {
         "id": 133,
-        "nombre": "EJEMPLO",
+        "nombre": "AAA - EJEMPLO",
         "telefono": "676666666",
         "altura": 200,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     }
 ]

@@ -25,7 +25,6 @@ def generar_datos_viacrucis(seleccionados, num_turnos, autocompletar):
 
 def distribuir_estructura(personas):
     varas = ["Izquierda", "Derecha"]
-    # ESTRUCTURA ARREGLADA: Varal -> Sección (Igual que en el Trono principal)
     res = {v: {"Delante": [], "Detras": []} for v in varas}
     
     reales = [p for p in personas if p.get('altura', 0) > 0]
@@ -89,8 +88,9 @@ def generar_html_viacrucis(datos_gen, master_list, seleccionados_ids):
             .vara h3 {{ color: #e8d08c; margin: 0 0 10px 0; font-size: 14px; text-align: center; }}
             .seccion {{ background: #160311; padding: 10px; margin: 10px 0; border-radius: 5px; min-height: 80px; border: 1px dashed #4a1038; }}
             
-            .costalero {{ background: #3d0c2e; border: 1px solid #571342; margin: 5px 0; padding: 8px; border-radius: 4px; cursor: move; display: flex; justify-content: space-between; align-items: center; font-size: 11px; transition: 0.3s; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }}
-            .costalero.vacio {{ border: 1px dashed #571342; background: #0c0209; color: #884d72; cursor: default; flex-direction: column; align-items: stretch; text-shadow: none; overflow: visible; position: relative; }}
+            .costalero {{ background: #3d0c2e; border: 1px solid #571342; margin: 5px 0; padding: 8px; border-radius: 4px; cursor: grab; display: flex; justify-content: space-between; align-items: center; font-size: 11px; transition: 0.3s; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }}
+            .costalero:active {{ cursor: grabbing; }}
+            .costalero.vacio {{ border: 1px dashed #571342; background: #0c0209; color: #884d72; flex-direction: column; align-items: stretch; text-shadow: none; overflow: visible; position: relative; }}
             
             .btn-control {{ background: #3d0c2e; color: #f8f0f5; border: 1px solid #d4af37; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; margin-left: 5px; text-transform: uppercase; transition: 0.3s; }}
             .btn-control:hover {{ background: #571342; box-shadow: 0 0 8px rgba(212, 175, 55, 0.4); }}
@@ -98,6 +98,14 @@ def generar_html_viacrucis(datos_gen, master_list, seleccionados_ids):
             .btn-export:hover {{ background: #b5952f; color:#000; }}
             .btn-danger {{ background: #b30000; border-color: #ff4d4d; }}
             .btn-danger:hover {{ background: #ff4d4d; color: #fff; box-shadow: 0 0 8px rgba(255, 77, 77, 0.4); }}
+            .btn-load {{ background: #17517e; border-color: #2980b9; }}
+            .btn-load:hover {{ background: #1f6b9c; }}
+
+            /* NUEVA ESTRUCTURA VISUAL VÍA CRUCIS */
+            .vc-layout {{ max-width: 560px; margin: 0 auto; }}
+            .vc-label {{ text-align:center; padding: 8px; color:#e8d08c; font-size:13px; font-weight:bold; letter-spacing:2px; border: 1px dashed #3d0c2e; border-radius:4px; margin: 8px 0; }}
+            .vc-cristo {{ text-align:center; padding: 14px 20px; background:#23061b; border:2px solid #d4af37; border-radius:8px; color:#d4af37; font-size:16px; font-weight:bold; letter-spacing:3px; margin: 12px 0; box-shadow: 0 0 15px rgba(212,175,55,0.15); }}
+            .vc-row {{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 4px 0; }}
             
             input.search-p {{ background: #0c0209; border: 1px solid #3d0c2e; color: #d4af37; padding: 5px; width: 100%; font-size: 10px; border-radius: 3px; outline: none; box-sizing: border-box; }}
             input.search-p:focus {{ border-color: #d4af37; }}
@@ -141,6 +149,7 @@ def generar_html_viacrucis(datos_gen, master_list, seleccionados_ids):
                 transition: background 0.2s; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
                 user-select: none;
             }}
+            .sidebar-item:active {{ cursor: grabbing; }}
             .sidebar-item:hover {{ background: #571342; border-color: #d4af37; }}
             .sidebar-item.ya-asignado {{ opacity: 0.38; border-style: dashed; cursor: grab; }}
         </style>
@@ -162,12 +171,31 @@ def generar_html_viacrucis(datos_gen, master_list, seleccionados_ids):
                 <div style="font-size:11px; color:#a37c95; margin-top: 3px;">Indicador de preferencia de hombro: ✅ Hombro Correcto</div>
             </div>
             <div>
+                <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
                 <button class="btn-control btn-danger" onclick="vaciarCuadrante()">🗑️ VACIAR CUADRANTE</button>
+                <button class="btn-control btn-load" onclick="document.getElementById('file-input').click()">📂 CARGAR DATOS</button>
+                <button class="btn-control" onclick="exportarPDF()">📄 EXPORTAR PDF</button>
                 <button class="btn-control btn-export" onclick="descargarDatosJSON()">💾 DESCARGAR DATOS</button>
             </div>
         </div>
 
-        <div id="app" style="margin-top: 30px;"></div>
+        <div style="max-width: 700px; margin: 30px auto 0 auto;">
+            <div style="background:#23061b; padding:15px; border-left:5px solid #d4af37; margin-bottom:15px; border-radius:4px;">
+                <h3 style="margin:0; color:#d4af37;">⛪ ESTRUCTURA DEL VÍA CRUCIS</h3>
+                <p style="margin: 8px 0 0 0; font-size: 13px; color: #e8d08c; line-height: 1.6;">
+                    Cada tramo: <b>2 costaleros delante</b> (Izq + Der) · <b>CRISTO</b> · <b>2 costaleros detrás</b> (Izq + Der) = 8 costaleros por relevo.
+                </p>
+            </div>
+
+            <div style="background:#1a0514; padding:15px; border:1px solid #3d0c2e; margin-bottom:30px; border-radius:4px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                <h3 style="margin:0 0 10px 0; color:#d4af37; font-size: 14px;">🔍 BUSCADOR DE COSTALEROS EN TRAMOS</h3>
+                <p style="margin: 0 0 10px 0; font-size: 11px; color: #a37c95;">Escribe el nombre de un costalero para ver en qué tramo, vara y posición sale. Si lo has asignado varias veces, te aparecerá duplicado aquí abajo.</p>
+                <input type="text" id="buscador-global" placeholder="Escribe el nombre a buscar..." onkeyup="buscarCostaleroGlobal()" style="width:100%; padding:8px; border-radius:4px; border:1px solid #3d0c2e; background:#0c0209; color:#d4af37; font-size:12px; outline:none; box-sizing:border-box;">
+                <div id="res-buscador-global" style="margin-top:10px;"></div>
+            </div>
+        </div>
+
+        <div id="app"></div>
 
         <script>
             const TS_PYTHON = "{marca_tiempo}";
@@ -215,7 +243,7 @@ def generar_html_viacrucis(datos_gen, master_list, seleccionados_ids):
                             }}
                         }}
                     }}
-                    render(); guardarMemoria();
+                    render(); guardarMemoria(); buscarCostaleroGlobal();
                 }}
             }}
 
@@ -228,81 +256,209 @@ def generar_html_viacrucis(datos_gen, master_list, seleccionados_ids):
                             }}
                         }}
                     }}
-                    render(); guardarMemoria();
+                    render(); guardarMemoria(); buscarCostaleroGlobal();
+                }}
+            }}
+
+            function buscarCostaleroGlobal() {{
+                const inputVal = document.getElementById('buscador-global').value;
+                const resDiv = document.getElementById('res-buscador-global');
+                if (!inputVal) {{
+                    resDiv.innerHTML = '';
+                    return;
+                }}
+                const query = normalizarSidebar(inputVal);
+                if (query.length < 2) {{
+                    resDiv.innerHTML = '';
+                    return;
+                }}
+
+                let encontrados = [];
+                for (const [idT, varas] of Object.entries(datos.ViaCrucis)) {{
+                    for (const v of ["Izquierda", "Derecha"]) {{
+                        for (const sec of ["Delante", "Detras"]) {{
+                            for (let idx = 0; idx < varas[v][sec].length; idx++) {{
+                                const p = varas[v][sec][idx];
+                                if (p && p.id !== -1 && p.altura !== 0) {{
+                                    if (normalizarSidebar(p.nombre).includes(query)) {{
+                                        encontrados.push(`
+                                            <div style="background:#3d0c2e; padding:8px; margin-bottom:5px; border-radius:4px; font-size:12px; color:#f8f0f5; border-left: 3px solid #d4af37;">
+                                                👤 <b>${{p.nombre}}</b> está en <b>${{idT}}</b> ➔ Vara <b>${{v}}</b> ➔ <b>${{sec}}</b> (Posición: ${{idx+1}})
+                                            </div>
+                                        `);
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+
+                if (encontrados.length > 0) {{
+                    resDiv.innerHTML = encontrados.join('');
+                }} else {{
+                    resDiv.innerHTML = `<div style="font-size:12px; color:#a37c95;">No se han encontrado resultados en el cuadrante actual.</div>`;
                 }}
             }}
 
             function render() {{
                 const app = document.getElementById('app');
                 app.innerHTML = '';
-                
-                let htmlInfo = `
-                <div style="background:#23061b; padding:15px; border-left:5px solid #d4af37; margin-bottom:20px; border-radius:4px;">
-                    <h3 style="margin:0; color:#d4af37;">⛪ ESTRUCTURA DEL VÍA CRUCIS</h3>
-                    <p style="margin: 8px 0 0 0; font-size: 13px; color: #e8d08c; line-height: 1.6;">
-                        Se compone de <b>4 varales</b> en total: 2 varales delanteros y 2 varales traseros.<br>
-                        Cada varal es portado por <b>2 costaleros</b> (total: 8 costaleros por relevo).
-                    </p>
-                </div>
-                `;
-                app.innerHTML += htmlInfo;
-                
+
                 for (const [idT, varas] of Object.entries(datos.ViaCrucis)) {{
-                    let html = `<div class="turno-container"><h2 style="display:flex; justify-content:space-between; align-items:center;">${{idT}} <button class="btn-control btn-danger" style="font-size:10px; padding:4px 12px; text-transform:none; letter-spacing:0;" onclick="vaciarTurno('${{idT}}')">🗑️ Vaciar tramo</button></h2><div class="grid-cruz">`;
-                    
-                    const ordenVaras = ["Izquierda", "Derecha"];
-                    for (const vNom of ordenVaras) {{
-                        const vData = varas[vNom];
-                        html += `<div class="vara"><h3>VARAL ${{vNom.toUpperCase()}}</h3>`;
+                    let html = `<div class="turno-container"><h2 style="display:flex; justify-content:space-between; align-items:center;">${{idT}} <button class="btn-control btn-danger" style="font-size:10px; padding:4px 12px; text-transform:none; letter-spacing:0;" onclick="vaciarTurno('${{idT}}')">🗑️ Vaciar tramo</button></h2>`;
+                    html += `<div class="vc-layout">`;
+
+                    function celdaVC(p, idT2, vNom, sec, i) {{
+                        const esVacio = p.altura === 0;
+                        let tickHombro = ''; let prefLetra = '';
+                        if (!esVacio) {{
+                            let pref = (p.pref_hombro || "").toLowerCase().trim();
+                            if (pref.includes("derech")) {{
+                                prefLetra = ' <span style="color:#888; font-size:9px;">(D)</span>';
+                                tickHombro = vNom === "Izquierda"
+                                    ? ' <span title="Hombro correcto" style="font-size:11px;">✅</span>'
+                                    : ' <span title="Hombro incorrecto" style="font-size:11px;">❌</span>';
+                            }} else if (pref.includes("izquierd")) {{
+                                prefLetra = ' <span style="color:#888; font-size:9px;">(I)</span>';
+                                tickHombro = vNom === "Derecha"
+                                    ? ' <span title="Hombro correcto" style="font-size:11px;">✅</span>'
+                                    : ' <span title="Hombro incorrecto" style="font-size:11px;">❌</span>';
+                            }}
+                        }}
                         
-                        ["Delante", "Detras"].forEach(sec => {{
-                            html += `<div style="text-align:center; padding-top:10px; margin-bottom:15px; color:#e8d08c; font-size:12px; font-weight:bold; border-bottom:1px dashed #3d0c2e; padding-bottom:5px;">
-                                ${{sec === "Delante" ? "▲ DELANTE ▲" : "▼ DETRÁS ▼"}}
-                            </div>`;
-                            
-                            html += `<div class="seccion" ondragover="allow(event)">`;
-                            vData[sec].forEach((p, i) => {{
-                                const esVacio = p.altura === 0;
-                                let tickHombro = ''; let prefLetra = '';
+                        // NOTA: Se ha añadido ondragover="allow(event)" para que permita soltar (Drop)
+                        return `<div class="costalero ${{esVacio ? 'vacio' : ''}}"
+                                     draggable="true"
+                                     ondragstart="drag(event,'${{idT2}}','${{vNom}}','${{sec}}',${{i}})"
+                                     ondragover="allow(event)"
+                                     ondrop="drop(event,'${{idT2}}','${{vNom}}','${{sec}}',${{i}})">
+                            ${{esVacio ?
+                                `<input type="text" class="search-p" placeholder="Buscar / Arrastrar aquí..." onkeyup="buscarMini(event,'${{idT2}}','${{vNom}}','${{sec}}',${{i}})">
+                                 <div id="sug-${{idT2}}-${{vNom}}-${{sec}}-${{i}}" class="sugerencias" style="display:none"></div>` :
+                                `<span>
+                                    <button style="background:none;border:none;color:#ff4757;cursor:pointer;padding:0 5px 0 0;" onclick="eliminar('${{idT2}}','${{vNom}}','${{sec}}',${{i}})">🗑️</button>
+                                    <span>${{p.nombre}}${{prefLetra}} ${{tickHombro}}</span>
+                                 </span>
+                                 <span style="color:#d4af37;font-weight:bold;">${{p.altura}}cm</span>`
+                            }}
+                        </div>`;
+                    }}
 
-                                if (!esVacio) {{
-                                    let pref = (p.pref_hombro || "").toLowerCase().trim();
-                                    if (pref.includes("derech")) {{
-                                        prefLetra = ' <span style="color:#888; font-size:9px;">(D)</span>';
-                                        if (vNom === "Izquierda") tickHombro = ' <span title="Correcto" style="font-size:11px;">✅</span>';
-                                        else tickHombro = ' <span title="Incorrecto" style="font-size:11px;">❌</span>';
-                                    }} else if (pref.includes("izquierd")) {{
-                                        prefLetra = ' <span style="color:#888; font-size:9px;">(I)</span>';
-                                        if (vNom === "Derecha") tickHombro = ' <span title="Correcto" style="font-size:11px;">✅</span>';
-                                        else tickHombro = ' <span title="Incorrecto" style="font-size:11px;">❌</span>';
-                                    }} else {{
-                                        tickHombro = ' <span style="font-size:11px;">✅</span>';
-                                    }}
-                                }}
-
-                                html += `
-                                    <div class="costalero ${{esVacio ? 'vacio' : ''}}" 
-                                         draggable="${{!esVacio}}" ondragstart="drag(event, '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})" ondrop="drop(event, '${{idT}}', '${{vNom}}', '${{sec}}', ${{i}})">
-                                        ${{esVacio ? 
-                                            `<input type="text" class="search-p" placeholder="Buscar..." onkeyup="buscarMini(event, '${{idT}}','${{vNom}}','${{sec}}',${{i}})">
-                                             <div id="sug-${{idT}}-${{vNom}}-${{sec}}-${{i}}" class="sugerencias" style="display:none"></div>` :
-                                            `<span>
-                                                <button style="background:none; border:none; color:#ff4757; cursor:pointer; padding:0 5px 0 0;" onclick="eliminar('${{idT}}','${{vNom}}','${{sec}}',${{i}})">🗑️</button>
-                                                <span>${{p.nombre}}${{prefLetra}} ${{tickHombro}}</span>
-                                            </span>
-                                            <span><span style="color:#d4af37; font-weight:bold;">${{p.altura}}cm</span></span>`
-                                        }}
-                                    </div>`;
-                            }});
-                            html += `</div>`;
-                        }});
+                    // DELANTE
+                    html += `<div class="vc-label">▲ &nbsp; DELANTE &nbsp; ▲</div>`;
+                    for (let idx = 0; idx < varas["Izquierda"]["Delante"].length; idx++) {{
+                        html += `<div class="vc-row">`;
+                        html += celdaVC(varas["Izquierda"]["Delante"][idx], idT, "Izquierda", "Delante", idx);
+                        html += celdaVC(varas["Derecha"]["Delante"][idx],   idT, "Derecha",   "Delante", idx);
                         html += `</div>`;
                     }}
+
+                    // CRISTO
+                    html += `<div class="vc-cristo">✝ &nbsp; CRISTO &nbsp; ✝</div>`;
+
+                    // DETRÁS
+                    for (let idx = 0; idx < varas["Izquierda"]["Detras"].length; idx++) {{
+                        html += `<div class="vc-row">`;
+                        html += celdaVC(varas["Izquierda"]["Detras"][idx], idT, "Izquierda", "Detras", idx);
+                        html += celdaVC(varas["Derecha"]["Detras"][idx],   idT, "Derecha",   "Detras", idx);
+                        html += `</div>`;
+                    }}
+                    html += `<div class="vc-label">▼ &nbsp; DETRÁS &nbsp; ▼</div>`;
+
                     html += `</div></div>`;
-                    
-                    // ESTA ERA LA LÍNEA QUE FALTABA Y DEJABA LA PANTALLA EN NEGRO
-                    app.innerHTML += html; 
+                    app.innerHTML += html;
                 }}
+            }}
+
+            function cargarJSON(event) {{
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {{
+                    try {{
+                        const loadedData = JSON.parse(e.target.result);
+                        if (loadedData.tipo_procesion && loadedData.tipo_procesion !== "via_crucis") {{
+                            alert("❌ ERROR: Este archivo no pertenece a un Vía Crucis.");
+                            event.target.value = '';
+                            return;
+                        }}
+                        if (loadedData.ViaCrucis) {{
+                            datos = loadedData;
+                            localStorage.setItem('viacrucis_ts', TS_PYTHON);
+                            localStorage.setItem('viacrucis_datos', JSON.stringify(datos));
+                            render();
+                            buscarCostaleroGlobal();
+                            if (sidebarAbierto) renderSidebar();
+                        }} else {{
+                            alert("❌ El archivo no tiene la estructura correcta de Vía Crucis.");
+                        }}
+                    }} catch(err) {{
+                        alert("❌ Error al leer el archivo: " + err.message);
+                    }}
+                    event.target.value = '';
+                }};
+                reader.readAsText(file);
+            }}
+
+            function exportarPDF() {{
+                let htmlPDF = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+                <title>Vía Crucis - Informe Oficial</title>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Open+Sans:wght@400;600;800&display=swap');
+                    body {{ font-family: 'Open Sans', sans-serif; background:#f4f6f8; color:#333; margin:0; padding:20px; }}
+                    .btn-pdf {{ background:#4F1243; color:#fff; padding:12px 25px; border-radius:5px; font-weight:bold; cursor:pointer; border:none; font-size:14px; text-transform:uppercase; display:block; margin-bottom:20px; }}
+                    .container {{ max-width:800px; margin:0 auto; background:#fff; padding:40px; box-shadow:0 0 15px rgba(0,0,0,.1); border-top:8px solid #4F1243; }}
+                    h1 {{ color:#4a148c; font-family:'Cinzel',serif; font-size:18px; text-transform:uppercase; margin:0 0 4px; }}
+                    h2 {{ color:#b5952f; font-size:14px; margin:0 0 20px; letter-spacing:1px; }}
+                    .tramo {{ border:1px solid #e0e0e0; border-left:5px solid #4F1243; border-radius:6px; margin-bottom:20px; padding:15px; page-break-inside:avoid; }}
+                    .tramo h3 {{ color:#4F1243; margin:0 0 12px; font-size:15px; text-transform:uppercase; }}
+                    .estructura {{ display:grid; grid-template-columns:1fr; max-width:400px; margin:0 auto; }}
+                    .label-sec {{ text-align:center; background:#f4f6f8; padding:5px; font-weight:bold; font-size:11px; letter-spacing:2px; color:#4F1243; border-radius:4px; margin:5px 0; }}
+                    .cristo-sep {{ text-align:center; background:#4F1243; color:#d4af37; padding:8px; font-weight:bold; font-size:13px; letter-spacing:3px; border-radius:4px; margin:8px 0; }}
+                    .fila {{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:3px 0; }}
+                    .celda {{ background:#f9f9f9; border:1px solid #ddd; padding:6px 10px; border-radius:4px; font-size:12px; }}
+                    .celda.vacio {{ color:#aaa; font-style:italic; }}
+                    @media print {{ .btn-pdf {{display:none;}} body {{background:#fff;padding:0;}} .container {{box-shadow:none;border-top:none;}} }}
+                </style></head><body>
+                <button class="btn-pdf" onclick="html2pdf().set({{margin:10,filename:'ViaCrucis.pdf',image:{{type:'jpeg',quality:0.98}},html2canvas:{{scale:2}},jsPDF:{{unit:'mm',format:'a4',orientation:'portrait'}}}}).from(document.getElementById('pdf-content')).save()">📥 DESCARGAR PDF</button>
+                <div class="container" id="pdf-content">
+                <h1>OFS Muy Ilustre Mayordomía de Nuestro Padre Jesús Nazareno</h1>
+                <h2>Distribución Oficial del Vía Crucis</h2>`;
+
+                for (const [idT, varas] of Object.entries(datos.ViaCrucis)) {{
+                    htmlPDF += `<div class="tramo"><h3>${{idT}}</h3><div class="estructura">`;
+                    htmlPDF += `<div class="label-sec">▲ DELANTE ▲</div>`;
+
+                    const dI = varas["Izquierda"]["Delante"];
+                    const dD = varas["Derecha"]["Delante"];
+                    for (let idx = 0; idx < dI.length; idx++) {{
+                        const pI = dI[idx], pD = dD[idx];
+                        htmlPDF += `<div class="fila">
+                            <div class="celda ${{pI.altura===0?'vacio':''}}">${{pI.altura===0?'HUECO LIBRE':pI.nombre+' ('+pI.altura+'cm)'}}</div>
+                            <div class="celda ${{pD.altura===0?'vacio':''}}">${{pD.altura===0?'HUECO LIBRE':pD.nombre+' ('+pD.altura+'cm)'}}</div>
+                        </div>`;
+                    }}
+
+                    htmlPDF += `<div class="cristo-sep">✝ CRISTO ✝</div>`;
+
+                    const tI = varas["Izquierda"]["Detras"];
+                    const tD = varas["Derecha"]["Detras"];
+                    for (let idx = 0; idx < tI.length; idx++) {{
+                        const pI = tI[idx], pD = tD[idx];
+                        htmlPDF += `<div class="fila">
+                            <div class="celda ${{pI.altura===0?'vacio':''}}">${{pI.altura===0?'HUECO LIBRE':pI.nombre+' ('+pI.altura+'cm)'}}</div>
+                            <div class="celda ${{pD.altura===0?'vacio':''}}">${{pD.altura===0?'HUECO LIBRE':pD.nombre+' ('+pD.altura+'cm)'}}</div>
+                        </div>`;
+                    }}
+
+                    htmlPDF += `<div class="label-sec">▼ DETRÁS ▼</div></div></div>`;
+                }}
+
+                htmlPDF += `</div></body></html>`;
+                const ventana = window.open('', '_blank');
+                ventana.document.write(htmlPDF);
+                ventana.document.close();
             }}
 
             function buscarMini(ev, t, v, s, i) {{
@@ -320,7 +476,10 @@ def generar_html_viacrucis(datos_gen, master_list, seleccionados_ids):
                         const div = document.createElement('div');
                         div.className = 'sug-item';
                         div.innerHTML = `${{m.nombre}} (${{m.altura}}cm)`;
-                        div.onclick = () => {{ datos.ViaCrucis[t][v][s][i] = {{...m}}; render(); guardarMemoria(); }};
+                        div.onclick = () => {{ 
+                            datos.ViaCrucis[t][v][s][i] = {{...m}}; 
+                            render(); guardarMemoria(); buscarCostaleroGlobal(); 
+                        }};
                         sugDiv.appendChild(div);
                     }});
                 }} else sugDiv.style.display = 'none';
@@ -329,24 +488,38 @@ def generar_html_viacrucis(datos_gen, master_list, seleccionados_ids):
             let dragging = null;
             function allow(ev) {{ ev.preventDefault(); }}
             function drag(ev, t, v, s, i) {{ dragging = {{ source: 'slot', t, v, s, i }}; }}
+            
             function drop(ev, t, v, s, i) {{
                 ev.preventDefault();
                 if (!dragging) return;
+                
+                let targetSlot = datos.ViaCrucis[t][v][s][i];
+
                 if (dragging.source === 'sidebar') {{
+                    // Si viene del menú lateral y hay alguien, pedimos confirmación
+                    if (targetSlot && targetSlot.id !== -1 && targetSlot.altura !== 0) {{
+                        if (!confirm(`⚠️ El hueco ya está ocupado por ${{targetSlot.nombre}}.\\n¿Deseas reemplazarlo por ${{dragging.persona.nombre}}?`)) {{
+                            return; // Se cancela la acción
+                        }}
+                    }}
                     datos.ViaCrucis[t][v][s][i] = {{...dragging.persona}};
                 }} else {{
+                    // Intercambio (Swap) entre dos personas que ya están en el cuadrante
                     let orig = datos.ViaCrucis[dragging.t][dragging.v][dragging.s][dragging.i];
-                    datos.ViaCrucis[dragging.t][dragging.v][dragging.s][dragging.i] = datos.ViaCrucis[t][v][s][i];
+                    datos.ViaCrucis[dragging.t][dragging.v][dragging.s][dragging.i] = targetSlot;
                     datos.ViaCrucis[t][v][s][i] = orig;
                 }}
+                
                 render(); guardarMemoria();
                 if (sidebarAbierto) renderSidebar();
+                buscarCostaleroGlobal(); // Actualizar resultados del buscador
             }}
             
             function eliminar(t, v, s, i) {{
                 datos.ViaCrucis[t][v][s][i] = {{"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1}};
                 render(); guardarMemoria();
                 if (sidebarAbierto) renderSidebar();
+                buscarCostaleroGlobal();
             }}
 
             // PANEL LATERAL CENSO

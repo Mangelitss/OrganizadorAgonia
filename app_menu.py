@@ -22,6 +22,8 @@ from logica_viacrucis import generar_datos_viacrucis, generar_html_viacrucis
 # ==========================================
 # CONFIGURACIÓN Y COLORES
 # ==========================================
+VERSION_ACTUAL = "1.1" # <--- VERSIÓN ACTUAL DEL PROGRAMA
+
 CONFIG = {
     "peso_trono_kg": 2000,
     "peso_cruz_kg": 200,      
@@ -34,8 +36,8 @@ CONFIG = {
 C_MORADO = "#4F1243"
 C_MORADO_HOVER = "#7a1b67"
 C_MORADO_BG = "#2a0a23"
-C_ORO = "#d4af37"
-C_ORO_HOVER = "#b5952f"
+C_ORO = "#D1B514"
+C_ORO_HOVER = "#97820B"
 C_BLANCO = "#ffffff"
 C_GRIS_FONDO = "#f0f2f5"
 C_TEXTO = "#333333"
@@ -57,7 +59,7 @@ class GestorCofradeAPP:
             pass
 
         self.root.title("Gestor de Turnos Cristo de la Agonía V1.0 - Ntro. Padre Jesús Nazareno")
-        self.root.geometry("1280x720")
+        self.root.geometry("1366x720")
         self.root.configure(bg=C_GRIS_FONDO)
         # HACEMOS LA VENTANA PRINCIPAL REESCALABLE
         self.root.resizable(True, True)
@@ -77,6 +79,13 @@ class GestorCofradeAPP:
         self.crear_menu_lateral()
         self.crear_pantallas()
         self.mostrar_pantalla("Inicio")
+
+        # F11 — alternar pantalla completa
+        self._pantalla_completa = False
+        def toggle_fullscreen(event=None):
+            self._pantalla_completa = not self._pantalla_completa
+            self.root.attributes('-fullscreen', self._pantalla_completa)
+        self.root.bind("<F11>", toggle_fullscreen)
 
         # 2. VERIFICAMOS LA SESIÓN:
         self.verificar_sesion()
@@ -117,7 +126,7 @@ class GestorCofradeAPP:
         self.ventana_login = tk.Toplevel(self.root)
         self.ventana_login.title("Activación de Licencia - Gestor Cofrade")
         self.ventana_login.geometry("450x600") 
-        self.ventana_login.configure(bg="#23061b") 
+        self.ventana_login.configure(bg=C_MORADO) 
         self.ventana_login.resizable(True, True)
         self.ventana_login.protocol("WM_DELETE_WINDOW", self.root.destroy)
         
@@ -137,20 +146,20 @@ class GestorCofradeAPP:
             self.ventana_login.iconphoto(False, logo_img)
             self.root.iconphoto(False, logo_img)
             
-            lbl_logo = tk.Label(self.ventana_login, image=logo_img, bg="#23061b")
+            lbl_logo = tk.Label(self.ventana_login, image=logo_img, bg=C_MORADO)
             lbl_logo.image = logo_img  
             lbl_logo.pack(pady=(25, 10))
         except Exception as e:
             pass
 
-        tk.Label(self.ventana_login, text="CONTROL DE ACCESO", font=("Georgia", 18, "bold"), bg="#23061b", fg="#d4af37").pack(pady=(0, 25))
+        tk.Label(self.ventana_login, text="CONTROL DE ACCESO", font=("Georgia", 18, "bold"), bg=C_MORADO, fg="#d4af37").pack(pady=(0, 25))
         
-        tk.Label(self.ventana_login, text="Usuario (Hermandad):", font=("Georgia", 11, "bold"), bg="#23061b", fg="#e8d08c").pack(anchor="w", padx=50, pady=(0, 5))
-        self.entry_user = tk.Entry(self.ventana_login, font=("Helvetica", 14), bg="#0c0209", fg="#d4af37", insertbackground="#d4af37", relief="solid", bd=1, justify="center")
+        tk.Label(self.ventana_login, text="Usuario (Hermandad):", font=("Georgia", 11, "bold"), bg=C_MORADO, fg="#e8d08c").pack(anchor="w", padx=50, pady=(0, 5))
+        self.entry_user = tk.Entry(self.ventana_login, font=("Helvetica", 14), bg=C_MORADO_BG, fg="#d4af37", insertbackground="#d4af37", relief="solid", bd=1, justify="center")
         self.entry_user.pack(fill=tk.X, padx=50, ipady=6, pady=(0, 20))
         
-        tk.Label(self.ventana_login, text="Contraseña de Licencia:", font=("Georgia", 11, "bold"), bg="#23061b", fg="#e8d08c").pack(anchor="w", padx=50, pady=(0, 5))
-        self.entry_pass = tk.Entry(self.ventana_login, font=("Helvetica", 14), bg="#0c0209", fg="#d4af37", insertbackground="#d4af37", show="*", relief="solid", bd=1, justify="center")
+        tk.Label(self.ventana_login, text="Contraseña de Licencia:", font=("Georgia", 11, "bold"), bg=C_MORADO, fg="#e8d08c").pack(anchor="w", padx=50, pady=(0, 5))
+        self.entry_pass = tk.Entry(self.ventana_login, font=("Helvetica", 14), bg=C_MORADO_BG, fg="#d4af37", insertbackground="#d4af37", show="*", relief="solid", bd=1, justify="center")
         self.entry_pass.pack(fill=tk.X, padx=50, ipady=6, pady=(0, 35))
         
         btn_login = tk.Button(self.ventana_login, text="INICIAR SESIÓN", font=("Georgia", 13, "bold"), bg="#d4af37", fg="#0c0209", activebackground="#b5952f", activeforeground="#000", cursor="hand2", relief="flat", command=self.validar_acceso)
@@ -177,6 +186,95 @@ class GestorCofradeAPP:
             messagebox.showinfo("Éxito", "Licencia validada correctamente.\n¡Bienvenido al Gestor Cofrade!")
         else:
             messagebox.showerror("Acceso Denegado", mensaje)
+
+    # --- SISTEMA DE ACTUALIZACIONES ---
+    def comprobar_actualizacion_manual(self):
+        """Comprueba al hacer clic si hay una versión nueva en la base de datos."""
+        try:
+            url_firebase = "https://licencias-gestor-cofrade-default-rtdb.europe-west1.firebasedatabase.app/app_config.json"
+            resp = requests.get(url_firebase, timeout=5)
+            
+            if resp.status_code == 200 and resp.json() is not None:
+                datos = resp.json()
+                
+                # --- ESTAS DOS LÍNEAS SON LA CORRECCIÓN ---
+                # Si Firebase ha metido los datos dentro de un sub-nodo "app_config", entramos en él
+                if "app_config" in datos:
+                    datos = datos["app_config"]
+                # ------------------------------------------
+
+                version_nube = datos.get("ultima_version", VERSION_ACTUAL)
+                link_descarga = datos.get("link_descarga", "")
+                
+                if version_nube > VERSION_ACTUAL:
+                    respuesta = messagebox.askyesno(
+                        "✨ Actualización Disponible", 
+                        f"¡Hay una versión nueva ({version_nube}) disponible!\n\n"
+                        f"¿Quieres descargarla e instalarla ahora?\n"
+                        f"El programa se reiniciará automáticamente."
+                    )
+                    if respuesta:
+                        self.descargar_e_instalar(link_descarga)
+                else:
+                    messagebox.showinfo("Actualizado", f"Ya tienes la última versión instalada (v{VERSION_ACTUAL}).")
+            else:
+                messagebox.showwarning("Error", "No se pudo comprobar la versión en la nube en este momento.")
+        except Exception as e:
+            messagebox.showerror("Error de conexión", f"Comprueba tu conexión a internet.\nDetalle: {e}")
+
+    def descargar_e_instalar(self, url):
+        """Descarga el nuevo .exe, ejecuta Actualizador.exe y se cierra."""
+        import urllib.request
+        import subprocess
+        
+        # Identificamos el nombre real de este archivo
+        if getattr(sys, 'frozen', False):
+            exe_actual = os.path.basename(sys.executable)
+        else:
+            exe_actual = os.path.basename(__file__)
+
+        exe_nuevo = "Gestor_Temp.exe"
+        actualizador = "Actualizador.exe"
+        
+        # Verificar si existe el programa actualizador
+        if not os.path.exists(actualizador):
+            messagebox.showerror("Falta Actualizador", 
+                f"No se ha encontrado el archivo '{actualizador}' en esta misma carpeta.\n"
+                "Asegúrate de que está junto al Gestor para poder actualizar.")
+            return
+
+        # Mostramos la ventana de espera con diseño moderno
+        win_progreso = tk.Toplevel(self.root)
+        win_progreso.title("Descargando...")
+        win_progreso.geometry("350x120")
+        win_progreso.configure(bg=C_MORADO)
+        win_progreso.overrideredirect(True)
+        
+        win_progreso.update_idletasks()
+        x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (350 // 2)
+        y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (120 // 2)
+        win_progreso.geometry(f"+{x}+{y}")
+        
+        tk.Label(win_progreso, text="🔄 Descargando actualización...", fg="#d4af37", bg=C_MORADO, font=("Segoe UI", 12, "bold")).pack(pady=(30, 5))
+        tk.Label(win_progreso, text="Por favor, no cierres el programa.", fg=C_BLANCO, bg=C_MORADO, font=("Segoe UI", 10)).pack()
+        
+        # Actualizamos la vista antes de congelar el hilo principal con la descarga
+        self.root.update()
+
+        try:
+            # Descargamos el archivo a Gestor_Temp.exe
+            urllib.request.urlretrieve(url, exe_nuevo)
+            
+            # Lanzamos el actualizador pasándole qué archivos debe intercambiar
+            subprocess.Popen([actualizador, exe_actual, exe_nuevo])
+            
+            # Cerramos este programa (GestorCofrade.exe) inmediatamente
+            self.root.quit()
+            sys.exit()
+            
+        except Exception as e:
+            win_progreso.destroy()
+            messagebox.showerror("Error en la descarga", f"Hubo un fallo al intentar actualizar:\n{e}")
 
     # --- UTILIDADES ---
     def guardar_censo(self, datos):
@@ -294,8 +392,12 @@ class GestorCofradeAPP:
             btn = self.crear_boton_moderno(self.frame_menu, op, C_MORADO, C_MORADO_HOVER, C_BLANCO, icon=icon, command=lambda nombre=op: self.mostrar_pantalla(nombre))
             btn.pack(fill=tk.X, pady=2, padx=10)
             
+        # --- NUEVO BOTÓN DE ACTUALIZAR ---
+        btn_actualizar = self.crear_boton_moderno(self.frame_menu, "Buscar Actualización", "#17517e", "#1f6b9c", C_BLANCO, icon="🔄", command=self.comprobar_actualizacion_manual)
+        btn_actualizar.pack(side=tk.BOTTOM, fill=tk.X, pady=(0, 5), padx=10)
+        
         btn_salir = self.crear_boton_moderno(self.frame_menu, "SALIR DEL SISTEMA", "#ff4757", "#ff6b81", C_BLANCO, icon="❌", command=self.root.quit)
-        btn_salir.pack(side=tk.BOTTOM, fill=tk.X, pady=20, padx=10)
+        btn_salir.pack(side=tk.BOTTOM, fill=tk.X, pady=(0, 20), padx=10)
 
     def mostrar_pantalla(self, nombre):
         frame_in = self.frames.get(nombre)
@@ -497,6 +599,12 @@ class GestorCofradeAPP:
         return f
 
     def crear_pantalla_viacrucis(self):
+        import unicodedata
+        def norm(s): return unicodedata.normalize('NFD', str(s)).encode('ascii','ignore').decode().lower()
+
+        self._vc_sort_col = "Nombre"
+        self._vc_sort_rev = False
+
         f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO)
         
         tk.Label(f, text="⛪ Gestor de Vía Crucis", font=("Segoe UI", 22, "bold"), bg=C_GRIS_FONDO, fg=C_MORADO).pack(anchor="w", padx=30, pady=(30, 10))
@@ -505,7 +613,7 @@ class GestorCofradeAPP:
         card.pack(fill=tk.BOTH, expand=True, padx=30, pady=(0, 30))
         
         config_frame = tk.Frame(card, bg=C_BLANCO)
-        config_frame.pack(fill=tk.X, pady=(0, 15))
+        config_frame.pack(fill=tk.X, pady=(0, 10))
         
         tk.Label(config_frame, text="Número de Tramos/Relevos:", bg=C_BLANCO, font=("Segoe UI", 11, "bold")).pack(side=tk.LEFT)
         entry_tramos = tk.Entry(config_frame, font=("Segoe UI", 12), width=5, relief="solid", bd=1)
@@ -514,73 +622,129 @@ class GestorCofradeAPP:
         
         var_auto = tk.BooleanVar(value=True)
         ttk.Checkbutton(config_frame, text="Autocompletar turnos (por altura)", variable=var_auto).pack(side=tk.LEFT, padx=20)
-        
-        tk.Label(card, text="☑ Selecciona los costaleros que asistirán haciendo clic en cualquier parte de su fila:", bg=C_BLANCO, font=("Segoe UI", 11, "bold")).pack(anchor="w", pady=(10, 5))
+
+        # --- BUSCADOR Y CONTADOR ---
+        search_frame = tk.Frame(card, bg=C_BLANCO)
+        search_frame.pack(fill=tk.X, pady=(0, 5))
+
+        tk.Label(search_frame, text="🔍 Buscar:", bg=C_BLANCO, font=("Segoe UI", 11)).pack(side=tk.LEFT, padx=(0, 5))
+        entry_busq_vc = tk.Entry(search_frame, font=("Segoe UI", 11), width=28, relief="solid", bd=1)
+        entry_busq_vc.pack(side=tk.LEFT)
+
+        lbl_cont_vc = tk.Label(search_frame, text="", bg=C_BLANCO, font=("Segoe UI", 10), fg="#555")
+        lbl_cont_vc.pack(side=tk.RIGHT)
+
+        tk.Label(card, text="☑ Selecciona los costaleros que asistirán haciendo clic en cualquier parte de su fila:", bg=C_BLANCO, font=("Segoe UI", 11, "bold")).pack(anchor="w", pady=(5, 5))
         
         frame_tabla = tk.Frame(card, bg=C_BLANCO)
         frame_tabla.pack(fill=tk.BOTH, expand=True)
         
         columnas = ("Sel", "Nombre", "Altura", "Hombro", "ID")
         self.tree_viacrucis = ttk.Treeview(frame_tabla, columns=columnas, show="headings", selectmode="none")
-        self.tree_viacrucis.heading("Sel", text="✔")
-        self.tree_viacrucis.heading("Nombre", text="Nombre")
-        self.tree_viacrucis.heading("Altura", text="Altura")
+
+        def cmd_sort_vc(col):
+            if self._vc_sort_col == col:
+                self._vc_sort_rev = not self._vc_sort_rev
+            else:
+                self._vc_sort_col = col
+                self._vc_sort_rev = False
+            refrescar_vc()
+
+        self.tree_viacrucis.heading("Sel",    text="✔")
+        self.tree_viacrucis.heading("Nombre", text="Nombre",   command=lambda: cmd_sort_vc("Nombre"))
+        self.tree_viacrucis.heading("Altura", text="Altura",   command=lambda: cmd_sort_vc("Altura"))
         self.tree_viacrucis.heading("Hombro", text="Hombro")
-        self.tree_viacrucis.heading("ID", text="ID")
+        self.tree_viacrucis.heading("ID",     text="ID")
         
-        self.tree_viacrucis.column("Sel", width=50, anchor="center")
+        self.tree_viacrucis.column("Sel",    width=50,  anchor="center")
         self.tree_viacrucis.column("Nombre", width=250)
         self.tree_viacrucis.column("Altura", width=100, anchor="center")
         self.tree_viacrucis.column("Hombro", width=120, anchor="center")
-        self.tree_viacrucis.column("ID", width=0, stretch=tk.NO)
+        self.tree_viacrucis.column("ID",     width=0,   stretch=tk.NO)
         
-        self.tree_viacrucis.tag_configure("selected", background=C_ORO, foreground=C_TEXTO)
+        self.tree_viacrucis.tag_configure("selected",   background=C_ORO,    foreground=C_TEXTO)
         self.tree_viacrucis.tag_configure("unselected", background=C_BLANCO, foreground=C_TEXTO)
 
         scroll = ttk.Scrollbar(frame_tabla, orient=tk.VERTICAL, command=self.tree_viacrucis.yview)
         self.tree_viacrucis.configure(yscroll=scroll.set)
         scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self.tree_viacrucis.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        
+
+        # Estado de selección separado de la vista (persiste al reordenar)
+        self._vc_seleccionados = set()  # ids seleccionados
+
         def toggle_selection(event):
             region = self.tree_viacrucis.identify("region", event.x, event.y)
             if region == "cell":
                 item = self.tree_viacrucis.identify_row(event.y)
                 if item:
-                    vals = list(self.tree_viacrucis.item(item, "values"))
-                    if vals[0] == "☐":
-                        vals[0] = "☑"
-                        self.tree_viacrucis.item(item, values=vals, tags=("selected",))
+                    pid = int(self.tree_viacrucis.item(item, "values")[4])
+                    if pid in self._vc_seleccionados:
+                        self._vc_seleccionados.discard(pid)
+                        self.tree_viacrucis.item(item, tags=("unselected",))
                     else:
-                        vals[0] = "☐"
-                        self.tree_viacrucis.item(item, values=vals, tags=("unselected",))
-                        
+                        self._vc_seleccionados.add(pid)
+                        self.tree_viacrucis.item(item, tags=("selected",))
+                    _actualizar_contador_vc()
+
         self.tree_viacrucis.bind("<ButtonRelease-1>", toggle_selection)
-        
-        datos = cargar_datos(CONFIG['archivo_datos'])
-        import unicodedata
-        datos.sort(key=lambda x: unicodedata.normalize('NFD', x.get('nombre', '')).encode('ascii','ignore').decode().lower())
-        for d in datos:
-            hombro = str(d.get('pref_hombro', '')).capitalize()
-            if not hombro or hombro == "Indiferente": hombro = "-"
-            self.tree_viacrucis.insert("", "end", values=("☐", d.get('nombre',''), f"{d.get('altura','')} cm", hombro, d.get('id','')), tags=("unselected",))
-                
-        def generar():
-            ids_sel = []
+
+        def _actualizar_contador_vc():
+            total = len(self.tree_viacrucis.get_children())
+            sel   = len(self._vc_seleccionados)
+            lbl_cont_vc.config(text=f"{sel} seleccionados de {total}")
+
+        def refrescar_vc(event=None):
+            filtro = norm(entry_busq_vc.get())
+            datos = cargar_datos(CONFIG['archivo_datos'])
+
+            # Filtro texto (nombre o altura)
+            if filtro:
+                datos = [p for p in datos if
+                         filtro in norm(p.get('nombre', ''))
+                         or str(p.get('altura', '')) == filtro]
+
+            # Ordenado
+            col = self._vc_sort_col
+            rev = self._vc_sort_rev
+            etiquetas = {"Nombre": "Nombre", "Altura": "Altura"}
+            for c, txt in etiquetas.items():
+                indicador = (" ▼" if rev else " ▲") if c == col else ""
+                self.tree_viacrucis.heading(c, text=txt + indicador)
+
+            if col == "Nombre": datos.sort(key=lambda x: norm(x.get('nombre', '')), reverse=rev)
+            elif col == "Altura": datos.sort(key=lambda x: x.get('altura', 0), reverse=rev)
+
             for item in self.tree_viacrucis.get_children():
-                if self.tree_viacrucis.item(item, "values")[0] == "☑":
-                    ids_sel.append(int(self.tree_viacrucis.item(item, "values")[4]))
+                self.tree_viacrucis.delete(item)
+
+            for d in datos:
+                hombro = str(d.get('pref_hombro', '')).capitalize()
+                if not hombro or hombro.lower() in ("indiferente", ""):
+                    hombro = "-"
+                pid = d.get('id', '')
+                check = "☑" if pid in self._vc_seleccionados else "☐"
+                tag   = "selected" if pid in self._vc_seleccionados else "unselected"
+                self.tree_viacrucis.insert("", "end",
+                    values=(check, d.get('nombre',''), f"{d.get('altura','')} cm", hombro, pid),
+                    tags=(tag,))
+            _actualizar_contador_vc()
+
+        entry_busq_vc.bind("<KeyRelease>", refrescar_vc)
+        refrescar_vc()  # carga inicial
+
+        def generar():
+            datos_todos = cargar_datos(CONFIG['archivo_datos'])
+            ids_sel = list(self._vc_seleccionados)
                     
             if not ids_sel:
                 if not messagebox.askyesno("Atención", "No has seleccionado a ningún costalero.\n\n¿Quieres generar los tramos del Vía Crucis completamente vacíos para rellenarlos a mano?"):
                     return
             
-            lista_seleccionados = [d for d in datos if d.get('id') in ids_sel]
-            
+            lista_seleccionados = [d for d in datos_todos if d.get('id') in ids_sel]
             tramos = int(entry_tramos.get()) if entry_tramos.get().isdigit() else 4
-            
             datos_gen = generar_datos_viacrucis(lista_seleccionados, tramos, var_auto.get() and len(ids_sel) > 0)
-            generar_html_viacrucis(datos_gen, datos, ids_sel)
+            generar_html_viacrucis(datos_gen, datos_todos, ids_sel)
             self.abrir_navegador("visualizador_viacrucis.html")
             
         def abrir_anterior():
@@ -1382,7 +1546,10 @@ class GestorCofradeAPP:
 
         # Filtro de búsqueda por texto (sin tildes)
         if filtro_texto:
-            datos = [p for p in datos if filtro_texto in normalizar(p.get('nombre', '')) or str(p.get('id', '')) == filtro_texto]
+            datos = [p for p in datos if
+                     filtro_texto in normalizar(p.get('nombre', ''))
+                     or str(p.get('id', '')) == filtro_texto
+                     or str(p.get('altura', '')) == filtro_texto]
 
         # Ordenado por columna activa
         col  = getattr(self, '_censo_sort_col', 'Nombre')
