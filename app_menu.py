@@ -18,6 +18,7 @@ from logica_informes import crear_html_informe
 from logica_licencia import comprobar_licencia
 from logica_calendario import cargar_eventos, guardar_eventos, generar_html_calendario
 from logica_viacrucis import generar_datos_viacrucis, generar_html_viacrucis
+from logica_personalizada import generar_datos_personalizados, generar_html_personalizado
 
 # ==========================================
 # CONFIGURACIÓN Y COLORES
@@ -382,10 +383,11 @@ class GestorCofradeAPP:
             ("Miércoles Santo", "🕯️"), 
             ("Viernes Santo", "✝️"), 
             ("Vía Crucis", "⛪"), 
+            ("Procesión Personalizada", "⚙️"), # <--- AÑADIDO
             ("Ensayos", "📋"), 
             ("Calendario", "📅"), 
             ("Censo (Costaleros)", "👥"), 
-            ("Publicar / PDF", "📤") # Cambiado el nombre de la pestaña
+            ("Publicar / PDF", "📤") 
         ]
         
         for op, icon in opciones:
@@ -425,6 +427,7 @@ class GestorCofradeAPP:
         self.frames["Miércoles Santo"] = self.crear_pantalla_procesion("Miércoles Santo", "visualizador_miercoles.html", generar_cuadrillas_miercoles, generar_html_miercoles, True)
         self.frames["Viernes Santo"] = self.crear_pantalla_procesion("Viernes Santo", "visualizador_viernes.html", generar_cuadrillas_viernes, generar_html_viernes, True)
         self.frames["Vía Crucis"] = self.crear_pantalla_viacrucis()
+        self.frames["Procesión Personalizada"] = self.crear_pantalla_personalizada()
         self.frames["Ensayos"] = self.crear_pantalla_ensayos()
         self.frames["Calendario"] = self.crear_pantalla_calendario()
         self.frames["Censo (Costaleros)"] = self.crear_pantalla_censo()
@@ -596,6 +599,87 @@ class GestorCofradeAPP:
         btn_abrir = self.crear_boton_moderno(btn_frame, "ABRIR CUADRANTE ANTERIOR", "#17517e", "#1f6b9c", C_BLANCO, command=abrir_anterior)
         btn_abrir.pack(side=tk.LEFT)
         tk.Label(card, text="* Generar un nuevo cuadrante sobreescribirá la ultima modificación sin guardar.", font=("Segoe UI", 10, "italic"), bg=C_BLANCO, fg="#888").pack(anchor="w", pady=(30, 0))
+        return f
+
+    # ==========================================
+    # NUEVA PANTALLA: PROCESIÓN PERSONALIZADA
+    # ==========================================
+    def crear_pantalla_personalizada(self):
+        f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO)
+        card = tk.Frame(f, bg=C_BLANCO, padx=40, pady=40, highlightbackground="#e0e0e0", highlightthickness=1)
+        card.place(relx=0.5, rely=0.45, anchor="center", width=800)
+        
+        tk.Label(card, text="⚙️ Procesión Personalizada", font=("Segoe UI", 22, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(anchor="w", pady=(0, 20))
+        tk.Label(card, text="Configura un entorno de procesión manual. Podrás organizar a los costaleros arrastrándolos desde el menú.", font=("Segoe UI", 11), bg=C_BLANCO, fg="#666").pack(anchor="w", pady=(0, 20))
+        
+        config_frame = tk.Frame(card, bg=C_BLANCO)
+        config_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        # Filtro de día
+        tk.Label(config_frame, text="Filtro de Censo:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).grid(row=0, column=0, sticky="w", pady=10, padx=5)
+        var_dia = tk.StringVar(value="Viernes Santo")
+        ttk.Combobox(config_frame, textvariable=var_dia, values=["Miércoles Santo", "Viernes Santo", "Todos"], state="readonly", width=18, font=("Segoe UI", 11)).grid(row=0, column=1, sticky="w", pady=10, padx=5)
+        
+        # Lleva cruz y Costaleros por Vara
+        tk.Label(config_frame, text="Opciones extra:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).grid(row=0, column=2, sticky="w", pady=10, padx=(30, 5))
+        var_cruz = tk.BooleanVar(value=True)
+        var_costaleros_7 = tk.BooleanVar(value=False)
+        ttk.Checkbutton(config_frame, text="Lleva Cruz Guía", variable=var_cruz).grid(row=0, column=3, sticky="w", pady=5, padx=5)
+        ttk.Checkbutton(config_frame, text="7 Costaleros/vara en Cristo", variable=var_costaleros_7).grid(row=0, column=4, sticky="w", pady=5, padx=15)
+        
+        # Turnos Trono
+        tk.Label(config_frame, text="Turnos de Trono (Ej: 2):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).grid(row=1, column=0, sticky="w", pady=10, padx=5)
+        entry_turnos_trono = tk.Entry(config_frame, font=("Segoe UI", 12), width=5, relief="solid", bd=1)
+        entry_turnos_trono.insert(0, "2")
+        entry_turnos_trono.grid(row=1, column=1, sticky="w", pady=10, padx=5)
+        
+        # Turnos Cruz
+        tk.Label(config_frame, text="Turnos de Cruz (Ej: 3):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).grid(row=1, column=2, sticky="w", pady=10, padx=(30, 5))
+        entry_turnos_cruz = tk.Entry(config_frame, font=("Segoe UI", 12), width=5, relief="solid", bd=1)
+        entry_turnos_cruz.insert(0, "3")
+        entry_turnos_cruz.grid(row=1, column=3, sticky="w", pady=10, padx=5, columnspan=2)
+
+        # Tramos Totales
+        tk.Label(config_frame, text="Tramos Totales (Tramos de la procesión):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).grid(row=2, column=0, sticky="w", pady=10, padx=5, columnspan=2)
+        entry_tramos_totales = tk.Entry(config_frame, font=("Segoe UI", 12), width=5, relief="solid", bd=1)
+        entry_tramos_totales.insert(0, "8")
+        entry_tramos_totales.grid(row=2, column=2, sticky="w", pady=10, padx=5)
+
+        def generar_nuevo():
+            dia = var_dia.get()
+            lleva_cruz = var_cruz.get()
+            costaleros_7 = var_costaleros_7.get()
+            
+            turnos_trono = int(entry_turnos_trono.get()) if entry_turnos_trono.get().isdigit() else 2
+            turnos_cruz = int(entry_turnos_cruz.get()) if entry_turnos_cruz.get().isdigit() else 3
+            tramos = int(entry_tramos_totales.get()) if entry_tramos_totales.get().isdigit() else 8
+
+            master_list = cargar_datos(CONFIG['archivo_datos'])
+            if dia == "Miércoles Santo":
+                master_list = [p for p in master_list if p.get('miercoles_santo', False)]
+            elif dia == "Viernes Santo":
+                master_list = [p for p in master_list if p.get('viernes_santo', False)]
+
+            if not master_list:
+                messagebox.showwarning("Aviso", f"No hay costaleros asignados para el filtro: {dia}.")
+                return
+
+            datos_gen = generar_datos_personalizados(turnos_trono, turnos_cruz, tramos, lleva_cruz, costaleros_7)
+            generar_html_personalizado(datos_gen, master_list, lleva_cruz)
+            self.abrir_navegador("visualizador_personalizado.html")
+
+        def abrir_anterior():
+            if os.path.exists("visualizador_personalizado.html"):
+                self.abrir_navegador("visualizador_personalizado.html")
+            else:
+                messagebox.askyesno("No encontrado", "No existe ninguna procesión personalizada guardada.")
+
+        btn_frame = tk.Frame(card, bg=C_BLANCO)
+        btn_frame.pack(fill=tk.X, pady=10)
+        btn_generar = self.crear_boton_moderno(btn_frame, "CREAR CUADRANTE MANUAL", C_ORO, C_ORO_HOVER, C_TEXTO, command=generar_nuevo)
+        btn_generar.pack(side=tk.LEFT, padx=(0, 10))
+        btn_abrir = self.crear_boton_moderno(btn_frame, "ABRIR ANTERIOR", "#17517e", "#1f6b9c", C_BLANCO, command=abrir_anterior)
+        btn_abrir.pack(side=tk.LEFT)
         return f
 
     def crear_pantalla_viacrucis(self):
