@@ -14,8 +14,8 @@ def generar_datos_personalizados(num_turnos_trono, num_turnos_cruz, num_tramos, 
     for i in range(num_turnos_trono):
         nombre_turno = f"Turno {letras[i % len(letras)]}"
         trono[nombre_turno] = {
-            "Delante": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1} for _ in range(plazas_por_vara)] for v in varas_trono},
-            "Detras": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1} for _ in range(plazas_por_vara)] for v in varas_trono}
+            "Delante": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": False} for _ in range(plazas_por_vara)] for v in varas_trono},
+            "Detras": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": False} for _ in range(plazas_por_vara)] for v in varas_trono}
         }
         
     # CRUZ: 2 varas delante, 2 varas detrás. Siempre 2 costaleros por vara.
@@ -26,11 +26,11 @@ def generar_datos_personalizados(num_turnos_trono, num_turnos_cruz, num_tramos, 
         for i in range(num_turnos_cruz):
             nombre_turno = f"Turno {i+1}"
             cruz[nombre_turno] = {
-                "Delante": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1} for _ in range(2)] for v in varas_cruz},
-                "Detras": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1} for _ in range(2)] for v in varas_cruz}
+                "Delante": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": False} for _ in range(2)] for v in varas_cruz},
+                "Detras": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": False} for _ in range(2)] for v in varas_cruz}
             }
 
-    # MAPPING (Matriz inicial de Tramos y a qué Turno apuntan). Por defecto secuencial.
+    # MAPPING (Matriz inicial de Tramos y a qué Turno apuntan)
     mapping = {}
     for i in range(num_tramos):
         tramo_name = f"Tramo {i+1}"
@@ -82,9 +82,9 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         .vara {{ background:#160311; padding:10px; border-radius:8px; border-top:3px solid #571342; }}
         .vara-titulo {{ text-align:center; color:#a37c95; font-size:12px; margin-bottom:10px; font-weight:bold; text-transform:uppercase; }}
         
-        .costalero {{ background:#3d0c2e; border:1px solid #571342; margin:5px 0; padding:8px; border-radius:4px; cursor:grab; display:flex; justify-content:space-between; align-items:center; font-size:11px; transition:.3s; text-shadow:1px 1px 2px rgba(0,0,0,.8); }}
+        .costalero {{ background:#3d0c2e; border:1px solid #571342; margin:5px 0; padding:8px; border-radius:4px; cursor:grab; display:flex; justify-content:space-between; align-items:center; font-size:11px; transition:.3s; text-shadow:1px 1px 2px rgba(0,0,0,.8); position:relative; }}
         .costalero:active {{ cursor:grabbing; }}
-        .costalero.vacio {{ border:1px dashed #571342; background:#0c0209; color:#884d72; flex-direction:column; align-items:stretch; text-shadow:none; position:relative; overflow:visible; }}
+        .costalero.vacio {{ border:1px dashed #571342; background:#0c0209; color:#884d72; flex-direction:column; align-items:stretch; text-shadow:none; overflow:visible; }}
         
         .costalero.estado-dosTurnos  {{ border:1px solid #ffd700; box-shadow:inset 0 0 8px rgba(255,215,0,.25); }}
         .costalero.estado-cruzYTrono {{ border:1px solid #00d2ff; box-shadow:inset 0 0 8px rgba(0,210,255,.25); }}
@@ -169,9 +169,12 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
             <div style="font-size:11px; color:#a37c95; margin-top:3px;">Arrastra costaleros desde el panel derecho · Pulsa ℹ️ para ver la hoja de ruta.</div>
         </div>
         <div>
+            <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
             <button class="btn-control btn-danger" onclick="vaciarTodo()">🗑️ VACIAR TODO</button>
-            <button class="btn-control" onclick="abrirModalHojaRuta()">📋 HOJA DE RUTA</button>
-            <button class="btn-control btn-export" onclick="descargarDatos()">💾 DESCARGAR JSON</button>
+            <button class="btn-control" onclick="abrirModalHojaRuta()">📋 RUTA DE COSTALERO</button>
+            <button class="btn-control" onclick="document.getElementById('file-input').click()">📂 CARGAR</button>
+            <button class="btn-control btn-export" onclick="descargarDatos()">💾 JSON</button>
+            <button class="btn-control" style="background:#5c164e; border-color:#d4af37;" onclick="exportarPDF()">📤 EXPORTAR A PDF</button>
         </div>
     </div>
 
@@ -201,7 +204,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
             <div class="ley-item"><div class="ley-dot" style="background:#3d0c2e; border:1px solid #ffd700; box-shadow:inset 0 0 6px rgba(255,215,0,.3);"></div><span style="color:#ffd700;">Sale en 2 turnos</span></div>
             <div class="ley-item"><div class="ley-dot" style="background:#3d0c2e; border:1px solid #00d2ff; box-shadow:inset 0 0 6px rgba(0,210,255,.3);"></div><span style="color:#00d2ff;">Trono + Cruz</span></div>
             <div class="ley-item"><div class="ley-dot" style="background:#6b0b1c; border:2px solid #ff4757;"></div><span style="color:#ff4757;">Doble carga consecutiva</span></div>
-            <div class="ley-item"><div class="ley-dot" style="background:#4a0000; border:2px dashed #ff0000;"></div><span style="color:#ff0000;">⚠️ CRÍTICO: 2 posiciones / Cruz y Trono a la vez</span></div>
+            <div class="ley-item"><div class="ley-dot" style="background:#4a0000; border:2px dashed #ff0000;"></div><span style="color:#ff0000;">⚠️ CRÍTICO: 2 posiciones o Cruz/Trono en mismo tramo</span></div>
         </div>
     </div>
 
@@ -214,28 +217,58 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
 
     /* ── INIT ── */
     function init() {{
-        let savedTs   = localStorage.getItem('pers_ts_v5');
-        let savedData = localStorage.getItem('pers_datos_v5');
+        let savedTs   = localStorage.getItem('pers_ts_v6');
+        let savedData = localStorage.getItem('pers_datos_v6');
+        
         if (savedData && savedTs === TS) {{
             try {{
                 let parsed = JSON.parse(savedData);
-                if (parsed.Trono) datos = parsed;
-                else throw new Error();
+                if (parsed.Trono) {{
+                    datos = parsed;
+                }} else {{
+                    throw new Error("Estructura corrupta o antigua");
+                }}
             }} catch(e) {{
                 datos = JSON.parse(JSON.stringify(DATOS_INIC));
-                guardarMemoria();
+                localStorage.setItem('pers_ts_v6', TS);
+                localStorage.setItem('pers_datos_v6', JSON.stringify(datos));
             }}
         }} else {{
             datos = JSON.parse(JSON.stringify(DATOS_INIC));
-            guardarMemoria();
+            localStorage.setItem('pers_ts_v6', TS);
+            localStorage.setItem('pers_datos_v6', JSON.stringify(datos));
         }}
         render();
     }}
 
     function guardarMemoria() {{
-        localStorage.setItem('pers_ts_v5', TS);
-        localStorage.setItem('pers_datos_v5', JSON.stringify(datos));
+        localStorage.setItem('pers_datos_v6', JSON.stringify(datos));
     }}
+
+    /* ── CARGAR JSON ── */
+    window.cargarJSON = function(event) {{
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {{
+            try {{
+                let loaded = JSON.parse(e.target.result);
+                if (loaded.Trono && loaded.Mapping) {{
+                    datos = loaded;
+                    guardarMemoria();
+                    render();
+                    if (sidebarAbierto) renderSidebar();
+                    alert("✅ Cuadrante cargado correctamente.");
+                }} else {{
+                    alert("❌ El archivo JSON no tiene la estructura correcta para esta procesión personalizada.");
+                }}
+            }} catch(err) {{
+                alert("❌ Error al leer el archivo JSON.");
+            }}
+        }};
+        reader.readAsText(file);
+        event.target.value = '';
+    }};
 
     /* ── ESTADO GLOBAL (CRITICO, DOBLE...) ── */
     let estadoGlobal = {{}};
@@ -290,6 +323,10 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
                 if (enT && enC) e.choqueTramo = true; // ⚠️ Rojo Crítico
             }}
             e.tramos = Array.from(misTramos).sort((a,b) => a - b);
+            
+            // Para poder exportar correctamente a JSON los Sets, los convertimos a Arrays nativos
+            e.tronoArr = Array.from(e.tronoT);
+            e.cruzArr = Array.from(e.cruzT);
         }}
 
         // Asignar colores/estados
@@ -310,6 +347,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
     function celdaHTML(p, tipo, turno, sec, vara, idx) {{
         const esVacio = (p.altura === 0 || p.id === -1);
         let prefLetra = '', claseEst = '', claseTxt = '', tickHombro = '';
+        let isLocked = p.bloqueado || false;
 
         if (!esVacio) {{
             let pref = (p.pref_hombro || '').toLowerCase();
@@ -331,17 +369,24 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         }}
 
         const idSug = `sug-${{tipo}}-${{turno.replace(/ /g,'')}}-${{sec}}-${{vara}}-${{idx}}`;
-        return `<div class="costalero ${{esVacio ? 'vacio' : claseEst}}"
-                     draggable="${{!esVacio}}"
+        let dragAttr = isLocked ? 'false' : (!esVacio).toString();
+        let lockBtn = `<button class="btn-accion" onclick="toggleLock('${{tipo}}','${{turno}}','${{sec}}','${{vara}}',${{idx}})" title="Bloquear / Desbloquear hueco">${{isLocked ? '🔒' : '🔓'}}</button>`;
+
+        return `<div class="costalero ${{esVacio ? 'vacio' : claseEst}}" ${{isLocked ? 'style="border-color:#d4af37; background:#1a0514;"' : ''}}
+                     draggable="${{dragAttr}}"
                      ondragstart="drag(event,'${{tipo}}','${{turno}}','${{sec}}','${{vara}}',${{idx}})"
                      ondragover="allow(event)"
                      ondrop="drop(event,'${{tipo}}','${{turno}}','${{sec}}','${{vara}}',${{idx}})">
             ${{esVacio ?
-                `<input type="text" class="search-p" placeholder="Arrastrar o buscar..." onkeyup="buscarMini(event,'${{tipo}}','${{turno}}','${{sec}}','${{vara}}',${{idx}})">
+                `<div style="display:flex; width:100%; gap:5px;">
+                    <input type="text" class="search-p" placeholder="Arrastrar o buscar..." onkeyup="buscarMini(event,'${{tipo}}','${{turno}}','${{sec}}','${{vara}}',${{idx}})" ${{isLocked ? 'disabled' : ''}}>
+                    ${{lockBtn}}
+                 </div>
                  <div id="${{idSug}}" class="sugerencias" style="display:none"></div>` :
                 `<span>
                     <button class="btn-accion btn-del"  onclick="eliminar('${{tipo}}','${{turno}}','${{sec}}','${{vara}}',${{idx}})" title="Quitar">🗑️</button>
                     <button class="btn-accion btn-info" onclick="verHoja(${{p.id}})" title="Hoja de ruta">ℹ️</button>
+                    ${{lockBtn}}
                     <span class="${{claseTxt}}">${{p.nombre}}${{prefLetra}}${{tickHombro}}</span>
                  </span>
                  <span style="color:#d4af37;font-weight:bold;">${{p.altura}}cm</span>`
@@ -478,8 +523,8 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         // Turnos a los que pertenece
         let turnosList = [];
         if (e) {{
-           e.tronoT.forEach(t => turnosList.push(`⛪ ${{t}} (Trono)`));
-           e.cruzT.forEach(t => turnosList.push(`✝ ${{t}} (Cruz)`));
+           e.tronoArr.forEach(t => turnosList.push(`⛪ ${{t}} (Trono)`));
+           e.cruzArr.forEach(t => turnosList.push(`✝ ${{t}} (Cruz)`));
         }}
         let turnosStr = turnosList.length > 0 ? turnosList.join(' &nbsp;|&nbsp; ') : '<span style="color:#ff4757;">Ninguno asignado</span>';
 
@@ -487,8 +532,8 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         let tramosInfo = [];
         for (let tr in datos.Mapping) {{
             let map = datos.Mapping[tr];
-            let enTrono = e && e.tronoT.has(map.Trono);
-            let enCruz  = e && LLEVA_CRUZ && e.cruzT.has(map.Cruz);
+            let enTrono = e && e.tronoArr.includes(map.Trono);
+            let enCruz  = e && LLEVA_CRUZ && e.cruzArr.includes(map.Cruz);
             
             if (enTrono || enCruz) {{
                 let roles = [];
@@ -529,12 +574,16 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
     /* ── ACCIONES ── */
     window.cambiarMap = function(tramo, tipo, val) {{ datos.Mapping[tramo][tipo] = val; guardarMemoria(); render(); }}
     window.guardarInd = function(tramo, val) {{ datos.Indicaciones[tramo] = val; guardarMemoria(); }}
+    window.toggleLock = function(tipo, turno, sec, vara, idx) {{ 
+        datos[tipo][turno][sec][vara][idx].bloqueado = !datos[tipo][turno][sec][vara][idx].bloqueado; 
+        guardarMemoria(); render(); 
+    }}
 
     window.vaciarTodo = function() {{
         if (!confirm('⚠️ ¿Vaciar TODO el cuadrante?')) return;
         let limpia = (blq) => {{
             for (let t in blq) for (let s in blq[t]) for (let v in blq[t][s])
-                blq[t][s][v] = blq[t][s][v].map(() => ({{ nombre:'HUECO LIBRE', altura:0, id:-1 }}));
+                blq[t][s][v] = blq[t][s][v].map(p => p.bloqueado ? p : ({{ nombre:'HUECO LIBRE', altura:0, id:-1, bloqueado:false }}));
         }};
         limpia(datos.Trono);
         if (LLEVA_CRUZ && datos.Cruz) limpia(datos.Cruz);
@@ -545,7 +594,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         if (!confirm(`⚠️ ¿Vaciar ${{turno}} (${{tipo}})?`)) return;
         let blq = datos[tipo][turno];
         for (let s in blq) for (let v in blq[s])
-            blq[s][v] = blq[s][v].map(() => ({{ nombre:'HUECO LIBRE', altura:0, id:-1 }}));
+            blq[s][v] = blq[s][v].map(p => p.bloqueado ? p : ({{ nombre:'HUECO LIBRE', altura:0, id:-1, bloqueado:false }}));
         render(); guardarMemoria(); if (sidebarAbierto) renderSidebar();
     }}
 
@@ -557,8 +606,213 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
     }}
 
     window.eliminar = function(tipo, turno, sec, v, idx) {{
-        datos[tipo][turno][sec][v][idx] = {{ nombre:'HUECO LIBRE', altura:0, id:-1 }};
+        if (datos[tipo][turno][sec][v][idx].bloqueado) {{
+            alert("🔒 Desbloquea la posición primero para poder eliminarla.");
+            return;
+        }}
+        datos[tipo][turno][sec][v][idx] = {{ nombre:'HUECO LIBRE', altura:0, id:-1, bloqueado:false }};
         render(); guardarMemoria(); if (sidebarAbierto) renderSidebar();
+    }}
+
+    /* ── EXPORTAR A PDF (INFORME OFICIAL) ── */
+    window.exportarPDF = function() {{
+        let anio = new Date().getFullYear();
+        let fecha_hoy = new Date().toLocaleDateString('es-ES');
+        
+        let html_pdf = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe Oficial - Personalizada ${{anio}}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Open+Sans:wght@400;600;800&display=swap');
+        body {{ font-family: 'Open Sans', Arial, sans-serif; background: #f4f6f8; color: #333; margin: 0; padding: 20px; }}
+        .container {{ max-width: 900px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,0.1); border-top: 8px solid #5c164e; position: relative; }}
+        .web-controls {{ display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 30px; background: #1a0514; padding: 20px; border-radius: 8px; border: 1px solid #d4af37; }}
+        .buscador-box {{ width: 100%; max-width: 600px; text-align: center; }}
+        .buscador-box input {{ width: 100%; padding: 12px; font-size: 16px; background: #0c0209; color: #d4af37; border: 1px solid #3d0c2e; border-radius: 5px; outline: none; }}
+        .itinerario-result {{ margin-top: 15px; padding: 15px; background: #23061b; border-radius: 5px; border-left: 5px solid #d4af37; display: none; color: #f8f0f5; text-align: left; }}
+        .itinerario-result ul {{ list-style: none; padding: 0; margin: 0; }}
+        .itinerario-result li {{ padding: 8px 0; border-bottom: 1px dashed #3d0c2e; font-size: 13px; display: flex; justify-content:space-between; }}
+        .tramo-label {{ width: 220px; color: #a37c95; flex-shrink: 0; }}
+        .btn-pdf {{ background: #5c164e; color: #fff; text-align: center; padding: 12px 25px; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; font-size: 14px; text-transform: uppercase; box-shadow: 0 4px 6px rgba(92, 22, 78, 0.3); transition: 0.3s; width: 100%; max-width: 350px; }}
+        .btn-pdf:hover {{ background: #7a1b67; transform: translateY(-2px); }}
+        .header {{ text-align: center; border-bottom: 2px solid #e0e0e0; padding-bottom: 20px; margin-bottom: 20px; }}
+        .logo-img {{ width: 100px; height: auto; margin-bottom: 10px; }}
+        .header h1 {{ color: #4a148c; margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; font-family: 'Cinzel', serif; font-weight: 600; }}
+        .header h2 {{ color: #b5952f; margin: 5px 0; font-size: 16px; text-transform: uppercase; letter-spacing: 2px; }}
+        .sello-anio {{ position: absolute; top: 30px; right: 40px; background: #5c164e; color: #fff; padding: 8px 15px; font-size: 16px; font-weight: bold; border-radius: 5px; letter-spacing: 2px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }}
+        .leyenda {{ display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; font-size: 11px; font-weight: bold; background: #fafafa; padding: 10px; border-radius: 5px; border: 1px solid #eee; flex-wrap: wrap; }}
+        .leyenda-item {{ display: flex; align-items: center; gap: 5px; }}
+        .caja {{ width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,0.2); }}
+        .turno-box {{ border: 1px solid #d4af37; border-radius: 8px; margin-bottom: 30px; overflow: hidden; page-break-inside: avoid; }}
+        .turno-title {{ background: #5c164e; color: #fff; padding: 10px 15px; margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }}
+        .grid-varales {{ display: flex; width: 100%; }}
+        .varal {{ flex: 1; padding: 10px; border-right: 1px solid #eee; }}
+        .varal:last-child {{ border-right: none; }}
+        .varal-title {{ text-align: center; color: #5c164e; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin-top: 0; font-size: 12px; font-weight: 800; text-transform: uppercase; }}
+        .seccion-top {{ font-size: 10px; color: #5c164e; text-align: center; margin: 10px 0 5px 0; font-weight: bold; background: #eee; padding: 4px; border-radius: 3px; letter-spacing: 1px; }}
+        .seccion-mid {{ font-size: 10px; color: #fff; text-align: center; margin: 8px 0; font-weight: bold; background: #5c164e; padding: 4px; border-radius: 3px; letter-spacing: 2px; }}
+        .seccion-bot {{ font-size: 10px; color: #5c164e; text-align: center; margin: 5px 0 10px 0; font-weight: bold; background: #eee; padding: 4px; border-radius: 3px; letter-spacing: 1px; }}
+        .lista-costaleros {{ list-style: none; padding: 0; margin: 0; font-size: 11px; }}
+        .costalero-cell {{ padding: 5px 8px; margin-bottom: 3px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; background: #fff; }}
+        .hueco-libre {{ padding: 5px 8px; margin-bottom: 3px; border-radius: 4px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; background: #fafafa; color: #aaa; font-style: italic; }}
+        .bg-amarillo {{ background-color: #fff9c4 !important; border-color: #fbc02d !important; color: #000 !important; }}
+        .bg-azul {{ background-color: #e1f5fe !important; border-color: #4fc3f7 !important; color: #000 !important; }}
+        .bg-rojo {{ background-color: #ffebee !important; border-color: #ef9a9a !important; color: #000 !important; }}
+        .c-info {{ display: flex; align-items: center; gap: 5px; }}
+        .nombre {{ font-weight: 600; font-size: 11px; }}
+        .meta {{ font-size: 9px; opacity: 0.7; font-weight: bold; }}
+        .seccion-texto {{ background: #fafafa; padding: 20px; border-radius: 8px; border-left: 4px solid #5c164e; margin-bottom: 20px; page-break-inside: avoid; }}
+        .seccion-texto h3 {{ color: #5c164e; margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-size: 16px; text-transform: uppercase; }}
+        .seccion-texto p {{ font-size: 12px; line-height: 1.5; color: #444; margin-bottom: 8px; }}
+        .lista-tramos {{ font-size: 12px; color: #444; line-height: 1.6; margin: 0; padding-left: 20px; }}
+        @media print {{
+            @page {{ margin: 0; }}
+            body {{ background: #fff !important; padding: 1.5cm !important; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important; }}
+            .no-print, .web-controls {{ display: none !important; }}
+            .container {{ box-shadow: none !important; border-top: none !important; padding: 0 !important; max-width: 100% !important; }}
+            .turno-box {{ border: 1px solid #000 !important; page-break-inside: avoid !important; margin-bottom: 20px !important; }}
+            .turno-title {{ background: #eee !important; color: #000 !important; border-bottom: 1px solid #000 !important; }}
+            .seccion-texto {{ background: transparent !important; border: 1px solid #ccc !important; border-left: 4px solid #5c164e !important; }}
+            .page-break-avoid {{ page-break-inside: avoid !important; }}
+            * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="web-controls no-print">
+        <button class="btn-pdf" onclick="window.print()">🖨️ IMPRIMIR / GUARDAR PDF</button>
+        <p style="color:#d4af37; font-size:12px; margin-top:-5px;">*En la ventana de impresión, selecciona "Guardar como PDF"</p>
+        
+        <div class="buscador-box">
+            <h3 style="margin-top:0; color:#d4af37;">🔍 BUSCADOR DE COSTALERO</h3>
+            <input type="text" id="input-buscador" placeholder="Escribe un nombre..." onkeyup="actualizarBuscador()">
+            <div id="resultado-itinerario" class="itinerario-result"></div>
+        </div>
+    </div>
+    
+    <div class="container" id="informe-content">
+        <div class="sello-anio no-print">AÑO ${{anio}}</div>
+        <div class="header">
+            <img src="bandera_tercio_npj.png" alt="Escudo" class="logo-img" onerror="this.style.display='none'">
+            <h1>OFS Muy Ilustre Mayordomía de Nuestro Padre Jesús Nazareno</h1>
+            <h2>Orden Procesional - Personalizada</h2>
+            <p>Fecha de emisión: ${{fecha_hoy}} | Cuadrante del Año: ${{anio}}</p>
+        </div>
+        
+        <div class="leyenda">
+            <div class="leyenda-item"><span class="caja bg-amarillo"></span> Sale en 2 Turnos</div>
+            <div class="leyenda-item"><span class="caja bg-azul"></span> Lleva Trono y Cruz</div>
+            <div class="leyenda-item"><span class="caja bg-rojo"></span> Alerta Carga (Dobles/Crítico)</div>
+        </div>
+        
+        <div id="content-turnos"></div>
+    </div>
+
+    <script>
+        const estadoGlobal = window.opener.estadoGlobal;
+        const datosExport = window.opener.datos;
+        const LLEVA_CRUZ = window.opener.LLEVA_CRUZ;
+        
+        function normalizar(s) {{ return s.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase(); }}
+        
+        function actualizarBuscador() {{
+            const val = normalizar(document.getElementById('input-buscador').value.trim());
+            const resDiv = document.getElementById('resultado-itinerario');
+            if (val.length < 2) {{ resDiv.style.display = 'none'; return; }}
+            
+            let foundId = null;
+            for (let pid in estadoGlobal) {{
+                if (normalizar(estadoGlobal[pid].nombre).includes(val)) {{
+                    foundId = pid; break;
+                }}
+            }}
+            
+            if (!foundId) {{
+                resDiv.innerHTML = '<p style="color:#ff4757; font-size:12px; margin:0;">No se encontró al costalero.</p>';
+                resDiv.style.display = 'block';
+                return;
+            }}
+            
+            let e = estadoGlobal[foundId];
+            let tramosInfo = [];
+            for (let tr in datosExport.Mapping) {{
+                let map = datosExport.Mapping[tr];
+                let enTrono = e.tronoArr.includes(map.Trono);
+                let enCruz  = LLEVA_CRUZ && e.cruzArr.includes(map.Cruz);
+                if (enTrono || enCruz) {{
+                    let roles = [];
+                    if (enTrono) roles.push('⛪ Trono');
+                    if (enCruz)  roles.push('✝ Cruz');
+                    tramosInfo.push('<li><span class="tramo-label"><b>'+tr+'</b></span><span style="color:#d4af37; font-weight:bold;">'+roles.join(' + ')+'</span></li>');
+                }} else {{
+                    tramosInfo.push('<li><span class="tramo-label">'+tr+'</span><span style="color:#888;">🕯️ Cirio (Descanso)</span></li>');
+                }}
+            }}
+            
+            resDiv.innerHTML = '<div style="margin-bottom:10px; border-bottom:1px solid #d4af37; padding-bottom:5px;"><b>' + e.nombre + '</b></div><ul>' + tramosInfo.join('') + '</ul>';
+            resDiv.style.display = 'block';
+        }}
+    <\/script>
+</body>
+</html>`;
+        
+        let contentHTML = "";
+        
+        // Función parseadora de Celdas PDF
+        let parseSlot = (p) => {{
+            if (p.id === -1 || p.altura === 0) return '<li class="hueco-libre">Hueco Libre</li>';
+            let e = estadoGlobal[p.id];
+            let bg = '';
+            if (e) {{
+                if (e.estadoStr === 'critico' || e.estadoStr === 'doble') bg = 'bg-rojo';
+                else if (e.estadoStr === 'cruzYTrono') bg = 'bg-azul';
+                else if (e.estadoStr === 'dosTurnos') bg = 'bg-amarillo';
+            }}
+            return '<li class="costalero-cell '+bg+'"><div class="c-info"><span class="nombre">'+p.nombre+'</span></div><span class="meta">'+p.altura+'cm</span></li>';
+        }};
+
+        for (let turno in datos.Trono) {{
+            contentHTML += '<div class="turno-box page-break-avoid"><h3 class="turno-title">⛪ TRONO - '+turno+'</h3><div class="grid-varales">';
+            ['Izquierda', 'Centro', 'Derecha'].forEach(vara => {{
+                contentHTML += '<div class="varal"><h4 class="varal-title">'+vara+'</h4><div class="seccion-top">DELANTE</div><ul class="lista-costaleros">';
+                datos.Trono[turno].Delante[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
+                contentHTML += '</ul><div class="seccion-mid">CRISTO</div><div class="seccion-bot">DETRÁS</div><ul class="lista-costaleros">';
+                datos.Trono[turno].Detras[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
+                contentHTML += '</ul></div>';
+            }});
+            contentHTML += '</div></div>';
+        }}
+
+        if (LLEVA_CRUZ && datos.Cruz) {{
+            for (let turno in datos.Cruz) {{
+                contentHTML += '<div class="turno-box page-break-avoid"><h3 class="turno-title">✝ CRUZ INSIGNIA - '+turno+'</h3><div class="grid-varales">';
+                ['Izquierda', 'Derecha'].forEach(vara => {{
+                    contentHTML += '<div class="varal"><h4 class="varal-title">'+vara+'</h4><div class="seccion-top">DELANTE</div><ul class="lista-costaleros">';
+                    datos.Cruz[turno].Delante[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
+                    contentHTML += '</ul><div class="seccion-mid">CRUZ</div><div class="seccion-bot">DETRÁS</div><ul class="lista-costaleros">';
+                    datos.Cruz[turno].Detras[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
+                    contentHTML += '</ul></div>';
+                }});
+                contentHTML += '</div></div>';
+            }}
+        }}
+
+        contentHTML += '<div class="seccion-texto page-break-avoid"><h3>🗺️ Hoja de Ruta y Tramos</h3><ul class="lista-tramos">';
+        for (let tr in datos.Mapping) {{
+            let m = datos.Mapping[tr];
+            let tStr = m.Trono ? 'Trono: ' + m.Trono : '';
+            let cStr = (LLEVA_CRUZ && m.Cruz) ? ' | Cruz: ' + m.Cruz : '';
+            contentHTML += '<li><b>'+tr+':</b> '+tStr+cStr+'</li>';
+        }}
+        contentHTML += '</ul></div>';
+
+        html_pdf = html_pdf.replace('<div id="content-turnos"></div>', contentHTML);
+
+        let pdfWin = window.open('', '_blank');
+        pdfWin.document.write(html_pdf);
+        pdfWin.document.close();
     }}
 
     /* ── DRAG & DROP ── */
@@ -573,13 +827,21 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         if (!dragging) return;
         
         let target = datos[tipo][turno][sec][v][idx];
-        
+        if (target.bloqueado) {{
+            alert("🔒 No puedes modificar un hueco que está bloqueado.");
+            dragging = null; return;
+        }}
+
         if (dragging.source === 'sidebar') {{
-            if (target.id !== -1 && !confirm(`El hueco ya está ocupado por ${{target.nombre}}. ¿Reemplazar?`)) return;
-            datos[tipo][turno][sec][v][idx] = {{...dragging.persona}};
+            if (target.id !== -1 && !confirm(`El hueco ya está ocupado por ${{target.nombre}}. ¿Reemplazar?`)) {{ dragging = null; return; }}
+            datos[tipo][turno][sec][v][idx] = {{...dragging.persona, bloqueado: false}};
         }} else {{
-            // Intercambio
             let orig = datos[dragging.tipo][dragging.turno][dragging.sec][dragging.v][dragging.idx];
+            if (orig.bloqueado) {{
+                alert("🔒 El costalero que intentas mover está bloqueado en su posición actual.");
+                dragging = null; return;
+            }}
+            // Intercambio
             datos[dragging.tipo][dragging.turno][dragging.sec][dragging.v][dragging.idx] = target;
             datos[tipo][turno][sec][v][idx] = orig;
         }}
@@ -645,7 +907,10 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
                 let d = document.createElement('div');
                 d.className = 'sug-item';
                 d.textContent = `${{m.nombre}} (${{m.altura}}cm)`;
-                d.onclick = () => {{ datos[tipo][turno][sec][v][idx] = {{...m}}; render(); guardarMemoria(); if(sidebarAbierto) renderSidebar(); }};
+                d.onclick = () => {{ 
+                    datos[tipo][turno][sec][v][idx] = {{...m, bloqueado: false}}; 
+                    render(); guardarMemoria(); if(sidebarAbierto) renderSidebar(); 
+                }};
                 sug.appendChild(d);
             }});
         }} else sug.style.display = 'none';
