@@ -55,7 +55,7 @@
         .btn-vacar { background:transparent; border:1px solid #b30000; color:#ff6b81; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold; transition: 0.2s; }
         .btn-vacar:hover { background:#b30000; color:#fff; }
         
-        /* BOTONES COPIAR PEGAR */
+        /* BOTONES COPIAR PEGAR Y BLOQUEAR */
         .btn-copiar { background:transparent; border:1px solid #3498db; color:#3498db; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold; transition: 0.2s; }
         .btn-copiar:hover { background:#3498db; color:#fff; }
         
@@ -63,6 +63,9 @@
         .btn-pegar.activo { opacity: 1; cursor: pointer; animation: pulseVerde 2s infinite; }
         .btn-pegar.activo:hover { background:#27ae60; color:#fff; }
         @keyframes pulseVerde { 0% { box-shadow:0 0 0 0 rgba(39,174,96,0.6); } 70% { box-shadow:0 0 0 6px rgba(39,174,96,0); } 100% { box-shadow:0 0 0 0 rgba(39,174,96,0); } }
+
+        .btn-lock-turn { background:transparent; border:1px solid #e8d08c; color:#e8d08c; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold; transition: 0.2s; }
+        .btn-lock-turn:hover { background:#e8d08c; color:#0c0209; }
         
         input.search-p { background:#0c0209; border:1px solid #3d0c2e; color:#d4af37; padding:5px; width:100%; font-size:10px; border-radius:3px; outline:none; box-sizing:border-box; }
         .sugerencias { background:#1a0514; border:1px solid #d4af37; max-height:100px; overflow-y:auto; position:absolute; z-index:999; width:100%; top:100%; left:0; box-shadow:0 4px 6px rgba(0,0,0,.2); border-radius:3px; }
@@ -163,7 +166,7 @@
     </div>
 
 <script>
-    const TS          = "1774453715";
+    const TS          = "1774462349";
     const DATOS_INIC  = {"tipo_procesion": "personalizada", "lleva_cruz": true, "costaleros_7": false, "Trono": {"Turno A": {"Delante": {"Izquierda": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Centro": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Derecha": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}]}, "Detras": {"Izquierda": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Centro": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Derecha": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}]}}, "Turno B": {"Delante": {"Izquierda": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Centro": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Derecha": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}]}, "Detras": {"Izquierda": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Centro": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Derecha": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}]}}}, "Cruz": {"Turno 1": {"Delante": {"Izquierda": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Derecha": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}]}, "Detras": {"Izquierda": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Derecha": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}]}}, "Turno 2": {"Delante": {"Izquierda": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Derecha": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}]}, "Detras": {"Izquierda": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Derecha": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}]}}, "Turno 3": {"Delante": {"Izquierda": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Derecha": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}]}, "Detras": {"Izquierda": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}], "Derecha": [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}, {"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": false}]}}}, "Mapping": {"Tramo 1": {"Ruta": "", "Trono": "Turno A", "Cruz": "Turno 1"}, "Tramo 2": {"Ruta": "", "Trono": "Turno B", "Cruz": "Turno 2"}, "Tramo 3": {"Ruta": "", "Trono": "Turno A", "Cruz": "Turno 3"}, "Tramo 4": {"Ruta": "", "Trono": "Turno B", "Cruz": "Turno 1"}, "Tramo 5": {"Ruta": "", "Trono": "Turno A", "Cruz": "Turno 2"}, "Tramo 6": {"Ruta": "", "Trono": "Turno B", "Cruz": "Turno 3"}, "Tramo 7": {"Ruta": "", "Trono": "Turno A", "Cruz": "Turno 1"}, "Tramo 8": {"Ruta": "", "Trono": "Turno B", "Cruz": "Turno 2"}}, "Indicaciones": {"Tramo 1": "", "Tramo 2": "", "Tramo 3": "", "Tramo 4": "", "Tramo 5": "", "Tramo 6": "", "Tramo 7": "", "Tramo 8": ""}};
     const MASTER_LIST = [{"id": 1, "nombre": "Abigail Garc\u00eda Botella", "telefono": "", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 2, "nombre": "Abraham Sarmiento Mar\u00edn", "telefono": "", "altura": 153, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 3, "nombre": "Ainoa R\u00f3denas Caselles", "telefono": "", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 4, "nombre": "Aitor Guirao Rodriguez", "telefono": "", "altura": 152, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 5, "nombre": "Alba Sempere Mart\u00ednez", "telefono": "", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 6, "nombre": "Alejandro Gea Mart\u00ed", "telefono": "", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 7, "nombre": "Alicia Bas Munuera", "telefono": "", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 8, "nombre": "Alicia Murcia Ros", "telefono": "", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 9, "nombre": "Alicia Ru\u00edz Cerezo", "telefono": "", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 10, "nombre": "Almudena Mula Abad\u00eda", "telefono": "", "altura": 130, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 11, "nombre": "\u00c1lvaro Sarmiento Caselles", "telefono": "", "altura": 145, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 12, "nombre": "Ana Isabel Mart\u00ednez Javaloyes", "telefono": "", "altura": 144, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 13, "nombre": "Ana M Rodr\u00edguez Lorente", "telefono": "", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 14, "nombre": "Anabel Arce Pedrique", "telefono": "", "altura": 136, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 15, "nombre": "Anabel Rabasco Arce", "telefono": "", "altura": 136, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 16, "nombre": "Andrea Fern\u00e1ndez Zaragoza", "telefono": "", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 17, "nombre": "Andr\u00e9s Garc\u00eda Mart\u00ed", "telefono": "", "altura": 162, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 18, "nombre": "\u00c1ngela Cerezo L\u00f3pez", "telefono": "", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 19, "nombre": "\u00c1ngela Fern\u00e1ndez Zaragoza", "telefono": "", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 20, "nombre": "Angela Ruiz Caselles", "telefono": "", "altura": 131, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 21, "nombre": "\u00c1ngeles Zaragoza Lucas", "telefono": "", "altura": 126, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 22, "nombre": "Antonio Jes\u00fas Cabrera Ferr\u00e1ndez", "telefono": "", "altura": 150, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 23, "nombre": "Antonio Lid\u00f3n Mart\u00ednez", "telefono": "", "altura": 141, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 24, "nombre": "Ariadna Mart\u00ednez Mart\u00ed", "telefono": "", "altura": 131, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 26, "nombre": "Beatriz Jara Rodr\u00edguez", "telefono": "", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 27, "nombre": "Blanca R\u00f3denas Caselles", "telefono": "", "altura": 136, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 28, "nombre": "Blanca Rosa Medina Oltra", "telefono": "", "altura": 136, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 29, "nombre": "Brenda Mart\u00ednez Sampere", "telefono": "", "altura": 132, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 30, "nombre": "Carla del Moral Fern\u00e1ndez", "telefono": "", "altura": 132, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 31, "nombre": "Carla Fern\u00e1ndez Ballesta", "telefono": "", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 32, "nombre": "Carla L\u00f3pez Rodr\u00edguez", "telefono": "", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 33, "nombre": "Carlota Marcos Belmonte", "telefono": "", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 34, "nombre": "Carmen Bas Mart\u00ed", "telefono": "", "altura": 131, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 35, "nombre": "Carmen M Hern\u00e1ndez C\u00e1mara", "telefono": "", "altura": 143, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 38, "nombre": "Clara Nortes Casanova", "telefono": "", "altura": 123, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 39, "nombre": "Claudia Ruiz Caselles", "telefono": "", "altura": 130, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 40, "nombre": "Cristina Rubio Blanco", "telefono": "", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 41, "nombre": "Cristina S\u00e1nchez Moya", "telefono": "", "altura": 146, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 42, "nombre": "Cristo Fernando Abad\u00eda L\u00f3pez", "telefono": "", "altura": 153, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 43, "nombre": "Daniel Mira Juan", "telefono": "", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 44, "nombre": "David Lorca Rodr\u00edguez", "telefono": "", "altura": 155, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 45, "nombre": "Elisa Pardines Ferr\u00e1ndez", "telefono": "", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 46, "nombre": "Erika Navarro Zaragoza", "telefono": "", "altura": 129, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 47, "nombre": "Estefan\u00eda Nortes Casanova", "telefono": "", "altura": 130, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 48, "nombre": "Esther Cano Berm\u00fadez", "telefono": "", "altura": 134, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 49, "nombre": "Fernando Mas P\u00e9rez", "telefono": "", "altura": 153, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 50, "nombre": "Francisco Noguera Saura", "telefono": "", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 51, "nombre": "Gelen Huertas Mateo", "telefono": "", "altura": 146, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 52, "nombre": "Gisela Mora Samper", "telefono": "", "altura": 146, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 53, "nombre": "Iluminada M Cabrera Ferr\u00e1ndez", "telefono": "", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 54, "nombre": "Inmaculada And\u00fagar Costa", "telefono": "", "altura": 129, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 55, "nombre": "Inmaculada M Meseguer D\u00edez", "telefono": "", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 56, "nombre": "Iv\u00e1n Fenoll Rodriguez", "telefono": "", "altura": 154, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 57, "nombre": "Jenifer Saura Ortu\u00f1o", "telefono": "", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 58, "nombre": "Jose Antonio Lid\u00f3n P\u00e9rez", "telefono": "", "altura": 157, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 59, "nombre": "Jose Ram\u00f3n Escobedo Medina", "telefono": "", "altura": 143, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 60, "nombre": "Josefina Rabasco Gim\u00e9nez", "telefono": "", "altura": 140, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 61, "nombre": "Karima Calvo Espinosa", "telefono": "", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 62, "nombre": "Laura Rodr\u00edguez Cerezo", "telefono": "", "altura": 142, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 63, "nombre": "Laura Vera Zapalana", "telefono": "", "altura": 142, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 64, "nombre": "Leticia Padilla Cuerdo", "telefono": "", "altura": 138, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 65, "nombre": "Lola Bas Mart\u00ed", "telefono": "", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 66, "nombre": "Loli Mart\u00ed Rocamora", "telefono": "", "altura": 144, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 67, "nombre": "Lourdes Egio Pardines", "telefono": "", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 68, "nombre": "Luc\u00eda Cerezo L\u00f3pez", "telefono": "", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 69, "nombre": "Luc\u00eda S\u00e1nchez V\u00e1zquez", "telefono": "", "altura": 132, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 70, "nombre": "Lydia Espinosa Fenoll", "telefono": "", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 71, "nombre": "M Adela Ros Mar\u00edn", "telefono": "", "altura": 136, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 72, "nombre": "M \u00c1ngeles L\u00f3pez Cerezo", "telefono": "", "altura": 137, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 73, "nombre": "M Bel\u00e9n Mula G\u00f3mez", "telefono": "", "altura": 135, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 74, "nombre": "M del Carmen Fern\u00e1ndez Belmonte", "telefono": "", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 75, "nombre": "M del Mar Garc\u00eda Grau", "telefono": "", "altura": 133, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 76, "nombre": "M Dolores Rodriguez Lorente", "telefono": "", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 77, "nombre": "M Dolores Z\u00e1rate Chumillas", "telefono": "", "altura": 135, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 78, "nombre": "M Eulalia Mula G\u00f3mez", "telefono": "", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 79, "nombre": "M Jes\u00fas Aledo Beltr\u00e1n", "telefono": "", "altura": 141, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 80, "nombre": "M Jes\u00fas Tovar Cuenca", "telefono": "", "altura": 145, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 82, "nombre": "M Jos\u00e9 S\u00e1nchez Fern\u00e1ndez", "telefono": "", "altura": 128, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 83, "nombre": "M Pilar Cerezo Palop", "telefono": "", "altura": 134, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 84, "nombre": "M Rosa Garc\u00eda Cabrera", "telefono": "", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 85, "nombre": "Manoli Mart\u00ednez Liz\u00f3n", "telefono": "", "altura": 132, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 86, "nombre": "M Jose Hernandez Hernandez", "telefono": "", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 87, "nombre": "Mar\u00eda Lorente Z\u00e1rate", "telefono": "", "altura": 137, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 88, "nombre": "Mar\u00eda Parra Cerezo", "telefono": "", "altura": 149, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 89, "nombre": "Mar\u00eda Rabasco Arce", "telefono": "", "altura": 130, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 91, "nombre": "Mariola Plaza Aniorte", "telefono": "", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 92, "nombre": "Mercedes Hern\u00e1ndez Bravo", "telefono": "", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 93, "nombre": "Miguel \u00c1ngel Amor\u00f3s Rodr\u00edguez", "telefono": "603 442 400", "altura": 151, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 94, "nombre": "Miguel \u00c1ngel Espinosa Mula", "telefono": "", "altura": 152, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 95, "nombre": "Milagros Pe\u00f1alver Lorenzo", "telefono": "", "altura": 147, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 96, "nombre": "Mireia Larr\u00f3s G\u00f3mez", "telefono": "", "altura": 142, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 97, "nombre": "Moises Lorente Irles", "telefono": "", "altura": 146, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 98, "nombre": "M\u00f3nica Corbal\u00e1n Navarro", "telefono": "", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 99, "nombre": "Monserrate Coll Mula", "telefono": "", "altura": 144, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 100, "nombre": "Natalia Belmonte Bas", "telefono": "", "altura": 145, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 101, "nombre": "Natalia Vinuesa Mart\u00ednez", "telefono": "", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 103, "nombre": "Noelia Grao L\u00f3pez", "telefono": "", "altura": 148, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 104, "nombre": "Noem\u00ed Garc\u00eda Bernab\u00e9", "telefono": "", "altura": 130, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 105, "nombre": "Nuria Lagu\u00eda Mart\u00ednez", "telefono": "", "altura": 131, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 106, "nombre": "Nuria Ortega Lid\u00f3n", "telefono": "", "altura": 154, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 107, "nombre": "Oscar Mart\u00ednez Mart\u00ednez", "telefono": "", "altura": 159, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 108, "nombre": "Oscar Mart\u00ednez Mora", "telefono": "", "altura": 153, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 109, "nombre": "Pablo Mart\u00ednez P\u00e9rez", "telefono": "", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 110, "nombre": "Paula Marco Ru\u00edz", "telefono": "", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 111, "nombre": "Paula Martinez Casanova", "telefono": "", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 112, "nombre": "Pilar de Lourdes Mart\u00ednez Pineda", "telefono": "", "altura": 142, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 113, "nombre": "Pilar Ru\u00edz Cerezo", "telefono": "", "altura": 134, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 114, "nombre": "Ram\u00f3n Escobedo P\u00e9rez", "telefono": "", "altura": 149, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 115, "nombre": "Raquel Rodr\u00edguez Escudero", "telefono": "", "altura": 135, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 116, "nombre": "Ra\u00fal Donate Escudero", "telefono": "", "altura": 151, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 117, "nombre": "Rosario Fructuoso Huertas", "telefono": "", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 118, "nombre": "Sandra Ca\u00f1ete Murcia", "telefono": "", "altura": 139, "pref_hombro": "Ambos", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 119, "nombre": "Sandra Merino Hern\u00e1ndez", "telefono": "", "altura": 136, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 120, "nombre": "Silvia Rodr\u00edguez Burillo", "telefono": "", "altura": 140, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 121, "nombre": "Sofia Bas Mart\u00ed", "telefono": "", "altura": 138, "pref_hombro": "Izquierdo", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 122, "nombre": "Sof\u00eda Vinuesa Mart\u00ednez", "telefono": "", "altura": 129, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 123, "nombre": "Ver\u00f3nica Rabasco Ferr\u00e1ndez", "telefono": "", "altura": 141, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 124, "nombre": "Ver\u00f3nica Soto Sarabia", "telefono": "", "altura": 141, "pref_hombro": "Derecho", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 126, "nombre": "Zenaida Vivancos Vivancos", "telefono": "", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 127, "nombre": "Aroa  Hernandez Galindo", "telefono": "", "altura": 137, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 128, "nombre": "Noel Lopez Garcia", "telefono": "", "altura": 143, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 129, "nombre": "Enrique Hernandez Cabrera", "telefono": "", "altura": 153, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 130, "nombre": "Elena Cayuelas Belmonte", "telefono": "", "altura": 130, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}, {"id": 132, "nombre": "Irene Nortes Valero", "telefono": "", "altura": 139, "pref_hombro": "", "puede_repetir": true, "miercoles_santo": true, "viernes_santo": true}];
     const LLEVA_CRUZ  = true;
@@ -172,8 +175,8 @@
 
     /* ── INIT ── */
     function init() {
-        let savedTs   = localStorage.getItem('pers_ts_v9');
-        let savedData = localStorage.getItem('pers_datos_v9');
+        let savedTs   = localStorage.getItem('pers_ts_v12');
+        let savedData = localStorage.getItem('pers_datos_v12');
         
         if (savedData && savedTs === TS) {
             try {
@@ -181,23 +184,23 @@
                 if (parsed.Trono) {
                     datos = parsed;
                 } else {
-                    throw new Error("Estructura corrupta o antigua");
+                    throw new Error("Estructura corrupta");
                 }
             } catch(e) {
                 datos = JSON.parse(JSON.stringify(DATOS_INIC));
-                localStorage.setItem('pers_ts_v9', TS);
-                localStorage.setItem('pers_datos_v9', JSON.stringify(datos));
+                localStorage.setItem('pers_ts_v12', TS);
+                localStorage.setItem('pers_datos_v12', JSON.stringify(datos));
             }
         } else {
             datos = JSON.parse(JSON.stringify(DATOS_INIC));
-            localStorage.setItem('pers_ts_v9', TS);
-            localStorage.setItem('pers_datos_v9', JSON.stringify(datos));
+            localStorage.setItem('pers_ts_v12', TS);
+            localStorage.setItem('pers_datos_v12', JSON.stringify(datos));
         }
         render();
     }
 
     function guardarMemoria() {
-        localStorage.setItem('pers_datos_v9', JSON.stringify(datos));
+        localStorage.setItem('pers_datos_v12', JSON.stringify(datos));
     }
 
     /* ── CARGAR JSON ── */
@@ -254,6 +257,35 @@
             render();
             if (sidebarAbierto) renderSidebar();
         }
+    };
+
+    /* ── BLOQUEO MASIVO INTELIGENTE ── */
+    window.toggleLockTurno = function(tipo, turno) {
+        let blq = datos[tipo][turno];
+        
+        // 1. Comprobar si están TODOS bloqueados
+        let todosBloqueados = true;
+        for (let s in blq) {
+            for (let v in blq[s]) {
+                blq[s][v].forEach(p => {
+                    if (!p.bloqueado) todosBloqueados = false;
+                });
+            }
+        }
+        
+        // 2. Si todos están bloqueados -> Soltar todos. Si falta alguno -> Bloquear todos.
+        let nuevoEstado = !todosBloqueados;
+        
+        for (let s in blq) {
+            for (let v in blq[s]) {
+                blq[s][v].forEach(p => {
+                    p.bloqueado = nuevoEstado;
+                });
+            }
+        }
+        
+        guardarMemoria();
+        render();
     };
 
     /* ── ESTADO GLOBAL (CRITICO, DOBLE...) ── */
@@ -406,15 +438,27 @@
         }
         tablaMap.innerHTML = hMap;
 
-        // GENERAR BOTONES COPIAR / PEGAR
+        // GENERAR BOTONES DE CONTROL DE TURNO (Copia, Pega, Bloqueo, Vaciar)
         let btnsControl = (tipo, turno) => {
             let activo = (portapapeles && portapapeles.tipo === tipo) ? 'activo' : '';
             let disabled = (portapapeles && portapapeles.tipo === tipo) ? '' : 'disabled';
+            
+            // Analizar si están todos bloqueados para cambiar el botón
+            let blq = datos[tipo][turno];
+            let todosBloqueados = true;
+            for (let s in blq) {
+                for (let v in blq[s]) {
+                    blq[s][v].forEach(p => { if (!p.bloqueado) todosBloqueados = false; });
+                }
+            }
+            let txtLock = todosBloqueados ? '🔓 Soltar Turno' : '🔒 Fijar Turno';
+            
             return `
             <div style="display:flex; gap:8px;">
                 <button class="btn-copiar" onclick="copiarTurno('${tipo}','${turno}')" title="Copiar este turno">📄 Copiar</button>
                 <button class="btn-pegar ${activo}" onclick="pegarTurno('${tipo}','${turno}')" title="Pegar datos" ${disabled}>📋 Pegar</button>
-                <button class="btn-vacar" onclick="vaciarTurno('${tipo}','${turno}')">🗑️ Vaciar turno</button>
+                <button class="btn-lock-turn" onclick="toggleLockTurno('${tipo}','${turno}')">${txtLock}</button>
+                <button class="btn-vacar" onclick="vaciarTurno('${tipo}','${turno}')" title="Vacía solo los huecos que NO tienen candado">🗑️ Vaciar</button>
             </div>`;
         };
 
@@ -593,7 +637,9 @@
     }
 
     window.vaciarTodo = function() {
-        if (!confirm('⚠️ ¿Vaciar TODO el cuadrante?')) return;
+        if (!confirm(`⚠️ ¿Vaciar TODO el cuadrante? 
+
+(Se respetarán todos los huecos bloqueados 🔒)`)) return;
         let limpia = (blq) => {
             for (let t in blq) for (let s in blq[t]) for (let v in blq[t][s])
                 blq[t][s][v] = blq[t][s][v].map(p => p.bloqueado ? p : ({ nombre:'HUECO LIBRE', altura:0, id:-1, bloqueado:false }));
@@ -604,7 +650,9 @@
     }
 
     window.vaciarTurno = function(tipo, turno) {
-        if (!confirm(`⚠️ ¿Vaciar ${turno} (${tipo})?`)) return;
+        if (!confirm(`⚠️ ¿Vaciar el ${turno} de ${tipo}?
+
+(Se respetarán todos los huecos bloqueados 🔒)`)) return;
         let blq = datos[tipo][turno];
         for (let s in blq) for (let v in blq[s])
             blq[s][v] = blq[s][v].map(p => p.bloqueado ? p : ({ nombre:'HUECO LIBRE', altura:0, id:-1, bloqueado:false }));
@@ -629,6 +677,8 @@
 
     /* ── EXPORTAR A PDF (INFORME OFICIAL) ── */
     window.exportarPDF = function() {
+        window.exportDataForPDF = { estadoGlobal: estadoGlobal, datos: datos, lleva_cruz: LLEVA_CRUZ, master: MASTER_LIST };
+        
         let anio = new Date().getFullYear();
         let fecha_hoy = new Date().toLocaleDateString('es-ES');
         
@@ -696,6 +746,12 @@
     <div class="web-controls no-print">
         <button class="btn-pdf" onclick="window.print()">🖨️ IMPRIMIR / GUARDAR PDF</button>
         <p style="color:#d4af37; font-size:12px; margin-top:-5px;">*En la ventana de impresión, selecciona "Guardar como PDF"</p>
+        
+        <div class="buscador-box">
+            <h3 style="margin-top:0; color:#d4af37;">🔍 BUSCADOR DE COSTALERO</h3>
+            <input type="text" id="input-buscador" placeholder="Escribe un nombre..." onkeyup="actualizarBuscador()">
+            <div id="resultado-itinerario" class="itinerario-result"></div>
+        </div>
     </div>
     
     <div class="container" id="informe-content">
@@ -715,15 +771,61 @@
         
         <div id="content-turnos"></div>
     </div>
+
+    <script>
+        const estadoGlobal = window.opener.exportDataForPDF.estadoGlobal;
+        const datosExport = window.opener.exportDataForPDF.datos;
+        const LLEVA_CRUZ = window.opener.exportDataForPDF.lleva_cruz;
+        const MASTER_LIST = window.opener.exportDataForPDF.master;
+        
+        function normalizar(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+        
+        function actualizarBuscador() {
+            const val = normalizar(document.getElementById('input-buscador').value.trim());
+            const resDiv = document.getElementById('resultado-itinerario');
+            if (val.length < 2) { resDiv.style.display = 'none'; return; }
+            
+            let foundId = null;
+            for (let pid in estadoGlobal) {
+                if (normalizar(estadoGlobal[pid].nombre).includes(val)) {
+                    foundId = pid; break;
+                }
+            }
+            
+            if (!foundId) {
+                resDiv.innerHTML = '<p style="color:#ff4757; font-size:12px; margin:0;">No se encontró al costalero.</p>';
+                resDiv.style.display = 'block';
+                return;
+            }
+            
+            let e = estadoGlobal[foundId];
+            let tramosInfo = [];
+            for (let tr in datosExport.Mapping) {
+                let map = datosExport.Mapping[tr];
+                let enTrono = e.tronoArr.includes(map.Trono);
+                let enCruz  = LLEVA_CRUZ && e.cruzArr.includes(map.Cruz);
+                if (enTrono || enCruz) {
+                    let roles = [];
+                    if (enTrono) roles.push('⛪ Trono');
+                    if (enCruz)  roles.push('✝ Cruz');
+                    tramosInfo.push('<li><span class="tramo-label"><b>'+tr+'</b></span><span style="color:#d4af37; font-weight:bold;">'+roles.join(' + ')+'</span></li>');
+                } else {
+                    tramosInfo.push('<li><span class="tramo-label">'+tr+'</span><span style="color:#888;">🕯️ Cirio (Descanso)</span></li>');
+                }
+            }
+            
+            resDiv.innerHTML = '<div style="margin-bottom:10px; border-bottom:1px solid #d4af37; padding-bottom:5px;"><b>' + e.nombre + '</b></div><ul>' + tramosInfo.join('') + '</ul>';
+            resDiv.style.display = 'block';
+        }
+    <\/script>
 </body>
 </html>`;
         
         let contentHTML = "";
         
-        // Función parseadora de Celdas PDF
         let parseSlot = (p) => {
             if (p.id === -1 || p.altura === 0) return '<li class="hueco-libre">Hueco Libre</li>';
-            let e = window.opener.estadoGlobal[p.id];
+            let e = estadoGlobal[p.id]; // <--- ¡Corregido aquí!
             let bg = '';
             if (e) {
                 if (e.estadoStr === 'critico' || e.estadoStr === 'doble') bg = 'bg-rojo';
@@ -733,28 +835,26 @@
             return '<li class="costalero-cell '+bg+'"><div class="c-info"><span class="nombre">'+p.nombre+'</span></div><span class="meta">'+p.altura+'cm</span></li>';
         };
 
-        let d_export = window.opener.datos;
-
-        for (let turno in d_export.Trono) {
+        for (let turno in datos.Trono) { // <--- ¡Corregido aquí!
             contentHTML += '<div class="turno-box page-break-avoid"><h3 class="turno-title">⛪ TRONO - '+turno+'</h3><div class="grid-varales">';
             ['Izquierda', 'Centro', 'Derecha'].forEach(vara => {
                 contentHTML += '<div class="varal"><h4 class="varal-title">'+vara+'</h4><div class="seccion-top">DELANTE</div><ul class="lista-costaleros">';
-                d_export.Trono[turno].Delante[vara].forEach(p => { contentHTML += parseSlot(p); });
+                datos.Trono[turno].Delante[vara].forEach(p => { contentHTML += parseSlot(p); });
                 contentHTML += '</ul><div class="seccion-mid">CRISTO</div><ul class="lista-costaleros">';
-                d_export.Trono[turno].Detras[vara].forEach(p => { contentHTML += parseSlot(p); });
+                datos.Trono[turno].Detras[vara].forEach(p => { contentHTML += parseSlot(p); });
                 contentHTML += '</ul><div class="seccion-bot">DETRÁS</div></div>';
             });
             contentHTML += '</div></div>';
         }
 
-        if (window.opener.LLEVA_CRUZ && d_export.Cruz) {
-            for (let turno in d_export.Cruz) {
+        if (LLEVA_CRUZ && datos.Cruz) { // <--- ¡Corregido aquí!
+            for (let turno in datos.Cruz) {
                 contentHTML += '<div class="turno-box page-break-avoid"><h3 class="turno-title">✝ CRUZ INSIGNIA - '+turno+'</h3><div class="grid-varales">';
                 ['Izquierda', 'Derecha'].forEach(vara => {
                     contentHTML += '<div class="varal"><h4 class="varal-title">'+vara+'</h4><div class="seccion-top">DELANTE</div><ul class="lista-costaleros">';
-                    d_export.Cruz[turno].Delante[vara].forEach(p => { contentHTML += parseSlot(p); });
+                    datos.Cruz[turno].Delante[vara].forEach(p => { contentHTML += parseSlot(p); });
                     contentHTML += '</ul><div class="seccion-mid">CRUZ</div><ul class="lista-costaleros">';
-                    d_export.Cruz[turno].Detras[vara].forEach(p => { contentHTML += parseSlot(p); });
+                    datos.Cruz[turno].Detras[vara].forEach(p => { contentHTML += parseSlot(p); });
                     contentHTML += '</ul><div class="seccion-bot">DETRÁS</div></div>';
                 });
                 contentHTML += '</div></div>';
@@ -762,11 +862,11 @@
         }
 
         contentHTML += '<div class="seccion-texto page-break-avoid"><h3>🗺️ Hoja de Ruta y Tramos</h3><ul class="lista-tramos">';
-        for (let tr in d_export.Mapping) {
-            let m = d_export.Mapping[tr];
+        for (let tr in datos.Mapping) { // <--- ¡Corregido aquí!
+            let m = datos.Mapping[tr];
             let rStr = m.Ruta ? ` <i>(${m.Ruta})</i>` : '';
             let tStr = m.Trono ? 'Trono: ' + m.Trono : '';
-            let cStr = (window.opener.LLEVA_CRUZ && m.Cruz) ? ' | Cruz: ' + m.Cruz : '';
+            let cStr = (LLEVA_CRUZ && m.Cruz) ? ' | Cruz: ' + m.Cruz : ''; // <--- ¡Corregido aquí!
             contentHTML += '<li><b>'+tr+rStr+':</b> '+tStr+cStr+'</li>';
         }
         contentHTML += '</ul></div>';
@@ -822,7 +922,7 @@
         if (sidebarAbierto) renderSidebar();
     }
 
-    function normalizar(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+    function normalizar(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
 
     function getIdsAsig() {
         const ids = new Set();
