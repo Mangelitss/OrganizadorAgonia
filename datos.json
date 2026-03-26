@@ -6,8 +6,8 @@
         "altura": 133,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 2,
@@ -26,8 +26,8 @@
         "altura": 137,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 4,
@@ -37,7 +37,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "id": 5,
@@ -46,8 +46,8 @@
         "altura": 136,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 6,
@@ -66,8 +66,8 @@
         "altura": 147,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 8,
@@ -101,7 +101,7 @@
     },
     {
         "id": 11,
-        "nombre": "Álvaro Sarmiento Caselles",
+        "nombre": "Alvaro Sarmiento Caselles",
         "telefono": "",
         "altura": 145,
         "pref_hombro": "",
@@ -116,8 +116,8 @@
         "altura": 144,
         "pref_hombro": "Izquierdo",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 13,
@@ -146,7 +146,7 @@
         "altura": 136,
         "pref_hombro": "Izquierdo",
         "puede_repetir": true,
-        "miercoles_santo": true,
+        "miercoles_santo": false,
         "viernes_santo": true
     },
     {
@@ -187,7 +187,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "id": 20,
@@ -256,8 +256,8 @@
         "altura": 136,
         "pref_hombro": "Izquierdo",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 28,
@@ -286,8 +286,8 @@
         "altura": 132,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 31,
@@ -307,7 +307,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "id": 33,
@@ -366,8 +366,8 @@
         "altura": 123,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 39,
@@ -386,8 +386,8 @@
         "altura": 139,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 41,
@@ -397,7 +397,7 @@
         "pref_hombro": "Derecho",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "id": 42,
@@ -407,7 +407,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "id": 43,
@@ -456,8 +456,8 @@
         "altura": 130,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 48,
@@ -536,8 +536,8 @@
         "altura": 140,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 56,
@@ -556,8 +556,8 @@
         "altura": 147,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 58,
@@ -567,7 +567,7 @@
         "pref_hombro": "Izquierdo",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "id": 59,
@@ -576,8 +576,8 @@
         "altura": 143,
         "pref_hombro": "Derecho",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 60,
@@ -607,7 +607,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "id": 63,
@@ -656,8 +656,8 @@
         "altura": 136,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 68,
@@ -696,8 +696,8 @@
         "altura": 136,
         "pref_hombro": "Derecho",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 72,
@@ -716,7 +716,7 @@
         "altura": 135,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
+        "miercoles_santo": false,
         "viernes_santo": true
     },
     {
@@ -766,8 +766,8 @@
         "altura": 136,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 79,
@@ -776,8 +776,8 @@
         "altura": 141,
         "pref_hombro": "Derecho",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 80,
@@ -856,8 +856,8 @@
         "altura": 149,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 89,
@@ -866,7 +866,7 @@
         "altura": 130,
         "pref_hombro": "Izquierdo",
         "puede_repetir": true,
-        "miercoles_santo": true,
+        "miercoles_santo": false,
         "viernes_santo": true
     },
     {
@@ -896,8 +896,8 @@
         "altura": 136,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 93,
@@ -927,11 +927,11 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "id": 96,
-        "nombre": "Mireia Larrós Gómez",
+        "nombre": "Mireia Larrósa Gómez",
         "telefono": "",
         "altura": 142,
         "pref_hombro": "",
@@ -987,7 +987,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "id": 103,
@@ -1077,7 +1077,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "id": 112,
@@ -1086,8 +1086,8 @@
         "altura": 142,
         "pref_hombro": "Derecho",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 113,
@@ -1096,7 +1096,7 @@
         "altura": 134,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
+        "miercoles_santo": false,
         "viernes_santo": true
     },
     {
@@ -1106,8 +1106,8 @@
         "altura": 149,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 115,
@@ -1126,8 +1126,8 @@
         "altura": 151,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 117,
@@ -1156,8 +1156,8 @@
         "altura": 136,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 120,
@@ -1166,8 +1166,8 @@
         "altura": 140,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 121,
@@ -1196,8 +1196,8 @@
         "altura": 141,
         "pref_hombro": "Derecho",
         "puede_repetir": true,
-        "miercoles_santo": true,
-        "viernes_santo": true
+        "miercoles_santo": false,
+        "viernes_santo": false
     },
     {
         "id": 124,
@@ -1227,11 +1227,11 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "id": 127,
-        "nombre": "Aroa  Hernandez Galindo",
+        "nombre": "Aroa Hernandez Galindo",
         "telefono": "",
         "altura": 137,
         "pref_hombro": "",
@@ -1247,7 +1247,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "id": 129,
@@ -1256,7 +1256,7 @@
         "altura": 153,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": true,
+        "miercoles_santo": false,
         "viernes_santo": true
     },
     {
@@ -1284,6 +1284,16 @@
         "nombre": "AAA - EJEMPLO",
         "telefono": "676666666",
         "altura": 200,
+        "pref_hombro": "",
+        "puede_repetir": true,
+        "miercoles_santo": false,
+        "viernes_santo": false
+    },
+    {
+        "id": 134,
+        "nombre": "Veronica Rico Soto",
+        "telefono": "",
+        "altura": 139,
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": false,
