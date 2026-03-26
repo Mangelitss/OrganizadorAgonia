@@ -80,14 +80,14 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         .turno-container {{ background:#1a0514; padding:20px; margin-bottom:30px; border-radius:10px; border:1px solid #3d0c2e; }}
         .turno-container h3 {{ color:#e8d08c; margin-top:0; font-size:16px; border-bottom:1px dashed #4a1038; padding-bottom:10px; display:flex; justify-content:space-between; align-items:center; }}
         
-        .grid-trono {{ display:grid; grid-template-columns:repeat(3,1fr); gap:15px; }}
-        .grid-cruz  {{ display:grid; grid-template-columns:repeat(2,1fr); gap:15px; }}
+        .grid-trono {{ display:grid; grid-template-columns:repeat(3,1fr); gap:15px; margin-bottom: 15px; }}
+        .grid-cruz  {{ display:grid; grid-template-columns:repeat(2,1fr); gap:15px; margin-bottom: 15px; }}
         .vara {{ background:#160311; padding:10px; border-radius:8px; border-top:3px solid #571342; }}
         .vara-titulo {{ text-align:center; color:#a37c95; font-size:14px; margin-bottom:10px; font-weight:bold; text-transform:uppercase; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px; }}
         
-        .sep-delante {{ font-size: 10px; color: #d4af37; text-align: center; margin: 10px 0 5px 0; font-weight: bold; letter-spacing: 1px; }}
-        .sep-mid {{ font-size: 11px; color: #fff; text-align: center; margin: 10px 0; font-weight: bold; background: #5c164e; padding: 5px; border-radius: 3px; letter-spacing: 2px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }}
-        .sep-detras {{ font-size: 10px; color: #d4af37; text-align: center; margin: 5px 0 10px 0; font-weight: bold; letter-spacing: 1px; }}
+        .sep-delante {{ font-size: 13px; color: #d4af37; text-align: center; margin: 15px 0 10px 0; font-weight: bold; letter-spacing: 2px; }}
+        .sep-mid {{ font-size: 13px; color: #fff; text-align: center; margin: 20px 0; font-weight: bold; background: #5c164e; padding: 6px; border-radius: 4px; letter-spacing: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }}
+        .sep-detras {{ font-size: 13px; color: #d4af37; text-align: center; margin: 15px 0 10px 0; font-weight: bold; letter-spacing: 2px; }}
         
         .costalero {{ background:#3d0c2e; border:1px solid #571342; margin:5px 0; padding:8px; border-radius:4px; cursor:grab; display:flex; justify-content:space-between; align-items:center; font-size:11px; transition:.3s; text-shadow:1px 1px 2px rgba(0,0,0,.8); position:relative; }}
         .costalero:active {{ cursor:grabbing; }}
@@ -118,7 +118,6 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         .btn-vacar {{ background:transparent; border:1px solid #b30000; color:#ff6b81; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold; transition: 0.2s; }}
         .btn-vacar:hover {{ background:#b30000; color:#fff; }}
         
-        /* BOTONES COPIAR PEGAR Y BLOQUEAR */
         .btn-copiar {{ background:transparent; border:1px solid #3498db; color:#3498db; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold; transition: 0.2s; }}
         .btn-copiar:hover {{ background:#3498db; color:#fff; }}
         
@@ -243,10 +242,22 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
     // --- CONFIGURACIÓN CUADRADOR AUTOMÁTICO ---
     const TOLERANCIA_ALTURA = 0; // Margen de cm permitidos para intercambiar costaleros. (0 = altura exacta)
 
+    /* ── HELPER DE ESTADÍSTICAS ── */
+    function getStats(arr) {{
+        let valid = arr.filter(p => p.id !== -1 && p.altura > 0);
+        if (valid.length === 0) return '';
+        let sum = valid.reduce((acc, p) => acc + p.altura, 0);
+        let avg = Math.round(sum / valid.length);
+        let min = Math.min(...valid.map(p => p.altura));
+        let max = Math.max(...valid.map(p => p.altura));
+        let rango = min === max ? min : `${{min}}-${{max}}`;
+        return `<span style="font-size:10px; color:#888; font-weight:normal; margin-left:4px; letter-spacing:0;">[∅ ${{avg}}cm | ↕ ${{rango}}]</span>`;
+    }}
+
     /* ── INIT ── */
     function init() {{
-        let savedTs   = localStorage.getItem('pers_ts_v13');
-        let savedData = localStorage.getItem('pers_datos_v13');
+        let savedTs   = localStorage.getItem('pers_ts_v14');
+        let savedData = localStorage.getItem('pers_datos_v14');
         
         if (savedData && savedTs === TS) {{
             try {{
@@ -258,19 +269,19 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
                 }}
             }} catch(e) {{
                 datos = JSON.parse(JSON.stringify(DATOS_INIC));
-                localStorage.setItem('pers_ts_v13', TS);
-                localStorage.setItem('pers_datos_v13', JSON.stringify(datos));
+                localStorage.setItem('pers_ts_v14', TS);
+                localStorage.setItem('pers_datos_v14', JSON.stringify(datos));
             }}
         }} else {{
             datos = JSON.parse(JSON.stringify(DATOS_INIC));
-            localStorage.setItem('pers_ts_v13', TS);
-            localStorage.setItem('pers_datos_v13', JSON.stringify(datos));
+            localStorage.setItem('pers_ts_v14', TS);
+            localStorage.setItem('pers_datos_v14', JSON.stringify(datos));
         }}
         render();
     }}
 
     function guardarMemoria() {{
-        localStorage.setItem('pers_datos_v13', JSON.stringify(datos));
+        localStorage.setItem('pers_datos_v14', JSON.stringify(datos));
     }}
 
     /* ── CARGAR JSON ── */
@@ -356,9 +367,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
     function esError(p, vara) {{
         if (p.id === -1 || p.altura === 0) return false;
         let pref = (p.pref_hombro || '').toLowerCase();
-        // Preferencia Izquierdo -> Debería ir en la Derecha. Si está en Izquierda es error.
         if (vara === 'Izquierda' && pref.includes('izquierd')) return true;
-        // Preferencia Derecho -> Debería ir en Izquierda. Si está en Derecha es error.
         if (vara === 'Derecha' && pref.includes('derech')) return true;
         return false;
     }}
@@ -368,16 +377,14 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         let isI = prefNew.includes('izquierd');
         let isD = prefNew.includes('derech');
         
-        if (!isI && !isD) return false; // Indiferente no conflictua
+        if (!isI && !isD) return false; 
         
-        // Comprobamos la vara del centro entera
         for (let i = 0; i < varaCentroArray.length; i++) {{
             if (i === idx_removed) continue;
             let p = varaCentroArray[i];
             if (p.id === -1 || p.altura === 0) continue;
             
             let pPref = (p.pref_hombro || '').toLowerCase();
-            // Si yo soy I y en el centro hay un D, hay conflicto (y viceversa)
             if (isI && pPref.includes('derech')) return true;
             if (isD && pPref.includes('izquierd')) return true;
         }}
@@ -396,18 +403,16 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
                 
                 for (let i = 0; i < varas[vOrigen].length; i++) {{
                     let p1 = varas[vOrigen][i];
-                    if (p1.id === -1 || p1.bloqueado) continue; // Libre o con candado, se ignora.
+                    if (p1.id === -1 || p1.bloqueado) continue; 
                     
                     if (esError(p1, vOrigen)) {{
                         let swapeado = false;
                         
-                        // Plan A: Buscar en vara contraria de la misma sección
                         for (let j = 0; j < varas[vDestino].length; j++) {{
                             let p2 = varas[vDestino][j];
                             if (p2.id === -1 || p2.bloqueado) continue;
                             
                             if (Math.abs(p1.altura - p2.altura) <= TOLERANCIA_ALTURA) {{
-                                // Verificamos que el cambio no le cause un error a p2 en su nuevo sitio
                                 if (!esError(p2, vOrigen) && !esError(p1, vDestino)) {{
                                     varas[vOrigen][i] = p2;
                                     varas[vDestino][j] = p1;
@@ -419,7 +424,6 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
                             }}
                         }}
                         
-                        // Plan B: Buscar en Centro (Solo Trono)
                         if (!swapeado && tipo === 'Trono' && varas['Centro']) {{
                             for (let j = 0; j < varas['Centro'].length; j++) {{
                                 let p2 = varas['Centro'][j];
@@ -510,12 +514,10 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         for (let pid in est) {{
             let e = est[pid];
             
-            // Comprobar si está asignado 2 veces en el mismo turno (Duplicado)
             e.duplicado = false;
             for (let c in e.tronoC) if (e.tronoC[c] > 1) e.duplicado = true;
             for (let c in e.cruzC)  if (e.cruzC[c] > 1)  e.duplicado = true;
 
-            // Calcular en qué tramos sale según la matriz
             let misTramos = new Set();
             e.choqueTramo = false; 
             
@@ -526,16 +528,14 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
                 
                 if (enT) misTramos.add(num);
                 if (enC) misTramos.add(num);
-                if (enT && enC) e.choqueTramo = true; // ⚠️ Rojo Crítico
+                if (enT && enC) e.choqueTramo = true; 
             }}
             e.tramos = Array.from(misTramos).sort((a,b) => a - b);
             
-            // Para poder exportar correctamente a JSON los Sets
             e.tronoArr = Array.from(e.tronoT);
             e.cruzArr = Array.from(e.cruzT);
         }}
 
-        // Asignar colores/estados
         for (let pid in est) {{
             let e = est[pid];
             let tieneConsec = e.tramos.some((n, i) => i > 0 && n - e.tramos[i-1] === 1);
@@ -607,7 +607,6 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
     function render() {{
         estadoGlobal = computarEstados();
 
-        // 1. Mapping
         const tablaMap = document.getElementById('tabla-mapping');
         const optT = Object.keys(datos.Trono || {{}}).map(k => `<option value="${{k}}">${{k}}</option>`).join('');
         const optC = (LLEVA_CRUZ && datos.Cruz) ? Object.keys(datos.Cruz).map(k => `<option value="${{k}}">${{k}}</option>`).join('') : '';
@@ -626,12 +625,10 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         }}
         tablaMap.innerHTML = hMap;
 
-        // GENERAR BOTONES DE CONTROL DE TURNO (Cuadrar, Copia, Pega, Bloqueo, Vaciar)
         let btnsControl = (tipo, turno) => {{
             let activo = (portapapeles && portapapeles.tipo === tipo) ? 'activo' : '';
             let disabled = (portapapeles && portapapeles.tipo === tipo) ? '' : 'disabled';
             
-            // Analizar si están todos bloqueados para cambiar el botón
             let blq = datos[tipo][turno];
             let todosBloqueados = true;
             for (let s in blq) {{
@@ -651,55 +648,75 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
             </div>`;
         }};
 
-        // 2. Trono
+        // 2. Trono (NUEVA ESTRUCTURA HORIZONTAL)
         const appT = document.getElementById('app-trono');
         appT.innerHTML = '';
         for (let turno in datos.Trono) {{
             let sec = datos.Trono[turno];
-            let listV = ['Izquierda', 'Centro', 'Derecha'].map(vara => `
+            
+            let listDelante = ['Izquierda', 'Centro', 'Derecha'].map(vara => `
                 <div class="varal">
-                    <div class="vara-titulo">${{vara}}</div>
-                    <div class="sep-delante">▲ DELANTE ▲</div>
+                    <div class="vara-titulo">${{vara}} ${{getStats(sec.Delante[vara])}}</div>
                     ${{sec.Delante[vara].map((p,i)=>celdaHTML(p,'Trono',turno,'Delante',vara,i)).join('')}}
-                    <div class="sep-mid">CRISTO</div>
+                </div>
+            `).join('');
+
+            let listDetras = ['Izquierda', 'Centro', 'Derecha'].map(vara => `
+                <div class="varal">
+                    <div class="vara-titulo">${{vara}} ${{getStats(sec.Detras[vara])}}</div>
                     ${{sec.Detras[vara].map((p,i)=>celdaHTML(p,'Trono',turno,'Detras',vara,i)).join('')}}
-                    <div class="sep-detras">▼ DETRÁS ▼</div>
                 </div>
             `).join('');
 
             appT.innerHTML += `
             <div class="turno-container">
                 <h3>${{turno}} ${{btnsControl('Trono', turno)}}</h3>
+                <div class="sep-delante">▲ DELANTE ▲</div>
                 <div class="grid-trono">
-                    ${{listV}}
+                    ${{listDelante}}
                 </div>
+                <div class="sep-mid">CRISTO</div>
+                <div class="grid-trono">
+                    ${{listDetras}}
+                </div>
+                <div class="sep-detras">▼ DETRÁS ▼</div>
             </div>`;
         }}
 
-        // 3. Cruz
+        // 3. Cruz (NUEVA ESTRUCTURA HORIZONTAL)
         if (LLEVA_CRUZ && datos.Cruz) {{
             const appC = document.getElementById('app-cruz');
             if (appC) {{
                 appC.innerHTML = '';
                 for (let turno in datos.Cruz) {{
                     let sec = datos.Cruz[turno];
-                    let listV = ['Izquierda', 'Derecha'].map(vara => `
+                    
+                    let listDelante = ['Izquierda', 'Derecha'].map(vara => `
                         <div class="varal">
-                            <div class="vara-titulo">${{vara}}</div>
-                            <div class="sep-delante">▲ DELANTE ▲</div>
+                            <div class="vara-titulo">${{vara}} ${{getStats(sec.Delante[vara])}}</div>
                             ${{sec.Delante[vara].map((p,i)=>celdaHTML(p,'Cruz',turno,'Delante',vara,i)).join('')}}
-                            <div class="sep-mid">CRUZ</div>
+                        </div>
+                    `).join('');
+
+                    let listDetras = ['Izquierda', 'Derecha'].map(vara => `
+                        <div class="varal">
+                            <div class="vara-titulo">${{vara}} ${{getStats(sec.Detras[vara])}}</div>
                             ${{sec.Detras[vara].map((p,i)=>celdaHTML(p,'Cruz',turno,'Detras',vara,i)).join('')}}
-                            <div class="sep-detras">▼ DETRÁS ▼</div>
                         </div>
                     `).join('');
 
                     appC.innerHTML += `
                     <div class="turno-container">
                         <h3>${{turno}} ${{btnsControl('Cruz', turno)}}</h3>
+                        <div class="sep-delante">▲ DELANTE ▲</div>
                         <div class="grid-cruz">
-                            ${{listV}}
+                            ${{listDelante}}
                         </div>
+                        <div class="sep-mid">CRUZ</div>
+                        <div class="grid-cruz">
+                            ${{listDetras}}
+                        </div>
+                        <div class="sep-detras">▼ DETRÁS ▼</div>
                     </div>`;
                 }}
             }}
@@ -764,7 +781,6 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         let p = MASTER_LIST.find(x => x.id === pid) || {{}};
         let nombre = e ? e.nombre : (p.nombre || 'Desconocido');
 
-        // Turnos a los que pertenece
         let turnosList = [];
         if (e) {{
            e.tronoArr.forEach(t => turnosList.push(`⛪ ${{t}} (Trono)`));
@@ -772,14 +788,12 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         }}
         let turnosStr = turnosList.length > 0 ? turnosList.join(' &nbsp;|&nbsp; ') : '<span style="color:#ff4757;">Ninguno asignado</span>';
 
-        // Tramos en los que sale este costalero
         let tramosInfo = [];
         for (let tr in datos.Mapping) {{
             let map = datos.Mapping[tr];
             let enTrono = e && e.tronoArr.includes(map.Trono);
             let enCruz  = e && LLEVA_CRUZ && e.cruzArr.includes(map.Cruz);
             
-            // Si el tramo tiene nombre de ruta en el JSON
             let trLabel = `<b>${{tr}}</b>${{map.Ruta ? `<br><span style="font-size:10px;color:#a37c95;font-weight:normal;">${{map.Ruta}}</span>` : ''}}`;
 
             if (enTrono || enCruz) {{
@@ -860,7 +874,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         render(); guardarMemoria(); if (sidebarAbierto) renderSidebar();
     }}
 
-    /* ── EXPORTAR A PDF (INFORME OFICIAL) ── */
+    /* ── EXPORTAR A PDF (INFORME OFICIAL NUEVA ESTRUCTURA HORIZONTAL) ── */
     window.exportarPDF = function() {{
         window.exportDataForPDF = {{ estadoGlobal: estadoGlobal, datos: datos, lleva_cruz: LLEVA_CRUZ, master: MASTER_LIST }};
         
@@ -899,9 +913,9 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         .varal {{ flex: 1; padding: 10px; border-right: 1px solid #eee; }}
         .varal:last-child {{ border-right: none; }}
         .varal-title {{ text-align: center; color: #5c164e; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin-top: 0; font-size: 12px; font-weight: 800; text-transform: uppercase; }}
-        .seccion-top {{ font-size: 10px; color: #5c164e; text-align: center; margin: 10px 0 5px 0; font-weight: bold; background: #eee; padding: 4px; border-radius: 3px; letter-spacing: 1px; }}
-        .seccion-mid {{ font-size: 10px; color: #fff; text-align: center; margin: 8px 0; font-weight: bold; background: #5c164e; padding: 4px; border-radius: 3px; letter-spacing: 2px; }}
-        .seccion-bot {{ font-size: 10px; color: #5c164e; text-align: center; margin: 5px 0 10px 0; font-weight: bold; background: #eee; padding: 4px; border-radius: 3px; letter-spacing: 1px; }}
+        .seccion-top {{ font-size: 12px; color: #5c164e; text-align: center; margin: 10px 0; font-weight: bold; background: #eee; padding: 6px; border-radius: 3px; letter-spacing: 2px; }}
+        .seccion-mid {{ font-size: 12px; color: #fff; text-align: center; margin: 15px 0; font-weight: bold; background: #5c164e; padding: 6px; border-radius: 3px; letter-spacing: 4px; }}
+        .seccion-bot {{ font-size: 12px; color: #5c164e; text-align: center; margin: 10px 0; font-weight: bold; background: #eee; padding: 6px; border-radius: 3px; letter-spacing: 2px; }}
         .lista-costaleros {{ list-style: none; padding: 0; margin: 0; font-size: 11px; }}
         .costalero-cell {{ padding: 5px 8px; margin-bottom: 3px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; background: #fff; }}
         .hueco-libre {{ padding: 5px 8px; margin-bottom: 3px; border-radius: 4px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; background: #fafafa; color: #aaa; font-style: italic; }}
@@ -1007,6 +1021,18 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
 </html>`;
         
         let contentHTML = "";
+
+        // Para PDF (Compartimos la funcion de obtener stats visualmente en PDF)
+        function getStatsPDF(arr) {{
+            let valid = arr.filter(p => p.id !== -1 && p.altura > 0);
+            if (valid.length === 0) return '';
+            let sum = valid.reduce((acc, p) => acc + p.altura, 0);
+            let avg = Math.round(sum / valid.length);
+            let min = Math.min(...valid.map(p => p.altura));
+            let max = Math.max(...valid.map(p => p.altura));
+            let rango = min === max ? min : `${{min}}-${{max}}`;
+            return `<span style="font-size:10px; color:#888; font-weight:normal; margin-left:4px; letter-spacing:0;">[∅ ${{avg}}cm | ↕ ${{rango}}]</span>`;
+        }}
         
         let parseSlot = (p) => {{
             if (p.id === -1 || p.altura === 0) return '<li class="hueco-libre">Hueco Libre</li>';
@@ -1020,31 +1046,57 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
             return '<li class="costalero-cell '+bg+'"><div class="c-info"><span class="nombre">'+p.nombre+'</span></div><span class="meta">'+p.altura+'cm</span></li>';
         }};
 
-        let d_export = window.opener.exportDataForPDF.datos;
+        let d_export = datos;
 
         for (let turno in d_export.Trono) {{ 
-            contentHTML += '<div class="turno-box page-break-avoid"><h3 class="turno-title">⛪ TRONO - '+turno+'</h3><div class="grid-varales">';
+            contentHTML += '<div class="turno-box page-break-avoid"><h3 class="turno-title">⛪ TRONO - '+turno+'</h3>';
+            
+            // DELANTE
+            contentHTML += '<div class="seccion-top">▲ DELANTE ▲</div><div class="grid-varales">';
             ['Izquierda', 'Centro', 'Derecha'].forEach(vara => {{
-                contentHTML += '<div class="varal"><h4 class="varal-title">'+vara+'</h4><div class="seccion-top">DELANTE</div><ul class="lista-costaleros">';
+                contentHTML += '<div class="varal"><h4 class="varal-title">'+vara+' '+getStatsPDF(d_export.Trono[turno].Delante[vara])+'</h4><ul class="lista-costaleros">';
                 d_export.Trono[turno].Delante[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
-                contentHTML += '</ul><div class="seccion-mid">CRISTO</div><ul class="lista-costaleros">';
-                d_export.Trono[turno].Detras[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
-                contentHTML += '</ul><div class="seccion-bot">DETRÁS</div></div>';
+                contentHTML += '</ul></div>';
             }});
-            contentHTML += '</div></div>';
+            contentHTML += '</div>';
+
+            // CRISTO
+            contentHTML += '<div class="seccion-mid">CRISTO</div>';
+
+            // DETRÁS
+            contentHTML += '<div class="grid-varales">';
+            ['Izquierda', 'Centro', 'Derecha'].forEach(vara => {{
+                contentHTML += '<div class="varal"><h4 class="varal-title">'+vara+' '+getStatsPDF(d_export.Trono[turno].Detras[vara])+'</h4><ul class="lista-costaleros">';
+                d_export.Trono[turno].Detras[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
+                contentHTML += '</ul></div>';
+            }});
+            contentHTML += '</div><div class="seccion-bot">▼ DETRÁS ▼</div></div>';
         }}
 
-        if (window.opener.exportDataForPDF.lleva_cruz && d_export.Cruz) {{ 
+        if (LLEVA_CRUZ && d_export.Cruz) {{ 
             for (let turno in d_export.Cruz) {{
-                contentHTML += '<div class="turno-box page-break-avoid"><h3 class="turno-title">✝ CRUZ INSIGNIA - '+turno+'</h3><div class="grid-varales">';
+                contentHTML += '<div class="turno-box page-break-avoid"><h3 class="turno-title">✝ CRUZ INSIGNIA - '+turno+'</h3>';
+                
+                // DELANTE
+                contentHTML += '<div class="seccion-top">▲ DELANTE ▲</div><div class="grid-varales">';
                 ['Izquierda', 'Derecha'].forEach(vara => {{
-                    contentHTML += '<div class="varal"><h4 class="varal-title">'+vara+'</h4><div class="seccion-top">DELANTE</div><ul class="lista-costaleros">';
+                    contentHTML += '<div class="varal"><h4 class="varal-title">'+vara+' '+getStatsPDF(d_export.Cruz[turno].Delante[vara])+'</h4><ul class="lista-costaleros">';
                     d_export.Cruz[turno].Delante[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
-                    contentHTML += '</ul><div class="seccion-mid">CRUZ</div><ul class="lista-costaleros">';
-                    d_export.Cruz[turno].Detras[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
-                    contentHTML += '</ul><div class="seccion-bot">DETRÁS</div></div>';
+                    contentHTML += '</ul></div>';
                 }});
-                contentHTML += '</div></div>';
+                contentHTML += '</div>';
+
+                // CRUZ
+                contentHTML += '<div class="seccion-mid">CRUZ</div>';
+
+                // DETRÁS
+                contentHTML += '<div class="grid-varales">';
+                ['Izquierda', 'Derecha'].forEach(vara => {{
+                    contentHTML += '<div class="varal"><h4 class="varal-title">'+vara+' '+getStatsPDF(d_export.Cruz[turno].Detras[vara])+'</h4><ul class="lista-costaleros">';
+                    d_export.Cruz[turno].Detras[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
+                    contentHTML += '</ul></div>';
+                }});
+                contentHTML += '</div><div class="seccion-bot">▼ DETRÁS ▼</div></div>';
             }}
         }}
 
@@ -1053,7 +1105,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
             let m = d_export.Mapping[tr];
             let rStr = m.Ruta ? ` <i>(${{m.Ruta}})</i>` : '';
             let tStr = m.Trono ? 'Trono: ' + m.Trono : '';
-            let cStr = (window.opener.exportDataForPDF.lleva_cruz && m.Cruz) ? ' | Cruz: ' + m.Cruz : ''; 
+            let cStr = (LLEVA_CRUZ && m.Cruz) ? ' | Cruz: ' + m.Cruz : ''; 
             contentHTML += '<li><b>'+tr+rStr+':</b> '+tStr+cStr+'</li>';
         }}
         contentHTML += '</ul></div>';
