@@ -129,6 +129,9 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
 
         .btn-lock-turn {{ background:transparent; border:1px solid #e8d08c; color:#e8d08c; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold; transition: 0.2s; }}
         .btn-lock-turn:hover {{ background:#e8d08c; color:#0c0209; }}
+
+        .btn-cuadrar {{ background:transparent; border:1px solid #00d2ff; color:#00d2ff; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold; transition: 0.2s; }}
+        .btn-cuadrar:hover {{ background:#00d2ff; color:#0c0209; }}
         
         input.search-p {{ background:#0c0209; border:1px solid #3d0c2e; color:#d4af37; padding:5px; width:100%; font-size:10px; border-radius:3px; outline:none; box-sizing:border-box; }}
         .sugerencias {{ background:#1a0514; border:1px solid #d4af37; max-height:100px; overflow-y:auto; position:absolute; z-index:999; width:100%; top:100%; left:0; box-shadow:0 4px 6px rgba(0,0,0,.2); border-radius:3px; }}
@@ -190,6 +193,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         </div>
         <div>
             <input type="file" id="file-input" accept=".json" style="display: none;" onchange="cargarJSON(event)">
+            <button class="btn-control" style="background:#0a2a3d; border-color:#00d2ff; color:#00d2ff;" onclick="cuadrarTodos()">⚖️ CUADRAR TODOS</button>
             <button class="btn-control btn-danger" onclick="vaciarTodo()">🗑️ VACIAR TODO</button>
             <button class="btn-control" onclick="abrirModalHojaRuta()">📋 RUTA DE COSTALERO</button>
             <button class="btn-control" onclick="document.getElementById('file-input').click()">📂 CARGAR</button>
@@ -236,10 +240,13 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
     let datos = {{}};
     let portapapeles = null; 
 
+    // --- CONFIGURACIÓN CUADRADOR AUTOMÁTICO ---
+    const TOLERANCIA_ALTURA = 0; // Margen de cm permitidos para intercambiar costaleros. (0 = altura exacta)
+
     /* ── INIT ── */
     function init() {{
-        let savedTs   = localStorage.getItem('pers_ts_v12');
-        let savedData = localStorage.getItem('pers_datos_v12');
+        let savedTs   = localStorage.getItem('pers_ts_v13');
+        let savedData = localStorage.getItem('pers_datos_v13');
         
         if (savedData && savedTs === TS) {{
             try {{
@@ -247,23 +254,23 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
                 if (parsed.Trono) {{
                     datos = parsed;
                 }} else {{
-                    throw new Error("Estructura corrupta");
+                    throw new Error("Estructura corrupta o antigua");
                 }}
             }} catch(e) {{
                 datos = JSON.parse(JSON.stringify(DATOS_INIC));
-                localStorage.setItem('pers_ts_v12', TS);
-                localStorage.setItem('pers_datos_v12', JSON.stringify(datos));
+                localStorage.setItem('pers_ts_v13', TS);
+                localStorage.setItem('pers_datos_v13', JSON.stringify(datos));
             }}
         }} else {{
             datos = JSON.parse(JSON.stringify(DATOS_INIC));
-            localStorage.setItem('pers_ts_v12', TS);
-            localStorage.setItem('pers_datos_v12', JSON.stringify(datos));
+            localStorage.setItem('pers_ts_v13', TS);
+            localStorage.setItem('pers_datos_v13', JSON.stringify(datos));
         }}
         render();
     }}
 
     function guardarMemoria() {{
-        localStorage.setItem('pers_datos_v12', JSON.stringify(datos));
+        localStorage.setItem('pers_datos_v13', JSON.stringify(datos));
     }}
 
     /* ── CARGAR JSON ── */
@@ -322,7 +329,6 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
     window.toggleLockTurno = function(tipo, turno) {{
         let blq = datos[tipo][turno];
         
-        // 1. Comprobar si están TODOS bloqueados
         let todosBloqueados = true;
         for (let s in blq) {{
             for (let v in blq[s]) {{
@@ -332,7 +338,6 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
             }}
         }}
         
-        // 2. Si todos están bloqueados -> Soltar todos. Si falta alguno -> Bloquear todos.
         let nuevoEstado = !todosBloqueados;
         
         for (let s in blq) {{
@@ -345,6 +350,130 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         
         guardarMemoria();
         render();
+    }};
+
+    /* ── AUTOSOLVER: CUADRAR HOMBROS ── */
+    function esError(p, vara) {{
+        if (p.id === -1 || p.altura === 0) return false;
+        let pref = (p.pref_hombro || '').toLowerCase();
+        // Preferencia Izquierdo -> Debería ir en la Derecha. Si está en Izquierda es error.
+        if (vara === 'Izquierda' && pref.includes('izquierd')) return true;
+        // Preferencia Derecho -> Debería ir en Izquierda. Si está en Derecha es error.
+        if (vara === 'Derecha' && pref.includes('derech')) return true;
+        return false;
+    }}
+
+    function conflictoCentro(p_new, varaCentroArray, idx_removed) {{
+        let prefNew = (p_new.pref_hombro || '').toLowerCase();
+        let isI = prefNew.includes('izquierd');
+        let isD = prefNew.includes('derech');
+        
+        if (!isI && !isD) return false; // Indiferente no conflictua
+        
+        // Comprobamos la vara del centro entera
+        for (let i = 0; i < varaCentroArray.length; i++) {{
+            if (i === idx_removed) continue;
+            let p = varaCentroArray[i];
+            if (p.id === -1 || p.altura === 0) continue;
+            
+            let pPref = (p.pref_hombro || '').toLowerCase();
+            // Si yo soy I y en el centro hay un D, hay conflicto (y viceversa)
+            if (isI && pPref.includes('derech')) return true;
+            if (isD && pPref.includes('izquierd')) return true;
+        }}
+        return false;
+    }}
+
+    function cuadrarHombrosTurno(tipo, turno) {{
+        let modificado = false;
+        let bloque = datos[tipo][turno];
+
+        for (let sec of ['Delante', 'Detras']) {{
+            let varas = bloque[sec];
+            
+            for (let vOrigen of ['Izquierda', 'Derecha']) {{
+                let vDestino = vOrigen === 'Izquierda' ? 'Derecha' : 'Izquierda';
+                
+                for (let i = 0; i < varas[vOrigen].length; i++) {{
+                    let p1 = varas[vOrigen][i];
+                    if (p1.id === -1 || p1.bloqueado) continue; // Libre o con candado, se ignora.
+                    
+                    if (esError(p1, vOrigen)) {{
+                        let swapeado = false;
+                        
+                        // Plan A: Buscar en vara contraria de la misma sección
+                        for (let j = 0; j < varas[vDestino].length; j++) {{
+                            let p2 = varas[vDestino][j];
+                            if (p2.id === -1 || p2.bloqueado) continue;
+                            
+                            if (Math.abs(p1.altura - p2.altura) <= TOLERANCIA_ALTURA) {{
+                                // Verificamos que el cambio no le cause un error a p2 en su nuevo sitio
+                                if (!esError(p2, vOrigen) && !esError(p1, vDestino)) {{
+                                    varas[vOrigen][i] = p2;
+                                    varas[vDestino][j] = p1;
+                                    p1 = p2; 
+                                    swapeado = true;
+                                    modificado = true;
+                                    break;
+                                }}
+                            }}
+                        }}
+                        
+                        // Plan B: Buscar en Centro (Solo Trono)
+                        if (!swapeado && tipo === 'Trono' && varas['Centro']) {{
+                            for (let j = 0; j < varas['Centro'].length; j++) {{
+                                let p2 = varas['Centro'][j];
+                                if (p2.id === -1 || p2.bloqueado) continue;
+                                
+                                if (Math.abs(p1.altura - p2.altura) <= TOLERANCIA_ALTURA) {{
+                                    if (!esError(p2, vOrigen) && !conflictoCentro(p1, varas['Centro'], j)) {{
+                                        varas[vOrigen][i] = p2;
+                                        varas['Centro'][j] = p1;
+                                        p1 = p2;
+                                        swapeado = true;
+                                        modificado = true;
+                                        break;
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        }}
+        return modificado;
+    }}
+
+    window.cuadrarTurno = function(tipo, turno) {{
+        if (cuadrarHombrosTurno(tipo, turno)) {{
+            guardarMemoria();
+            render();
+            alert(`✅ Hombros cuadrados en el ${{turno}} de ${{tipo}}.`);
+        }} else {{
+            alert(`ℹ️ No se encontró ningún intercambio válido para el ${{turno}} de ${{tipo}}.`);
+        }}
+    }};
+
+    window.cuadrarTodos = function() {{
+        let modificado = false;
+        
+        for (let t in datos.Trono) {{
+            if (cuadrarHombrosTurno('Trono', t)) modificado = true;
+        }}
+        
+        if (LLEVA_CRUZ && datos.Cruz) {{
+            for (let t in datos.Cruz) {{
+                if (cuadrarHombrosTurno('Cruz', t)) modificado = true;
+            }}
+        }}
+        
+        if (modificado) {{
+            guardarMemoria();
+            render();
+            alert("✅ Se han cuadrado los hombros automáticamente en todos los turnos posibles.");
+        }} else {{
+            alert("ℹ️ Ya estaba todo cuadrado, o no se ha encontrado ningún intercambio posible por altura o bloqueo.");
+        }}
     }};
 
     /* ── ESTADO GLOBAL (CRITICO, DOBLE...) ── */
@@ -497,7 +626,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         }}
         tablaMap.innerHTML = hMap;
 
-        // GENERAR BOTONES DE CONTROL DE TURNO (Copia, Pega, Bloqueo, Vaciar)
+        // GENERAR BOTONES DE CONTROL DE TURNO (Cuadrar, Copia, Pega, Bloqueo, Vaciar)
         let btnsControl = (tipo, turno) => {{
             let activo = (portapapeles && portapapeles.tipo === tipo) ? 'activo' : '';
             let disabled = (portapapeles && portapapeles.tipo === tipo) ? '' : 'disabled';
@@ -514,6 +643,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
             
             return `
             <div style="display:flex; gap:8px;">
+                <button class="btn-cuadrar" onclick="cuadrarTurno('${{tipo}}','${{turno}}')" title="Intercambiar costaleros para corregir hombros">⚖️ Cuadrar</button>
                 <button class="btn-copiar" onclick="copiarTurno('${{tipo}}','${{turno}}')" title="Copiar este turno">📄 Copiar</button>
                 <button class="btn-pegar ${{activo}}" onclick="pegarTurno('${{tipo}}','${{turno}}')" title="Pegar datos" ${{disabled}}>📋 Pegar</button>
                 <button class="btn-lock-turn" onclick="toggleLockTurno('${{tipo}}','${{turno}}')">${{txtLock}}</button>
@@ -880,7 +1010,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         
         let parseSlot = (p) => {{
             if (p.id === -1 || p.altura === 0) return '<li class="hueco-libre">Hueco Libre</li>';
-            let e = estadoGlobal[p.id]; // <--- ¡Corregido aquí!
+            let e = estadoGlobal[p.id]; 
             let bg = '';
             if (e) {{
                 if (e.estadoStr === 'critico' || e.estadoStr === 'doble') bg = 'bg-rojo';
@@ -890,26 +1020,28 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
             return '<li class="costalero-cell '+bg+'"><div class="c-info"><span class="nombre">'+p.nombre+'</span></div><span class="meta">'+p.altura+'cm</span></li>';
         }};
 
-        for (let turno in datos.Trono) {{ // <--- ¡Corregido aquí!
+        let d_export = window.opener.exportDataForPDF.datos;
+
+        for (let turno in d_export.Trono) {{ 
             contentHTML += '<div class="turno-box page-break-avoid"><h3 class="turno-title">⛪ TRONO - '+turno+'</h3><div class="grid-varales">';
             ['Izquierda', 'Centro', 'Derecha'].forEach(vara => {{
                 contentHTML += '<div class="varal"><h4 class="varal-title">'+vara+'</h4><div class="seccion-top">DELANTE</div><ul class="lista-costaleros">';
-                datos.Trono[turno].Delante[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
+                d_export.Trono[turno].Delante[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
                 contentHTML += '</ul><div class="seccion-mid">CRISTO</div><ul class="lista-costaleros">';
-                datos.Trono[turno].Detras[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
+                d_export.Trono[turno].Detras[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
                 contentHTML += '</ul><div class="seccion-bot">DETRÁS</div></div>';
             }});
             contentHTML += '</div></div>';
         }}
 
-        if (LLEVA_CRUZ && datos.Cruz) {{ // <--- ¡Corregido aquí!
-            for (let turno in datos.Cruz) {{
+        if (window.opener.exportDataForPDF.lleva_cruz && d_export.Cruz) {{ 
+            for (let turno in d_export.Cruz) {{
                 contentHTML += '<div class="turno-box page-break-avoid"><h3 class="turno-title">✝ CRUZ INSIGNIA - '+turno+'</h3><div class="grid-varales">';
                 ['Izquierda', 'Derecha'].forEach(vara => {{
                     contentHTML += '<div class="varal"><h4 class="varal-title">'+vara+'</h4><div class="seccion-top">DELANTE</div><ul class="lista-costaleros">';
-                    datos.Cruz[turno].Delante[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
+                    d_export.Cruz[turno].Delante[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
                     contentHTML += '</ul><div class="seccion-mid">CRUZ</div><ul class="lista-costaleros">';
-                    datos.Cruz[turno].Detras[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
+                    d_export.Cruz[turno].Detras[vara].forEach(p => {{ contentHTML += parseSlot(p); }});
                     contentHTML += '</ul><div class="seccion-bot">DETRÁS</div></div>';
                 }});
                 contentHTML += '</div></div>';
@@ -917,11 +1049,11 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         }}
 
         contentHTML += '<div class="seccion-texto page-break-avoid"><h3>🗺️ Hoja de Ruta y Tramos</h3><ul class="lista-tramos">';
-        for (let tr in datos.Mapping) {{ // <--- ¡Corregido aquí!
-            let m = datos.Mapping[tr];
+        for (let tr in d_export.Mapping) {{ 
+            let m = d_export.Mapping[tr];
             let rStr = m.Ruta ? ` <i>(${{m.Ruta}})</i>` : '';
             let tStr = m.Trono ? 'Trono: ' + m.Trono : '';
-            let cStr = (LLEVA_CRUZ && m.Cruz) ? ' | Cruz: ' + m.Cruz : ''; // <--- ¡Corregido aquí!
+            let cStr = (window.opener.exportDataForPDF.lleva_cruz && m.Cruz) ? ' | Cruz: ' + m.Cruz : ''; 
             contentHTML += '<li><b>'+tr+rStr+':</b> '+tStr+cStr+'</li>';
         }}
         contentHTML += '</ul></div>';
@@ -977,7 +1109,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         if (sidebarAbierto) renderSidebar();
     }}
 
-    function normalizar(s) {{ return s.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase(); }}
+    function normalizar(s) {{ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }}
 
     function getIdsAsig() {{
         const ids = new Set();
