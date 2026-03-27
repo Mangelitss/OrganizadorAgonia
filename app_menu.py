@@ -33,6 +33,9 @@ CONFIG = {
     "archivo_datos": "datos.json"
 }
 
+# --- URL DE LA BASE DE DATOS EN LA NUBE (FIREBASE) ---
+FIREBASE_URL = "https://licencias-gestor-cofrade-default-rtdb.europe-west1.firebasedatabase.app/censo_oficial.json"
+
 # Paleta Mayordomía "Modern UI"
 C_MORADO = "#4F1243"
 C_MORADO_HOVER = "#7a1b67"
@@ -198,11 +201,8 @@ class GestorCofradeAPP:
             if resp.status_code == 200 and resp.json() is not None:
                 datos = resp.json()
                 
-                # --- ESTAS DOS LÍNEAS SON LA CORRECCIÓN ---
-                # Si Firebase ha metido los datos dentro de un sub-nodo "app_config", entramos en él
                 if "app_config" in datos:
                     datos = datos["app_config"]
-                # ------------------------------------------
 
                 version_nube = datos.get("ultima_version", VERSION_ACTUAL)
                 link_descarga = datos.get("link_descarga", "")
@@ -383,7 +383,7 @@ class GestorCofradeAPP:
             ("Miércoles Santo", "🕯️"), 
             ("Viernes Santo", "✝️"), 
             ("Vía Crucis", "⛪"), 
-            ("Procesión Personalizada", "⚙️"), # <--- AÑADIDO
+            ("Procesión Personalizada", "⚙️"), 
             ("Ensayos", "📋"), 
             ("Calendario", "📅"), 
             ("Censo (Costaleros)", "👥"), 
@@ -394,7 +394,6 @@ class GestorCofradeAPP:
             btn = self.crear_boton_moderno(self.frame_menu, op, C_MORADO, C_MORADO_HOVER, C_BLANCO, icon=icon, command=lambda nombre=op: self.mostrar_pantalla(nombre))
             btn.pack(fill=tk.X, pady=2, padx=10)
             
-        # --- NUEVO BOTÓN DE ACTUALIZAR ---
         btn_actualizar = self.crear_boton_moderno(self.frame_menu, "Buscar Actualización", "#17517e", "#1f6b9c", C_BLANCO, icon="🔄", command=self.comprobar_actualizacion_manual)
         btn_actualizar.pack(side=tk.BOTTOM, fill=tk.X, pady=(0, 5), padx=10)
         
@@ -437,12 +436,10 @@ class GestorCofradeAPP:
     def crear_pantalla_inicio(self):
         f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO)
         
-        # --- 1. CANVAS PARA EL FONDO DINÁMICO ---
         canvas_fondo = tk.Canvas(f, bg=C_GRIS_FONDO, highlightthickness=0)
         canvas_fondo.place(relwidth=1, relheight=1)
 
         try:
-            # Importamos ImageDraw para dibujar el "efecto cristal"
             from PIL import Image, ImageTk, ImageEnhance, ImageDraw
             import os
             
@@ -454,13 +451,11 @@ class GestorCofradeAPP:
                     break
             
             if ruta_imagen and os.path.exists(ruta_imagen):
-                # Convertimos a RGBA para soportar transparencias
                 img_original = Image.open(ruta_imagen).convert("RGBA")
                 
                 def redimensionar_fondo(event):
                     if event.width < 100 or event.height < 100: return
                     
-                    # 1. Ajustar el tamaño del Cristo a la ventana
                     ratio_img = img_original.width / img_original.height
                     ratio_ventana = event.width / event.height
                     
@@ -473,16 +468,12 @@ class GestorCofradeAPP:
                         
                     img_redim = img_original.resize((nuevo_ancho, nuevo_alto), Image.LANCZOS)
                     
-                    # 2. Oscurecer el fondo un poco (50%)
                     enhancer = ImageEnhance.Brightness(img_redim)
                     img_redim = enhancer.enhance(0.5) 
                     
-                    # --- 3. EL TRUCO DE LA TRANSPARENCIA ---
-                    # Creamos una capa invisible del tamaño de la foto
                     capa_transparente = Image.new('RGBA', img_redim.size, (0,0,0,0))
                     draw = ImageDraw.Draw(capa_transparente)
                     
-                    # Medidas de la tarjeta efecto cristal
                     card_w, card_h = 800, 250
                     img_cx, img_cy = nuevo_ancho // 2, nuevo_alto // 2
                     
@@ -491,32 +482,26 @@ class GestorCofradeAPP:
                     x2 = img_cx + card_w // 2
                     y2 = img_cy + card_h // 2
                     
-                    # Dibujamos un rectángulo blanco con 82% de opacidad (210) y borde dorado
                     draw.rectangle([x1, y1, x2, y2], fill=(255, 255, 255, 180), outline=(212, 175, 55, 255), width=4)
                     
-                    # Fusionamos la capa semitransparente con la foto del Cristo
                     img_final = Image.alpha_composite(img_redim, capa_transparente)
                     
-                    # 4. Guardar y mostrar en pantalla
                     f.img_tk = ImageTk.PhotoImage(img_final)
                     canvas_fondo.delete("all")
                     canvas_fondo.create_image(event.width/2, event.height/2, image=f.img_tk, anchor="center")
                     
-                    # --- 5. DIBUJAR LOS TEXTOS FLOTANTES ---
                     cx, cy = event.width // 2, event.height // 2
                     
                     canvas_fondo.create_text(cx, cy - 60, text="Sistema de Gestión Turnos y Procesiones", font=("Cinzel", 24, "bold"), fill=C_MORADO)
                     canvas_fondo.create_text(cx, cy - 20, text="OFS Muy Ilustre Mayordomía de Ntro. Padre Jesús Nazareno", font=("Cinzel", 15), fill="#333333")
                     canvas_fondo.create_text(cx, cy + 10, text="Tercio del Cristo de la Agonía y María Magdalena", font=("Cinzel", 13), fill="#333333")
                     
-                    # La línea dorada separadora
                     canvas_fondo.create_line(cx - 100, cy + 40, cx + 100, cy + 40, fill=C_ORO, width=2)
                     
                     canvas_fondo.create_text(cx, cy + 70, text="Selecciona un módulo en el menú lateral izquierdo para empezar a trabajar.", font=("Segoe UI", 12), fill="#555555")
 
                 f.bind("<Configure>", redimensionar_fondo)
             else:
-                # Sistema de seguridad por si alguna vez borras la foto sin querer
                 card = tk.Frame(f, bg=C_BLANCO, padx=50, pady=50, highlightbackground=C_ORO, highlightthickness=2)
                 card.place(relx=0.5, rely=0.5, anchor="center")
                 tk.Label(card, text="Sistema de Gestión Turnos y Procesiones", font=("Georgia", 24, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=(0, 10))
@@ -562,7 +547,6 @@ class GestorCofradeAPP:
             func_html(datos, master_list, anio, es_par, CONFIG['peso_trono_kg'], CONFIG['peso_cruz_kg'], CONFIG['limite_peso_persona'])
             self.abrir_navegador(html_file)
 
-            # Detectar costaleros del censo que no han quedado en ningún hueco
             def extraer_ids(obj):
                 ids = set()
                 if isinstance(obj, dict):
@@ -601,9 +585,6 @@ class GestorCofradeAPP:
         tk.Label(card, text="* Generar un nuevo cuadrante sobreescribirá la ultima modificación sin guardar.", font=("Segoe UI", 10, "italic"), bg=C_BLANCO, fg="#888").pack(anchor="w", pady=(30, 0))
         return f
 
-    # ==========================================
-    # NUEVA PANTALLA: PROCESIÓN PERSONALIZADA
-    # ==========================================
     def crear_pantalla_personalizada(self):
         f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO)
         card = tk.Frame(f, bg=C_BLANCO, padx=40, pady=40, highlightbackground="#e0e0e0", highlightthickness=1)
@@ -615,40 +596,43 @@ class GestorCofradeAPP:
         config_frame = tk.Frame(card, bg=C_BLANCO)
         config_frame.pack(fill=tk.X, pady=(0, 20))
         
-        # Filtro de día
         tk.Label(config_frame, text="Filtro de Censo:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).grid(row=0, column=0, sticky="w", pady=10, padx=5)
         var_dia = tk.StringVar(value="Viernes Santo")
         ttk.Combobox(config_frame, textvariable=var_dia, values=["Miércoles Santo", "Viernes Santo", "Todos"], state="readonly", width=18, font=("Segoe UI", 11)).grid(row=0, column=1, sticky="w", pady=10, padx=5)
         
-        # Lleva cruz y Costaleros por Vara
         tk.Label(config_frame, text="Opciones extra:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).grid(row=0, column=2, sticky="w", pady=10, padx=(30, 5))
         var_cruz = tk.BooleanVar(value=True)
         var_costaleros_7 = tk.BooleanVar(value=False)
         ttk.Checkbutton(config_frame, text="Lleva Cruz Guía", variable=var_cruz).grid(row=0, column=3, sticky="w", pady=5, padx=5)
         ttk.Checkbutton(config_frame, text="7 Costaleros/vara en Cristo", variable=var_costaleros_7).grid(row=0, column=4, sticky="w", pady=5, padx=15)
         
-        # Turnos Trono
         tk.Label(config_frame, text="Turnos de Trono (Ej: 2):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).grid(row=1, column=0, sticky="w", pady=10, padx=5)
         entry_turnos_trono = tk.Entry(config_frame, font=("Segoe UI", 12), width=5, relief="solid", bd=1)
         entry_turnos_trono.insert(0, "2")
         entry_turnos_trono.grid(row=1, column=1, sticky="w", pady=10, padx=5)
         
-        # Turnos Cruz
         tk.Label(config_frame, text="Turnos de Cruz (Ej: 3):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).grid(row=1, column=2, sticky="w", pady=10, padx=(30, 5))
         entry_turnos_cruz = tk.Entry(config_frame, font=("Segoe UI", 12), width=5, relief="solid", bd=1)
         entry_turnos_cruz.insert(0, "3")
         entry_turnos_cruz.grid(row=1, column=3, sticky="w", pady=10, padx=5, columnspan=2)
 
-        # Tramos Totales
-        tk.Label(config_frame, text="Tramos Totales (Tramos de la procesión):", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).grid(row=2, column=0, sticky="w", pady=10, padx=5, columnspan=2)
+        tk.Label(config_frame, text="Tramos Totales:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).grid(row=2, column=0, sticky="w", pady=10, padx=5)
         entry_tramos_totales = tk.Entry(config_frame, font=("Segoe UI", 12), width=5, relief="solid", bd=1)
         entry_tramos_totales.insert(0, "8")
-        entry_tramos_totales.grid(row=2, column=2, sticky="w", pady=10, padx=5)
+        entry_tramos_totales.grid(row=2, column=1, sticky="w", pady=10, padx=5)
+
+        tk.Label(config_frame, text="IA de Autocompletado:", bg=C_BLANCO, font=("Segoe UI", 10, "bold")).grid(row=2, column=2, sticky="w", pady=10, padx=(30, 5))
+        var_auto_trono = tk.BooleanVar(value=False)
+        var_auto_cruz = tk.BooleanVar(value=False)
+        ttk.Checkbutton(config_frame, text="Autocompletar Trono", variable=var_auto_trono).grid(row=2, column=3, sticky="w", pady=5, padx=5)
+        ttk.Checkbutton(config_frame, text="Autocompletar Cruces", variable=var_auto_cruz).grid(row=2, column=4, sticky="w", pady=5, padx=15)
 
         def generar_nuevo():
             dia = var_dia.get()
             lleva_cruz = var_cruz.get()
             costaleros_7 = var_costaleros_7.get()
+            auto_trono = var_auto_trono.get()
+            auto_cruz = var_auto_cruz.get()
             
             turnos_trono = int(entry_turnos_trono.get()) if entry_turnos_trono.get().isdigit() else 2
             turnos_cruz = int(entry_turnos_cruz.get()) if entry_turnos_cruz.get().isdigit() else 3
@@ -664,7 +648,7 @@ class GestorCofradeAPP:
                 messagebox.showwarning("Aviso", f"No hay costaleros asignados para el filtro: {dia}.")
                 return
 
-            datos_gen = generar_datos_personalizados(turnos_trono, turnos_cruz, tramos, lleva_cruz, costaleros_7)
+            datos_gen = generar_datos_personalizados(turnos_trono, turnos_cruz, tramos, lleva_cruz, costaleros_7, auto_trono, auto_cruz, master_list)
             generar_html_personalizado(datos_gen, master_list, lleva_cruz)
             self.abrir_navegador("visualizador_personalizado.html")
 
@@ -707,7 +691,6 @@ class GestorCofradeAPP:
         var_auto = tk.BooleanVar(value=True)
         ttk.Checkbutton(config_frame, text="Autocompletar turnos (por altura)", variable=var_auto).pack(side=tk.LEFT, padx=20)
 
-        # --- BUSCADOR Y CONTADOR ---
         search_frame = tk.Frame(card, bg=C_BLANCO)
         search_frame.pack(fill=tk.X, pady=(0, 5))
 
@@ -754,8 +737,7 @@ class GestorCofradeAPP:
         scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self.tree_viacrucis.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # Estado de selección separado de la vista (persiste al reordenar)
-        self._vc_seleccionados = set()  # ids seleccionados
+        self._vc_seleccionados = set() 
 
         def toggle_selection(event):
             region = self.tree_viacrucis.identify("region", event.x, event.y)
@@ -782,13 +764,11 @@ class GestorCofradeAPP:
             filtro = norm(entry_busq_vc.get())
             datos = cargar_datos(CONFIG['archivo_datos'])
 
-            # Filtro texto (nombre o altura)
             if filtro:
                 datos = [p for p in datos if
                          filtro in norm(p.get('nombre', ''))
                          or str(p.get('altura', '')) == filtro]
 
-            # Ordenado
             col = self._vc_sort_col
             rev = self._vc_sort_rev
             etiquetas = {"Nombre": "Nombre", "Altura": "Altura"}
@@ -815,7 +795,7 @@ class GestorCofradeAPP:
             _actualizar_contador_vc()
 
         entry_busq_vc.bind("<KeyRelease>", refrescar_vc)
-        refrescar_vc()  # carga inicial
+        refrescar_vc()
 
         def generar():
             datos_todos = cargar_datos(CONFIG['archivo_datos'])
@@ -1093,16 +1073,12 @@ class GestorCofradeAPP:
             accion = "actualizado" if editar else "añadido"
             self.mostrar_toast(f"✅  Evento {accion} correctamente")
 
-        # Atajos de teclado
         top.bind("<Escape>", lambda e: top.destroy())
 
         btn_guardar = tk.Button(top, text="💾 GUARDAR EVENTO", bg=C_MORADO, fg=C_BLANCO, font=("Segoe UI", 12, "bold"), bd=0, cursor="hand2", command=guardar)
         btn_guardar.pack(fill=tk.X, padx=30, pady=(0, 20), ipady=8)
 
 
-    # ==========================================
-    # NUEVA PANTALLA: CENTRO DE PUBLICACIÓN
-    # ==========================================
     def crear_pantalla_pdf(self):
         f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO)
         card = tk.Frame(f, bg=C_BLANCO, padx=40, pady=40, highlightbackground="#e0e0e0", highlightthickness=1)
@@ -1125,14 +1101,12 @@ class GestorCofradeAPP:
         ttk.Radiobutton(card, text="Miércoles Santo", variable=var_tipo, value="Miércoles Santo").pack(anchor="w", pady=5)
         ttk.Radiobutton(card, text="Viernes Santo", variable=var_tipo, value="Viernes Santo").pack(anchor="w", pady=5)
         
-        # Variable de control del estado
         estado_exportacion = {
             "archivo_ruta": None,
             "datos_json": None,
             "revisado": False
         }
 
-        # --- PANEL DE CONTROL DE PUBLICACIÓN (Oculto al inicio) ---
         panel_pub = tk.Frame(card, bg="#f4f6f8", bd=1, relief="solid", padx=20, pady=20)
         
         lbl_info_archivo = tk.Label(panel_pub, text="", font=("Segoe UI", 11, "bold"), bg="#f4f6f8", fg=C_MORADO)
@@ -1149,7 +1123,6 @@ class GestorCofradeAPP:
         btn_despublicar = tk.Button(panel_pub, text="🗑️ DESPUBLICAR Y OCULTAR DE LA WEB", font=("Segoe UI", 10, "bold"), bg="#ff4757", fg="white", cursor="hand2")
         btn_despublicar.pack(fill=tk.X, pady=(10,0), ipady=4)
 
-        # LÓGICA DE LOS BOTONES
         def cargar_archivo_cuadrante():
             archivo = filedialog.askopenfilename(title="Selecciona el cuadrante final (.json)", filetypes=[("Archivos JSON", "*.json")])
             if archivo:
@@ -1161,7 +1134,6 @@ class GestorCofradeAPP:
                     estado_exportacion["datos_json"] = datos
                     estado_exportacion["revisado"] = False
                     
-                    # Validar coincidencia del archivo con la opción marcada
                     t_proc = datos.get("tipo_procesion", "")
                     if var_tipo.get() == "Viernes Santo" and t_proc != "viernes_santo":
                         messagebox.showwarning("Atención", "Has marcado Viernes Santo pero has cargado un archivo del Miércoles Santo.\nEl PDF podría generarse mal.")
@@ -1185,7 +1157,7 @@ class GestorCofradeAPP:
             if exito:
                 self.abrir_navegador(msg)
                 estado_exportacion["revisado"] = True
-                btn_publicar.config(state="normal") # ¡Se desbloquea el botón de publicar!
+                btn_publicar.config(state="normal") 
                 messagebox.showinfo("Revisión Necesaria", "Se ha abierto el borrador del PDF en tu navegador.\n\nRevísalo a fondo. Si ves que está todo perfecto, vuelve aquí y pulsa el botón verde de 'PUBLICAR EN EL PORTAL WEB'.")
             else:
                 messagebox.showerror("Error", f"Error al generar la vista previa: {msg}")
@@ -1203,11 +1175,9 @@ class GestorCofradeAPP:
                 btn_publicar.config(text="⏳ COMPROBANDO NUBE...", state="disabled")
                 self.root.update()
                 
-                # 1. Comprobamos si ya existe una publicación previa
                 resp_get = requests.get(url_firebase, timeout=5)
                 
                 if resp_get.status_code == 200 and resp_get.json() is not None:
-                    # Ya hay algo publicado
                     confirmacion = messagebox.askyesno(
                         "⚠️ ¡ATENCIÓN: SOBREESCRITURA!", 
                         f"El sistema ha detectado que YA EXISTE un cuadrante del {var_tipo.get()} publicado en el Portal Web.\n\n¿Estás completamente seguro de que deseas SOBREESCRIBIRLO con la nueva versión que acabas de revisar?"
@@ -1216,7 +1186,6 @@ class GestorCofradeAPP:
                         btn_publicar.config(text="🌐 2. PUBLICAR EN EL PORTAL WEB", state="normal")
                         return
                 else:
-                    # No hay nada publicado
                     confirmacion = messagebox.askyesno(
                         "Confirmar Publicación", 
                         f"Vas a hacer público en internet el cuadrante del {var_tipo.get()}.\nLos costaleros que tengan el enlace podrán verlo.\n\n¿Deseas continuar?"
@@ -1225,7 +1194,6 @@ class GestorCofradeAPP:
                         btn_publicar.config(text="🌐 2. PUBLICAR EN EL PORTAL WEB", state="normal")
                         return
 
-                # 2. Procedemos a publicar (PUT)
                 btn_publicar.config(text="⏳ SUBIENDO A LA NUBE...")
                 self.root.update()
                 
@@ -1262,7 +1230,6 @@ class GestorCofradeAPP:
             except Exception as e:
                 messagebox.showerror("Error de Conexión", f"No se pudo conectar a la nube.\n{str(e)}")
 
-        # Asignamos las funciones a los botones
         btn_vista_previa.config(command=hacer_vista_previa)
         btn_publicar.config(command=publicar)
         btn_despublicar.config(command=despublicar)
@@ -1388,7 +1355,6 @@ class GestorCofradeAPP:
         ws = wb.active
         ws.title = "Censo Costaleros"
 
-        # Estilos
         color_morado = "4F1243"
         color_oro    = "D4AF37"
         fill_cabecera = PatternFill("solid", fgColor=color_oro)
@@ -1396,7 +1362,6 @@ class GestorCofradeAPP:
         font_cabecera = Font(bold=True, color="333333", size=11)
         font_titulo   = Font(bold=True, color=color_morado, size=13)
 
-        # Título
         ws.merge_cells("A1:G1")
         ws["A1"] = "Censo de Costaleros — OFS Mayordomía de Ntro. Padre Jesús Nazareno"
         ws["A1"].font = font_titulo
@@ -1407,7 +1372,6 @@ class GestorCofradeAPP:
         ws["A2"].alignment = Alignment(horizontal="center")
         ws["A2"].font = Font(italic=True, color="888888", size=10)
 
-        # Cabeceras
         cabeceras = ["ID", "Nombre", "Altura (cm)", "Teléfono", "Hombro preferido", "Miércoles Santo", "Viernes Santo"]
         for col, cab in enumerate(cabeceras, 1):
             c = ws.cell(row=4, column=col, value=cab)
@@ -1415,7 +1379,6 @@ class GestorCofradeAPP:
             c.fill = fill_cabecera
             c.alignment = Alignment(horizontal="center")
 
-        # Datos
         for fila, p in enumerate(datos, 5):
             valores = [
                 p.get('id'),
@@ -1432,7 +1395,6 @@ class GestorCofradeAPP:
                 if fila % 2 == 0:
                     c.fill = fill_alterno
 
-        # Anchos de columna
         anchos = [6, 35, 12, 16, 18, 16, 14]
         for col, ancho in enumerate(anchos, 1):
             ws.column_dimensions[openpyxl.utils.get_column_letter(col)].width = ancho
@@ -1446,10 +1408,9 @@ class GestorCofradeAPP:
 
     # --- PANTALLA CENSO ---
     def crear_pantalla_censo(self):
-        # Estado del ordenado: columna activa y dirección
         self._censo_sort_col = "Nombre"
         self._censo_sort_rev = False
-        self._ultimo_formato = "PDF"   # último formato de exportación usado
+        self._ultimo_formato = "PDF"   
 
         f = tk.Frame(self.frame_main, bg=C_GRIS_FONDO, padx=30, pady=30)
         tk.Label(f, text="Gestión del Censo General", font=("Segoe UI", 22, "bold"), bg=C_GRIS_FONDO, fg=C_MORADO).pack(anchor="w")
@@ -1463,8 +1424,13 @@ class GestorCofradeAPP:
         btn_editar.pack(side=tk.LEFT, padx=10)
         btn_borrar = self.crear_boton_moderno(toolbar, "❌ Borrar", "#ff4757", "#ff6b81", C_BLANCO, command=self.borrar_costalero)
         btn_borrar.pack(side=tk.LEFT, padx=10)
-        btn_cargar = self.crear_boton_moderno(toolbar, "📂 Cargar Censo", "#17517e", "#1f6b9c", C_BLANCO, command=self.cargar_censo_externo)
-        btn_cargar.pack(side=tk.LEFT, padx=10)
+        
+        # --- BOTONES DE LA NUBE ---
+        btn_subir = self.crear_boton_moderno(toolbar, "☁️ Subir a Nube", "#2980b9", "#3498db", C_BLANCO, command=self.subir_a_nube)
+        btn_subir.pack(side=tk.LEFT, padx=10)
+        
+        btn_bajar = self.crear_boton_moderno(toolbar, "📥 Bajar de Nube", "#8e44ad", "#9b59b6", C_BLANCO, command=self.descargar_de_nube)
+        btn_bajar.pack(side=tk.LEFT, padx=10)
         
         search_frame = tk.Frame(toolbar, bg=C_GRIS_FONDO)
         search_frame.pack(side=tk.RIGHT)
@@ -1473,7 +1439,6 @@ class GestorCofradeAPP:
         self.entry_busqueda.pack(side=tk.LEFT)
         self.entry_busqueda.bind("<KeyRelease>", self.actualizar_tabla_censo)
 
-        # --- SPLIT BUTTON EXPORTAR ---
         def exportar_ultimo():
             if self._ultimo_formato == "Excel":
                 self.exportar_censo_excel()
@@ -1504,7 +1469,6 @@ class GestorCofradeAPP:
                                    cursor="hand2", command=mostrar_menu_exportar)
         btn_exp_arrow.pack(side=tk.LEFT)
 
-        # --- FILA DE FILTROS Y CONTADOR ---
         filtros_frame = tk.Frame(f, bg=C_GRIS_FONDO)
         filtros_frame.pack(fill=tk.X, pady=(0, 8))
 
@@ -1519,7 +1483,6 @@ class GestorCofradeAPP:
         self._lbl_contador = tk.Label(filtros_frame, text="", bg=C_GRIS_FONDO, font=("Segoe UI", 10), fg="#555")
         self._lbl_contador.pack(side=tk.RIGHT)
 
-        # --- TABLA ---
         style = ttk.Style()
         style.theme_use("clam")
         style.configure("Treeview.Heading", font=('Segoe UI', 11, 'bold'), background=C_ORO, foreground=C_TEXTO, relief="flat")
@@ -1532,7 +1495,6 @@ class GestorCofradeAPP:
         columnas = ("ID", "Nombre", "Telefono", "Altura", "Hombro", "Miércoles", "Viernes")
         self.tree = ttk.Treeview(frame_tabla, columns=columnas, show="headings")
 
-        # Cabeceras clicables — las que tienen sentido ordenar
         def cmd_sort(col):
             if self._censo_sort_col == col:
                 self._censo_sort_rev = not self._censo_sort_rev
@@ -1564,53 +1526,6 @@ class GestorCofradeAPP:
         
         return f
 
-    def cargar_censo_externo(self):
-        archivo_nuevo = filedialog.askopenfilename(
-            title="Seleccionar archivo de Censo Local (datos.json)",
-            filetypes=[("Archivos JSON", "*.json")]
-        )
-        if not archivo_nuevo:
-            return
-
-        confirmacion = messagebox.askyesno(
-            "⚠️ Atención: Sobreescritura",
-            "Vas a reemplazar el censo actual por el archivo seleccionado.\n\n"
-            "El sistema creará una copia de seguridad automática del censo antiguo por precaución.\n\n"
-            "¿Estás completamente seguro de querer continuar?"
-        )
-        if not confirmacion:
-            return
-
-        archivo_actual = CONFIG['archivo_datos']
-        if os.path.exists(archivo_actual):
-            fecha_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            archivo_backup = f"censo_backup_{fecha_str}.json"
-            try:
-                shutil.copy(archivo_actual, archivo_backup)
-            except Exception as e:
-                messagebox.showerror("Error", f"No se pudo crear la copia de seguridad: {e}")
-                return
-
-        try:
-            with open(archivo_nuevo, 'r', encoding='utf-8') as f:
-                nuevos_datos = json.load(f)
-            
-            if not isinstance(nuevos_datos, list):
-                raise ValueError("El archivo no tiene la estructura de censo correcta.")
-
-            with open(archivo_actual, 'w', encoding='utf-8') as f:
-                json.dump(nuevos_datos, f, indent=4, ensure_ascii=False)
-            
-            self.actualizar_tabla_censo()
-            
-            msg = "Censo actualizado correctamente.\n\n"
-            if os.path.exists(archivo_actual):
-                msg += f"Se ha guardado tu censo anterior a salvo en el archivo:\n{archivo_backup}"
-            messagebox.showinfo("Éxito", msg)
-            
-        except Exception as e:
-            messagebox.showerror("Error de Formato", f"El archivo seleccionado no es válido o está dañado:\n{e}")
-
     def actualizar_tabla_censo(self, event=None):
         import unicodedata
         def normalizar(s):
@@ -1622,20 +1537,17 @@ class GestorCofradeAPP:
         datos = cargar_datos(CONFIG['archivo_datos'])
         filtro_texto = normalizar(self.entry_busqueda.get()) if hasattr(self, 'entry_busqueda') else ""
 
-        # Filtros de procesión
         filtro_mi = self._var_filtro_mi.get() if hasattr(self, '_var_filtro_mi') else False
         filtro_vi = self._var_filtro_vi.get() if hasattr(self, '_var_filtro_vi') else False
         if filtro_mi: datos = [p for p in datos if p.get('miercoles_santo')]
         if filtro_vi: datos = [p for p in datos if p.get('viernes_santo')]
 
-        # Filtro de búsqueda por texto (sin tildes)
         if filtro_texto:
             datos = [p for p in datos if
                      filtro_texto in normalizar(p.get('nombre', ''))
                      or str(p.get('id', '')) == filtro_texto
                      or str(p.get('altura', '')) == filtro_texto]
 
-        # Ordenado por columna activa
         col  = getattr(self, '_censo_sort_col', 'Nombre')
         rev  = getattr(self, '_censo_sort_rev', False)
         if col == "ID":          datos.sort(key=lambda x: x.get('id', 0),                    reverse=rev)
@@ -1644,7 +1556,6 @@ class GestorCofradeAPP:
         elif col == "Miércoles": datos.sort(key=lambda x: x.get('miercoles_santo', False),    reverse=rev)
         elif col == "Viernes":   datos.sort(key=lambda x: x.get('viernes_santo', False),      reverse=rev)
 
-        # Actualizar indicadores ▲▼ en las cabeceras
         etiquetas = {
             "ID":        "ID",
             "Nombre":    "Nombre del Costalero",
@@ -1659,7 +1570,6 @@ class GestorCofradeAPP:
             else:
                 self.tree.heading(c, text=texto_base)
 
-        # Insertar filas
         for p in datos:
             mi = "✅" if p.get("miercoles_santo") else "❌"
             vi = "✅" if p.get("viernes_santo") else "❌"
@@ -1667,7 +1577,6 @@ class GestorCofradeAPP:
             telefono = p.get("telefono", "")
             self.tree.insert("", tk.END, values=(p['id'], p['nombre'], telefono, p['altura'], hombro.capitalize(), mi, vi))
 
-        # Actualizar contador
         if hasattr(self, '_lbl_contador'):
             total_censo = cargar_datos(CONFIG['archivo_datos'])
             total     = len(total_censo)
@@ -1743,12 +1652,10 @@ class GestorCofradeAPP:
             nombre = var_nombre.get().strip()
             altura_str = var_altura.get().strip()
 
-            # Validación básica
             if not nombre or not altura_str.isdigit():
                 messagebox.showwarning("Error", "Revisa los campos. El nombre no puede estar vacío y la altura debe ser un número.")
                 return
 
-            # Validación teléfono
             tel = var_telefono.get().strip()
             if tel:
                 tel_limpio = tel.replace(" ", "").replace("-", "").replace("+", "")
@@ -1757,7 +1664,6 @@ class GestorCofradeAPP:
                         "El teléfono no parece válido.\nDebe tener al menos 9 dígitos y solo puede contener números, espacios, guiones o el signo +.")
                     return
 
-            # Validación altura (aviso si fuera del rango típico)
             altura_val = int(altura_str)
             if altura_val < 100 or altura_val > 200:
                 messagebox.showerror("Altura inválida",
@@ -1769,7 +1675,6 @@ class GestorCofradeAPP:
                 if not continuar:
                     return
 
-            # Detección de duplicados (solo en nuevo)
             if not editar:
                 nombre_norm = norm(nombre)
                 for p in datos:
@@ -1809,7 +1714,6 @@ class GestorCofradeAPP:
                     editar=editar
                 )
 
-        # Atajos de teclado: Enter guarda, Escape cierra
         top.bind("<Return>",  lambda e: guardar())
         top.bind("<Escape>",  lambda e: top.destroy())
 
@@ -1832,6 +1736,60 @@ class GestorCofradeAPP:
             datos = [x for x in datos if x.get('id') != pid]
             self.guardar_censo(datos)
             self.actualizar_tabla_censo()
+
+    # ==========================================
+    # SINCRONIZACIÓN EN LA NUBE (FIREBASE)
+    # ==========================================
+    def subir_a_nube(self):
+        if not messagebox.askyesno("⚠️ Confirmar Subida", "Vas a subir tu censo actual a internet.\nA partir de ahora, esta será la versión oficial para todos los ordenadores.\n\n¿Deseas continuar?"):
+            return
+
+        try:
+            with open(CONFIG['archivo_datos'], 'r', encoding='utf-8') as f:
+                datos_locales = json.load(f)
+            
+            respuesta = requests.put(FIREBASE_URL, json=datos_locales, timeout=10)
+            
+            if respuesta.status_code == 200:
+                messagebox.showinfo("Sincronización", "☁️ ¡Datos subidos correctamente a la nube!\n\nTu censo local es ahora la versión oficial en internet.")
+            else:
+                messagebox.showerror("Error", f"Hubo un fallo al subir a la nube. Código: {respuesta.status_code}")
+                
+        except Exception as e:
+            messagebox.showerror("Error de Conexión", f"No se pudo conectar a internet o a Firebase.\nDetalles: {e}")
+
+    def descargar_de_nube(self):
+        if not messagebox.askyesno("⚠️ Confirmar Descarga", "Vas a descargar el censo oficial de internet.\nEsto SOBREESCRIBIRÁ el censo que tienes actualmente en este ordenador.\n\n(Se creará una copia de seguridad automática por si acaso).\n\n¿Estás seguro de continuar?"):
+            return
+            
+        try:
+            respuesta = requests.get(FIREBASE_URL, timeout=10)
+            
+            if respuesta.status_code == 200:
+                datos_nube = respuesta.json()
+                
+                if datos_nube:
+                    archivo_actual = CONFIG['archivo_datos']
+                    
+                    # 1. Crear copia de seguridad local antes de machacar
+                    if os.path.exists(archivo_actual):
+                        fecha_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                        shutil.copy(archivo_actual, f"censo_backup_pre_nube_{fecha_str}.json")
+                        
+                    # 2. Guardar los datos de la nube
+                    with open(archivo_actual, 'w', encoding='utf-8') as f:
+                        json.dump(datos_nube, f, indent=4, ensure_ascii=False)
+                        
+                    # 3. Refrescar la tabla para ver los cambios
+                    self.actualizar_tabla_censo() 
+                    messagebox.showinfo("Sincronización", "📥 ¡Censo descargado de la nube con éxito y actualizado en pantalla!")
+                else:
+                    messagebox.showwarning("Aviso", "La base de datos en la nube está vacía.\nSube los datos primero desde el ordenador que tenga el censo oficial.")
+            else:
+                messagebox.showerror("Error", f"Fallo al descargar de la nube. Código: {respuesta.status_code}")
+                
+        except Exception as e:
+            messagebox.showerror("Error de Conexión", f"No se pudo conectar a internet o a Firebase.\nDetalles: {e}")
 
 # ==========================================
 # INICIO DE LA APLICACIÓN

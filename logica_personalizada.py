@@ -2,48 +2,161 @@ import json
 import time
 import string
 
-def generar_datos_personalizados(num_turnos_trono, num_turnos_cruz, num_tramos, lleva_cruz, costaleros_7):
-    # Generar letras para Trono (Turno A, Turno B...)
+def generar_datos_personalizados(num_turnos_trono, num_turnos_cruz, num_tramos, lleva_cruz, costaleros_7, auto_trono=False, auto_cruz=False, master_list=None):
+    if master_list is None: master_list = []
     letras = list(string.ascii_uppercase)
-    
-    # TRONO: 3 varas delante, 3 varas detrás. Costaleros 6 o 7 por vara.
     plazas_por_vara = 7 if costaleros_7 else 6
     varas_trono = ["Izquierda", "Centro", "Derecha"]
-    trono = {}
     
-    for i in range(num_turnos_trono):
-        nombre_turno = f"Turno {letras[i % len(letras)]}"
-        trono[nombre_turno] = {
-            "Delante": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": False} for _ in range(plazas_por_vara)] for v in varas_trono},
-            "Detras": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": False} for _ in range(plazas_por_vara)] for v in varas_trono}
-        }
+    pool = sorted(master_list, key=lambda x: x.get('altura', 0), reverse=True)
+    
+    trono = {}
+    turnos_trono_nombres = [f"Turno {letras[i % len(letras)]}" for i in range(num_turnos_trono)]
+    
+    if auto_trono:
+        # 1. Preparar las listas de personas para cada turno
+        personas_a = pool[:36]
+        while len(personas_a) < 36: personas_a.append({"nombre": "HUECO LIBRE", "altura": 0, "id": -1})
         
-    # CRUZ: 2 varas delante, 2 varas detrás. Siempre 2 costaleros por vara.
+        plazas_b_c = 42 if costaleros_7 else 36
+        personas_b = pool[36:36+plazas_b_c]
+        while len(personas_b) < plazas_b_c: personas_b.append({"nombre": "HUECO LIBRE", "altura": 0, "id": -1})
+        
+        pool_c = pool[36+plazas_b_c:]
+        personas_c = pool_c[:plazas_b_c]
+        if len(personas_c) < plazas_b_c:
+            faltan = plazas_b_c - len(personas_c)
+            b_reales = [p for p in personas_b if p.get('altura', 0) > 0]
+            b_reales.sort(key=lambda x: x.get('altura', 0)) # Cogemos los más bajitos del B
+            for p in b_reales[:faltan]:
+                p_copy = p.copy()
+                personas_c.append(p_copy)
+            while len(personas_c) < plazas_b_c:
+                personas_c.append({"nombre": "HUECO LIBRE", "altura": 0, "id": -1})
+                
+        asignaciones = {}
+        for i, t_nom in enumerate(turnos_trono_nombres):
+            if i == 0: asignaciones[t_nom] = (personas_a, True) # Es Turno A
+            elif i == 1: asignaciones[t_nom] = (personas_b, False)
+            elif i == 2: asignaciones[t_nom] = (personas_c, False)
+            else: asignaciones[t_nom] = ([], False) # Si hay más de 3, no se autocompletan
+            
+        for t_nom, (personas, is_a) in asignaciones.items():
+            res = {
+                "Delante": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": False} for _ in range(plazas_por_vara)] for v in varas_trono},
+                "Detras": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": False} for _ in range(plazas_por_vara)] for v in varas_trono}
+            }
+            if not personas:
+                trono[t_nom] = res
+                continue
+                
+            reales = [p for p in personas if p.get('altura',0) > 0]
+            huecos = [p for p in personas if p.get('altura',0) == 0]
+            
+            reales.sort(key=lambda x: x.get('altura',0), reverse=True)
+            mitad = len(reales) // 2
+            para_delante = reales[:mitad]
+            para_detras = reales[mitad:]
+            
+            zigzag = ["Centro", "Derecha", "Izquierda"]
+            
+            # Definir qué posiciones se rellenan (las puntas vacías para el Turno A si son 7)
+            if is_a and costaleros_7:
+                slots_delante = list(range(1, 7)) # Rellena de 1 a 6 (el 0 es la punta alejada)
+                slots_detras = list(range(5, -1, -1)) # Rellena del 5 al 0 (el 6 es la punta alejada)
+            else:
+                slots_delante = list(range(plazas_por_vara)) # Rellena de la punta al trono
+                slots_detras = list(range(plazas_por_vara - 1, -1, -1)) # Rellena de la punta al trono
+                
+            # Repartimos en ZigZag desde las puntas hacia el trono
+            for idx in slots_delante:
+                for v in zigzag:
+                    p_to_add = para_delante.pop(0) if para_delante else (huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "id": -1})
+                    p_to_add["bloqueado"] = False
+                    res["Delante"][v][idx] = p_to_add
+                    
+            for idx in slots_detras:
+                for v in zigzag:
+                    p_to_add = para_detras.pop(0) if para_detras else (huecos.pop(0) if huecos else {"nombre": "HUECO LIBRE", "altura": 0, "id": -1})
+                    p_to_add["bloqueado"] = False
+                    res["Detras"][v][idx] = p_to_add
+                    
+            # Algoritmo interno para cuadrar hombros (Misma lógica que JavaScript)
+            def can_go_to(p2, target_vara):
+                pref2 = str(p2.get('pref_hombro', '')).lower().strip()
+                if not pref2 or "indiferente" in pref2 or "ambos" in pref2: return True
+                if target_vara == "Izquierda" and "derech" in pref2: return True
+                if target_vara == "Derecha" and "izquierd" in pref2: return True
+                return False
+
+            for v_nom in ["Izquierda", "Derecha"]:
+                for sec in ["Delante", "Detras"]:
+                    for i in range(plazas_por_vara):
+                        p1 = res[sec][v_nom][i]
+                        if not p1 or p1.get('altura', 0) == 0: continue
+                        
+                        pref1 = str(p1.get('pref_hombro', '')).lower().strip()
+                        mismatched = False
+                        if v_nom == "Izquierda" and "izquierd" in pref1: mismatched = True
+                        if v_nom == "Derecha" and "derech" in pref1: mismatched = True
+                        
+                        if mismatched:
+                            swapped = False
+                            opp_vara = "Derecha" if v_nom == "Izquierda" else "Izquierda"
+                            for sec2 in ["Delante", "Detras"]:
+                                if swapped: break
+                                for j in range(plazas_por_vara):
+                                    p2 = res[sec2][opp_vara][j]
+                                    if p2 and p2.get('altura') == p1.get('altura') and can_go_to(p2, v_nom):
+                                        res[sec][v_nom][i], res[sec2][opp_vara][j] = res[sec2][opp_vara][j], res[sec][v_nom][i]
+                                        swapped = True
+                                        break
+                            if not swapped:
+                                for sec2 in ["Delante", "Detras"]:
+                                    if swapped: break
+                                    for j in range(plazas_por_vara):
+                                        p_centro = res[sec2]["Centro"][j]
+                                        if p_centro and p_centro.get('altura') == p1.get('altura') and can_go_to(p_centro, v_nom):
+                                            pref_p1 = str(res[sec][v_nom][i].get('pref_hombro','')).lower()
+                                            conflict = False
+                                            for cc in res[sec2]["Centro"]:
+                                                if cc == p_centro: continue
+                                                cc_pref = str(cc.get('pref_hombro','')).lower()
+                                                if "izquierd" in pref_p1 and "derech" in cc_pref: conflict=True
+                                                if "derech" in pref_p1 and "izquierd" in cc_pref: conflict=True
+                                            if not conflict:
+                                                res[sec][v_nom][i], res[sec2]["Centro"][j] = res[sec2]["Centro"][j], res[sec][v_nom][i]
+                                                swapped = True
+                                                break
+            trono[t_nom] = res
+    else:
+        for t_nom in turnos_trono_nombres:
+            trono[t_nom] = {
+                "Delante": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": False} for _ in range(plazas_por_vara)] for v in varas_trono},
+                "Detras": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": False} for _ in range(plazas_por_vara)] for v in varas_trono}
+            }
+            
+    # CRUZ (En pausa esperando tu lógica)
     varas_cruz = ["Izquierda", "Derecha"]
     cruz = {}
-    
     if lleva_cruz:
         for i in range(num_turnos_cruz):
             nombre_turno = f"Turno {i+1}"
+            if auto_cruz:
+                pass # AQUÍ METEREMOS LA LÓGICA QUE ME DIGAS LUEGO
+                
             cruz[nombre_turno] = {
                 "Delante": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": False} for _ in range(2)] for v in varas_cruz},
                 "Detras": {v: [{"nombre": "HUECO LIBRE", "altura": 0, "id": -1, "bloqueado": False} for _ in range(2)] for v in varas_cruz}
             }
 
-    # MAPPING (Matriz inicial de Tramos y a qué Turno apuntan)
     mapping = {}
     for i in range(num_tramos):
         tramo_name = f"Tramo {i+1}"
         t_trono = f"Turno {letras[i % num_turnos_trono]}" if num_turnos_trono > 0 else ""
         t_cruz = f"Turno {(i % num_turnos_cruz) + 1}" if (lleva_cruz and num_turnos_cruz > 0) else ""
+        mapping[tramo_name] = {"Ruta": "", "Trono": t_trono, "Cruz": t_cruz}
         
-        mapping[tramo_name] = {
-            "Ruta": "",
-            "Trono": t_trono,
-            "Cruz": t_cruz
-        }
-        
-    # INDICACIONES (Textos vacíos iniciales para cada tramo)
     indicaciones = {f"Tramo {i+1}": "" for i in range(num_tramos)}
 
     return {
