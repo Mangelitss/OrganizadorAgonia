@@ -63,11 +63,11 @@
         "id": 7,
         "nombre": "Alicia Bas Munuera",
         "telefono": "",
-        "altura": 147,
+        "altura": 150,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": false,
-        "viernes_santo": false
+        "miercoles_santo": true,
+        "viernes_santo": true
     },
     {
         "id": 8,
@@ -607,7 +607,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": false
+        "viernes_santo": true
     },
     {
         "id": 63,
@@ -697,7 +697,7 @@
         "pref_hombro": "Derecho",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": false
+        "viernes_santo": true
     },
     {
         "id": 72,
@@ -777,7 +777,7 @@
         "pref_hombro": "Derecho",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": false
+        "viernes_santo": true
     },
     {
         "id": 80,
@@ -1197,7 +1197,7 @@
         "pref_hombro": "Derecho",
         "puede_repetir": true,
         "miercoles_santo": true,
-        "viernes_santo": false
+        "viernes_santo": true
     },
     {
         "id": 124,
