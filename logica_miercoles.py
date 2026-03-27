@@ -264,7 +264,6 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             
             .costalero.dyn-rep-c {{ border: 1px solid #ffd700; box-shadow: inset 0 0 8px rgba(255, 215, 0, 0.2); }}
             .costalero.dyn-rep-cruz {{ border: 1px solid #00d2ff; box-shadow: inset 0 0 8px rgba(0, 210, 255, 0.2); }}
-            .costalero.dyn-rep-doble {{ border: 2px solid #ff4757; box-shadow: inset 0 0 10px rgba(255, 71, 87, 0.4); }}
             .costalero.dyn-conflicto {{ border: 2px dashed #ff0000; background: #4a0000; animation: parpadeo 1s infinite; }}
             .dyn-text-conflicto {{ color: #fff; font-weight: bold; font-size: 12px; text-shadow: none; }}
 
@@ -408,7 +407,6 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             <b style="color:#e8d08c;">LEYENDA AUTOMÁTICA:</b><br><br>
             <span style="color:#ffd700; margin-right:20px; font-weight:bold;">■ Amarillo: Dobla Trono (Turno A + B)</span>
             <span style="color:#00d2ff; margin-right:20px; font-weight:bold;">■ Azul: Carga Alterna (Trono y Cruz)</span>
-            <span style="color:#ff4757; margin-right:20px; font-weight:bold;">■ Rojo: Doble Carga (Carga 2 Tramos Seguidos)</span>
             <span style="color:#ffffff; background:#b30000; padding:2px 5px; font-weight:bold; border:1px dashed white;">■ ROJO PARPADEANTE: Imposible / Baja Censo / No Sale</span>
         </div>
 
@@ -651,8 +649,6 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                         s.estadoStr = "no_procesiona";
                     }} else if (tieneConflicto) {{
                         s.estadoStr = "conflicto";
-                    }} else if (allTramos.length > 1) {{
-                        s.estadoStr = "doble";
                     }} else if (cruzUniq.length > 0 && cristoUniq.length > 0) {{
                         s.estadoStr = "repCruz"; 
                     }} else if (cristoTurnosUnicos.length >= 2) {{
@@ -794,9 +790,6 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                     label = `💪 <strong style='color:#00d2ff'>Cruz (${{enCruz.join('+')}})</strong>`;
                 }}
                 
-                if(tOcupados.length === 2 && (enCristo.length > 0 || enCruz.length > 0)) {{
-                    label = label.replace("💪", "⚠️").replace("#e8d08c", "#ff4757").replace("#00d2ff", "#ff4757") + " [DOBLE CARGA]";
-                }}
                 return `<li><span class="tramo-label">${{tr.txt}}</span> ${{label}}</li>`;
             }}
 
@@ -875,7 +868,6 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                                             if (est === "baja_censo") {{ clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [BAJA]'; }} 
                                             else if (est === "no_procesiona") {{ clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [NO SALE]'; }} 
                                             else if (est === "conflicto") {{ clExtra = 'dyn-conflicto'; nExtra = 'dyn-text-conflicto'; tagFinal = ' [CRÍTICO]'; }} 
-                                            else if (est === "doble") {{ clExtra = 'dyn-rep-doble'; nExtra = 'dyn-text-doble'; tagFinal = ' (Sobrecarga)'; }} 
                                             else if (est === "repCruz") {{ clExtra = 'dyn-rep-cruz'; nExtra = 'dyn-text-cruz'; tagFinal = ' (Cruz)'; }} 
                                             else if (est === "repC") {{ clExtra = 'dyn-rep-c'; nExtra = 'dyn-text-c'; tagFinal = ' (Doble)'; }}
                                         }}

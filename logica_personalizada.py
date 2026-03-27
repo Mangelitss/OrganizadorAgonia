@@ -95,11 +95,9 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         
         .costalero.estado-dosTurnos  {{ border:1px solid #ffd700; box-shadow:inset 0 0 8px rgba(255,215,0,.25); }}
         .costalero.estado-cruzYTrono {{ border:1px solid #00d2ff; box-shadow:inset 0 0 8px rgba(0,210,255,.25); }}
-        .costalero.estado-doble      {{ border:2px solid #ff4757; background:#6b0b1c; }}
         .costalero.estado-critico    {{ border:2px dashed #ff0000; background:#4a0000; animation:parpadeo 1s infinite; }}
         .txt-dosTurnos  {{ color:#ffd700; font-weight:bold; }}
         .txt-cruzYTrono {{ color:#00d2ff; font-weight:bold; }}
-        .txt-doble      {{ color:#ff4757; font-weight:bold; }}
         .txt-critico    {{ color:#fff; font-weight:bold; }}
         @keyframes parpadeo {{ 50% {{ opacity:.5; }} }}
         
@@ -202,7 +200,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
     </div>
 
     <div style="max-width:960px; margin:30px auto;">
-        <div class="titulo-bloque"><h2>📍 MATRIZ DE RELEVOS POR TRAMO</h2></div>
+        <div class="titulo-bloque"><h2>📍 RELEVOS POR TRAMO</h2></div>
         <table class="tabla-relevos" id="tabla-mapping"></table>
 
         <div class="titulo-bloque"><h2>⛪ TRONO (EL CRISTO)</h2></div>
@@ -226,7 +224,6 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
             <div class="ley-item"><div class="ley-dot" style="background:#3d0c2e; border:1px solid #571342;"></div><span>Normal</span></div>
             <div class="ley-item"><div class="ley-dot" style="background:#3d0c2e; border:1px solid #ffd700; box-shadow:inset 0 0 6px rgba(255,215,0,.3);"></div><span style="color:#ffd700;">Sale en 2 turnos</span></div>
             <div class="ley-item"><div class="ley-dot" style="background:#3d0c2e; border:1px solid #00d2ff; box-shadow:inset 0 0 6px rgba(0,210,255,.3);"></div><span style="color:#00d2ff;">Trono + Cruz</span></div>
-            <div class="ley-item"><div class="ley-dot" style="background:#6b0b1c; border:2px solid #ff4757;"></div><span style="color:#ff4757;">Doble carga consecutiva</span></div>
             <div class="ley-item"><div class="ley-dot" style="background:#4a0000; border:2px dashed #ff0000;"></div><span style="color:#ff0000;">⚠️ CRÍTICO: 2 posiciones o Cruz/Trono en mismo tramo</span></div>
         </div>
     </div>
@@ -538,10 +535,8 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
 
         for (let pid in est) {{
             let e = est[pid];
-            let tieneConsec = e.tramos.some((n, i) => i > 0 && n - e.tramos[i-1] === 1);
 
             if (e.duplicado || e.choqueTramo)        e.estadoStr = 'critico';
-            else if (tieneConsec)                    e.estadoStr = 'doble';
             else if (e.tronoT.size > 0 && e.cruzT.size > 0) e.estadoStr = 'cruzYTrono';
             else if (e.tronoT.size > 1 || e.cruzT.size > 1) e.estadoStr = 'dosTurnos';
             else                                     e.estadoStr = 'normal';
@@ -569,7 +564,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
 
             let est = estadoGlobal[p.id];
             if (est) {{
-                const map = {{ critico:['estado-critico','txt-critico'], doble:['estado-doble','txt-doble'], cruzYTrono:['estado-cruzYTrono','txt-cruzYTrono'], dosTurnos:['estado-dosTurnos','txt-dosTurnos'] }};
+                const map = {{ critico:['estado-critico','txt-critico'], cruzYTrono:['estado-cruzYTrono','txt-cruzYTrono'], dosTurnos:['estado-dosTurnos','txt-dosTurnos'] }};
                 if (map[est.estadoStr]) {{ claseEst = map[est.estadoStr][0]; claseTxt = map[est.estadoStr][1]; }}
             }}
         }}
@@ -811,7 +806,6 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
 
         const badges = {{
             critico:    `<span style="background:#4a0000;border:2px dashed #ff0000;color:#fff;padding:4px 12px;border-radius:4px;animation:parpadeo 1s infinite;display:inline-block; font-size:11px; font-weight:bold;">⚠️ CRÍTICO — Conflicto de turnos</span>`,
-            doble:      `<span style="background:#6b0b1c;border:1px solid #ff4757;color:#ff4757;padding:4px 12px;border-radius:4px; font-size:11px; font-weight:bold;">🔴 Doble carga consecutiva</span>`,
             cruzYTrono: `<span style="background:#0a2a3d;border:1px solid #00d2ff;color:#00d2ff;padding:4px 12px;border-radius:4px; font-size:11px; font-weight:bold;">🔵 Lleva Trono y Cruz</span>`,
             dosTurnos:  `<span style="background:#2a2000;border:1px solid #ffd700;color:#ffd700;padding:4px 12px;border-radius:4px; font-size:11px; font-weight:bold;">🟡 Sale en 2 turnos</span>`,
             normal:     `<span style="color:#a37c95;font-size:12px;">✅ Carga óptima (Sin alertas)</span>`,
@@ -958,14 +952,13 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         <div class="header">
             <img src="bandera_tercio_npj.png" alt="Escudo" class="logo-img" onerror="this.style.display='none'">
             <h1>OFS Muy Ilustre Mayordomía de Nuestro Padre Jesús Nazareno</h1>
-            <h2>Orden Procesional - Personalizada</h2>
+            <h2>Tercio del Cristo de la Agonía y María Magdalena</h2>
             <p>Fecha de emisión: ${{fecha_hoy}} | Cuadrante del Año: ${{anio}}</p>
         </div>
         
         <div class="leyenda">
             <div class="leyenda-item"><span class="caja bg-amarillo"></span> Sale en 2 Turnos</div>
             <div class="leyenda-item"><span class="caja bg-azul"></span> Lleva Trono y Cruz</div>
-            <div class="leyenda-item"><span class="caja bg-rojo"></span> Alerta Carga (Dobles/Crítico)</div>
         </div>
         
         <div id="content-turnos"></div>
@@ -1039,7 +1032,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
             let e = estadoGlobal[p.id]; 
             let bg = '';
             if (e) {{
-                if (e.estadoStr === 'critico' || e.estadoStr === 'doble') bg = 'bg-rojo';
+                if (e.estadoStr === 'critico') bg = 'bg-rojo';
                 else if (e.estadoStr === 'cruzYTrono') bg = 'bg-azul';
                 else if (e.estadoStr === 'dosTurnos') bg = 'bg-amarillo';
             }}

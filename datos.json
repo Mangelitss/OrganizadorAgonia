@@ -6,7 +6,7 @@
         "altura": 133,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": false,
+        "miercoles_santo": true,
         "viernes_santo": false
     },
     {
@@ -603,7 +603,7 @@
         "id": 62,
         "nombre": "Laura Rodríguez Cerezo",
         "telefono": "",
-        "altura": 142,
+        "altura": 145,
         "pref_hombro": "",
         "puede_repetir": true,
         "miercoles_santo": true,
@@ -696,7 +696,7 @@
         "altura": 136,
         "pref_hombro": "Derecho",
         "puede_repetir": true,
-        "miercoles_santo": false,
+        "miercoles_santo": true,
         "viernes_santo": false
     },
     {
@@ -776,7 +776,7 @@
         "altura": 141,
         "pref_hombro": "Derecho",
         "puede_repetir": true,
-        "miercoles_santo": false,
+        "miercoles_santo": true,
         "viernes_santo": false
     },
     {
@@ -1096,7 +1096,7 @@
         "altura": 134,
         "pref_hombro": "",
         "puede_repetir": true,
-        "miercoles_santo": false,
+        "miercoles_santo": true,
         "viernes_santo": true
     },
     {
@@ -1144,7 +1144,7 @@
         "nombre": "Sandra Cañete Murcia",
         "telefono": "",
         "altura": 139,
-        "pref_hombro": "Ambos",
+        "pref_hombro": "Derecho",
         "puede_repetir": true,
         "miercoles_santo": true,
         "viernes_santo": true
@@ -1196,7 +1196,7 @@
         "altura": 141,
         "pref_hombro": "Derecho",
         "puede_repetir": true,
-        "miercoles_santo": false,
+        "miercoles_santo": true,
         "viernes_santo": false
     },
     {

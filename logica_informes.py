@@ -65,26 +65,13 @@ def crear_html_informe(tipo, archivo_json, anio):
             map_tr = {"Turno A": [1], "Turno B": [2]}
         map_cr = {"Turno 1": [1], "Turno 2": [2]}
 
-    # Cálculo implacable de Sobreesfuerzos y Repeticiones
     for pid, d in tramos_dict.items():
         all_tr = []
         for t in d['cristo']: all_tr.extend(map_tr.get(t, []))
         for t in d['cruz']: all_tr.extend(map_cr.get(t, []))
         
         all_tr = sorted(list(set(all_tr)))
-        tiene_doble = False
-        
-        for i in range(len(all_tr)-1):
-            if all_tr[i+1] - all_tr[i] == 1:
-                tiene_doble = True
-                
-        if "Viernes" in tipo:
-            cargas_procesion = len([x for x in all_tr if x <= 4])
-            if cargas_procesion > 2:
-                tiene_doble = True
-                
         d['all_tr'] = all_tr
-        d['tiene_doble'] = tiene_doble
 
     # ==========================================
     # LÓGICA DE TEXTOS (VIERNES VS MIÉRCOLES)
@@ -174,16 +161,7 @@ def crear_html_informe(tipo, archivo_json, anio):
             } else if (enCristo.length > 0) {
                 label = `💪 <strong style='color:#e8d08c'>Trono (${enCristo.join(" + ")})</strong>`;
             } else if (enCruz.length > 0) {
-                let sinDescanso = false;
-                for(let i=0; i<tOcupados.length-1; i++){
-                    if(tOcupados[i+1] - tOcupados[i] === 1) sinDescanso = true;
-                }
-                let sobrecarga = tOcupados.filter(t => t <= 4).length > 2;
-                if (sinDescanso || sobrecarga) {
-                    label = `⚠️ <strong style='color:#ff4757'>Cruz (${enCruz.join('+')}) [DOBLE CARGA]</strong>`;
-                } else {
-                    label = `💪 <strong style='color:#00d2ff'>Cruz (${enCruz.join('+')})</strong>`;
-                }
+                label = `💪 <strong style='color:#00d2ff'>Cruz (${enCruz.join('+')})</strong>`;
             }
         """
 
@@ -252,9 +230,6 @@ def crear_html_informe(tipo, archivo_json, anio):
             } else if (enCruz.length > 0) {
                 label = `💪 <strong style='color:#00d2ff'>Cruz (${enCruz.join('+')})</strong>`;
             }
-            if(tOcupados.length === 2 && (enCristo.length > 0 || enCruz.length > 0)) {
-                label = label.replace("💪", "⚠️").replace("#e8d08c", "#ff4757").replace("#00d2ff", "#ff4757") + " [SOBREESFUERZO]";
-            }
         """
 
     def generar_li_costalero(p):
@@ -268,9 +243,7 @@ def crear_html_informe(tipo, archivo_json, anio):
         
         if pid in tramos_dict:
             d = tramos_dict[pid]
-            if d['tiene_doble']:
-                clase_bg = "bg-rojo"
-            elif len(set(d['cruz'])) > 0 and len(set(d['cristo'])) > 0:
+            if len(set(d['cruz'])) > 0 and len(set(d['cristo'])) > 0:
                 clase_bg = "bg-azul"
             elif len(set(d['cristo'])) >= 2:
                 clase_bg = "bg-amarillo"
@@ -364,12 +337,12 @@ def crear_html_informe(tipo, archivo_json, anio):
                ========================================== */
             @media print {{
                 @page {{ 
-                    margin: 0; /* TRUCO MAGICO: Elimina la URL y fecha automáticas del navegador */
+                    margin: 0; 
                 }}
                 
                 body {{ 
                     background: #fff !important; 
-                    padding: 1.5cm !important; /* Margen interno físico para que el folio quede elegante */
+                    padding: 1.5cm !important; 
                     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important; 
                 }}
                 
@@ -383,7 +356,6 @@ def crear_html_informe(tipo, archivo_json, anio):
                 .seccion-texto {{ background: transparent !important; border: 1px solid #ccc !important; border-left: 4px solid #5c164e !important; }}
                 .page-break-avoid {{ page-break-inside: avoid !important; }}
                 
-                /* Forzamos los colores de fondo cruciales para la impresión */
                 * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
             }}
         </style>
@@ -417,9 +389,9 @@ def crear_html_informe(tipo, archivo_json, anio):
             </div>
             
             <div class="leyenda">
-                <div class="leyenda-item"><span class="caja bg-amarillo"></span> Repite Trono (B + C)</div>
+                <div class="leyenda-item"><span class="caja bg-amarillo"></span> Repite Trono</div>
                 <div class="leyenda-item"><span class="caja bg-azul"></span> Carga Alterna (Trono y Cruz)</div>
-                <div class="leyenda-item"><span class="caja bg-rojo"></span> Doble Carga (2 Tramos Seguidos)</div>
+                <div class="leyenda-item"><span class="caja bg-rojo"></span> Alerta Crítica (Imposible)</div>
             </div>
     """
 
