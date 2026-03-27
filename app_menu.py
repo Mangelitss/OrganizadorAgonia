@@ -23,7 +23,7 @@ from logica_personalizada import generar_datos_personalizados, generar_html_pers
 # ==========================================
 # CONFIGURACIÓN Y COLORES
 # ==========================================
-VERSION_ACTUAL = "1.2" # <--- VERSIÓN ACTUAL DEL PROGRAMA
+VERSION_ACTUAL = "1.3" # <--- VERSIÓN ACTUAL DEL PROGRAMA
 
 CONFIG = {
     "peso_trono_kg": 2000,
