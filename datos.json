@@ -10,7 +10,7 @@
         "viernes_santo": false
     },
     {
-        "altura": 150,
+        "altura": 152,
         "id": 2,
         "miercoles_santo": true,
         "nombre": "Abraham Sarmiento Marín",
@@ -112,12 +112,12 @@
     {
         "altura": 144,
         "id": 12,
-        "miercoles_santo": false,
+        "miercoles_santo": true,
         "nombre": "Ana Isabel Martínez Javaloyes",
         "pref_hombro": "Izquierdo",
         "puede_repetir": true,
         "telefono": "",
-        "viernes_santo": false
+        "viernes_santo": true
     },
     {
         "altura": 140,
@@ -282,12 +282,12 @@
     {
         "altura": 132,
         "id": 30,
-        "miercoles_santo": false,
+        "miercoles_santo": true,
         "nombre": "Carla del Moral Fernández",
         "pref_hombro": "",
         "puede_repetir": true,
         "telefono": "",
-        "viernes_santo": false
+        "viernes_santo": true
     },
     {
         "altura": 138,
@@ -572,12 +572,12 @@
     {
         "altura": 143,
         "id": 59,
-        "miercoles_santo": false,
+        "miercoles_santo": true,
         "nombre": "Jose Ramón Escobedo Medina",
         "pref_hombro": "Derecho",
         "puede_repetir": true,
         "telefono": "",
-        "viernes_santo": false
+        "viernes_santo": true
     },
     {
         "altura": 140,
@@ -1122,12 +1122,12 @@
     {
         "altura": 151,
         "id": 116,
-        "miercoles_santo": false,
+        "miercoles_santo": true,
         "nombre": "Raúl Donate Escudero",
         "pref_hombro": "",
         "puede_repetir": true,
         "telefono": "",
-        "viernes_santo": false
+        "viernes_santo": true
     },
     {
         "altura": 139,

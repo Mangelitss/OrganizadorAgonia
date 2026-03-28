@@ -59,11 +59,12 @@ def crear_html_informe(tipo, archivo_json, anio):
             map_tr = {"Turno A": [2,4,6], "Turno B": [3,5,7], "Turno C": [1,5,7]}
         map_cr = {"Turno 1": [1], "Turno 2": [2], "Turno 3": [3], "Turno 4": [4]}
     else:
+        # Modificado para 3 Tramos / 3 Turnos del Miércoles Santo
         if es_par:
-            map_tr = {"Turno A": [2], "Turno B": [1]}
+            map_tr = {"Turno A": [2], "Turno B": [1], "Turno C": [3]}
         else:
-            map_tr = {"Turno A": [1], "Turno B": [2]}
-        map_cr = {"Turno 1": [1], "Turno 2": [2]}
+            map_tr = {"Turno A": [3], "Turno B": [2], "Turno C": [1]}
+        map_cr = {"Turno 1": [1], "Turno 2": [2], "Turno 3": [3]}
 
     for pid, d in tramos_dict.items():
         all_tr = []
@@ -166,24 +167,25 @@ def crear_html_informe(tipo, archivo_json, anio):
         """
 
     else: 
-        # ==================== MIÉRCOLES SANTO ====================
+        # ==================== MIÉRCOLES SANTO (Actualizado 3 Tramos) ====================
         i_t1 = indicaciones.get("tramo1", "").strip() or "(Sin indicaciones especiales)"
         i_t2 = indicaciones.get("tramo2", "").strip() or "(Sin indicaciones especiales)"
+        i_t3 = indicaciones.get("tramo3", "").strip() or "(Sin indicaciones especiales)"
 
         if es_par:
-            txt_trono_1, txt_trono_2 = "Turno B", "Turno A"
+            txt_trono_1, txt_trono_2, txt_trono_3 = "Turno B", "Turno A", "Turno C"
             js_tramos_obj = """
             const TRAMOS = {
-                "Trono": { "Turno A": [2], "Turno B": [1] },
-                "Cruz": { "Turno 1": [1], "Turno 2": [2] }
+                "Trono": { "Turno A": [2], "Turno B": [1], "Turno C": [3] },
+                "Cruz": { "Turno 1": [1], "Turno 2": [2], "Turno 3": [3] }
             };
             """
         else:
-            txt_trono_1, txt_trono_2 = "Turno A", "Turno B"
+            txt_trono_1, txt_trono_2, txt_trono_3 = "Turno C", "Turno B", "Turno A"
             js_tramos_obj = """
             const TRAMOS = {
-                "Trono": { "Turno A": [1], "Turno B": [2] },
-                "Cruz": { "Turno 1": [1], "Turno 2": [2] }
+                "Trono": { "Turno A": [3], "Turno B": [2], "Turno C": [1] },
+                "Cruz": { "Turno 1": [1], "Turno 2": [2], "Turno 3": [3] }
             };
             """
 
@@ -191,8 +193,9 @@ def crear_html_informe(tipo, archivo_json, anio):
         <div class="seccion-texto page-break-avoid">
             <h3>📍 Orden e Itinerario Oficial (Miércoles Santo - Año {anio})</h3>
             <ul class="lista-tramos">
-                <li><b>Tramo 1 (S. Francisco ➔ Gasolinera):</b> Carga el Trono el <b>{txt_trono_1}</b>, y la Cruz el <b>Turno 1</b>.</li>
-                <li><b>Tramo 2 (Gasolinera ➔ Monserrate):</b> Carga el Trono el <b>{txt_trono_2}</b>, y la Cruz el <b>Turno 2</b>.</li>
+                <li><b>Tramo 1 (S. Fco ➔ M. Rogel):</b> Carga el Trono el <b>{txt_trono_1}</b>, y la Cruz el <b>Turno 1</b>.</li>
+                <li><b>Tramo 2 (M. Rogel ➔ Capuchinos):</b> Carga el Trono el <b>{txt_trono_2}</b>, y la Cruz el <b>Turno 2</b>.</li>
+                <li><b>Tramo 3 (Capuchinos ➔ Monserrate):</b> Carga el Trono el <b>{txt_trono_3}</b>, y la Cruz el <b>Turno 3</b>.</li>
             </ul>
         </div>
         """
@@ -200,8 +203,9 @@ def crear_html_informe(tipo, archivo_json, anio):
         bloque_indicaciones = f"""
         <div class="seccion-texto indicaciones-dinamicas page-break-avoid">
             <h3>⚠️ Indicaciones Específicas del Cuadrillero</h3>
-            <p><b>Tramo 1 (San Francisco a Gasolinera):</b><br>{i_t1}</p>
-            <p><b>Tramo 2 (Gasolinera a Monserrate):</b><br>{i_t2}</p>
+            <p><b>Tramo 1 (S. Fco ➔ M. Rogel):</b><br>{i_t1}</p>
+            <p><b>Tramo 2 (M. Rogel ➔ Capuchinos):</b><br>{i_t2}</p>
+            <p><b>Tramo 3 (Capuchinos ➔ Monserrate):</b><br>{i_t3}</p>
         </div>
         <div class="seccion-texto indicaciones-dinamicas page-break-avoid" style="margin-bottom:0;">
             <h3>📜 Normativa de la Cuadrilla</h3>
@@ -215,8 +219,9 @@ def crear_html_informe(tipo, archivo_json, anio):
                         <h5 style="margin: 0 0 8px 0; color: #e8d08c; font-size: 14px; border-bottom: 1px solid #3d0c2e; padding-bottom: 5px;">🌟 PROCESIÓN (Ida)</h5>
                         <ul style="list-style:none; padding:0; margin:0;">`;
             [
-                { num: 1, txt: "1. S.Francisco ➔ Gasolinera" },
-                { num: 2, txt: "2. Gasolinera ➔ Monserrate" }
+                { num: 1, txt: "1. S. Fco ➔ M. Rogel" },
+                { num: 2, txt: "2. M. Rogel ➔ Capuchinos" },
+                { num: 3, txt: "3. Capuchinos ➔ Monserrate" }
             ].forEach(tr => { html += generarFilaTramo(tr, st, tOcupados); });
             html += `</ul></div>`;
             return html;

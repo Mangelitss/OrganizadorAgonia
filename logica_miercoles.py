@@ -12,50 +12,67 @@ def cargar_datos_miercoles(archivo='datos.json'):
         return []
 
 def generar_cuadrillas_miercoles(costaleros, es_par=True):
-    # Reparto inicial por altura
     pool = sorted(costaleros, key=lambda x: x.get('altura', 0), reverse=True)
     
-    # Rellenamos con huecos si el censo es crítico para poder formar el trono base
-    while len(pool) < 72:
-        pool.append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
-        
-    turno_a_personas = pool[:36]
-    turno_b_personas = pool[36:72]
-    restantes = pool[72:] 
+    # 1. TRONO: Turnos A y B se llenan con la lista
+    turno_a = pool[:36]
+    while len(turno_a) < 36: turno_a.append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
     
-    cruz_turnos = [[], []]
+    turno_b = pool[36:72]
+    while len(turno_b) < 36: turno_b.append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
     
-    disp_restantes = [p.copy() for p in restantes if p.get('id', -1) != -1]
+    # Turno C: Se llena con la gente restante. Si faltan, clonan a los más bajos del Turno B.
+    turno_c = pool[72:108]
+    if len(turno_c) < 36:
+        repetidores_b = [p for p in turno_b if p.get('id', -1) != -1]
+        repetidores_b.sort(key=lambda x: x.get('altura', 0)) 
+        idx_rep = 0
+        while len(turno_c) < 36:
+            if idx_rep < len(repetidores_b):
+                turno_c.append(repetidores_b[idx_rep].copy())
+                idx_rep += 1
+            else:
+                turno_c.append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
+                
+    # 2. CRUZ: 3 Turnos (24 personas en total)
+    cruz_turnos = [[], [], []]
+    
+    disp_b = [p.copy() for p in turno_b if p.get('id', -1) != -1]
+    disp_c = [p.copy() for p in turno_c if p.get('id', -1) != -1]
+    
+    disp_b.sort(key=lambda x: x.get('altura', 0), reverse=True)
+    disp_c.sort(key=lambda x: x.get('altura', 0), reverse=True)
+
+    # Gente del censo que sobró y no lleva el Trono en absoluto
+    disp_restantes = [p.copy() for p in pool[108:] if p.get('id', -1) != -1]
     disp_restantes.sort(key=lambda x: x.get('altura', 0), reverse=True)
-    
+
     def extraer_seguro(lista, cantidad):
         res = []
-        while len(res) < cantidad and len(lista) > 0:
-            res.append(lista.pop(0))
+        while len(res) < cantidad and len(lista) > 0: res.append(lista.pop(0))
         return res
 
-    # 1. Rellenar las cruces EXCLUSIVAMENTE con la gente sobrante (sin sobreesfuerzos)
+    # Primero rellenamos las cruces con los que sobran
     cruz_turnos[0].extend(extraer_seguro(disp_restantes, 8))
     cruz_turnos[1].extend(extraer_seguro(disp_restantes, 8))
-    
-    # 2. SISTEMA DE EMERGENCIA: Si falta gente, prestamos del Turno B (Nunca del A)
-    disp_b = [p.copy() for p in turno_b_personas if p.get('id', -1) != -1]
-    disp_b.sort(key=lambda x: x.get('altura', 0), reverse=True)
-    
+    cruz_turnos[2].extend(extraer_seguro(disp_restantes, 8))
+
+    # Si faltan huecos, robamos de los turnos de Trono que estén descansando en ese tramo
     if es_par:
-        if len(cruz_turnos[1]) < 8:
-            cruz_turnos[1].extend(extraer_seguro(disp_b, 8 - len(cruz_turnos[1])))
+        cruz_turnos[0].extend(extraer_seguro(disp_c, 8 - len(cruz_turnos[0]))) # T1 roba del C
+        cruz_turnos[1].extend(extraer_seguro(disp_b, 8 - len(cruz_turnos[1]))) # T2 roba del B
+        cruz_turnos[2].extend(extraer_seguro(disp_b, 8 - len(cruz_turnos[2]))) # T3 roba del B
     else:
-        if len(cruz_turnos[0]) < 8:
-            cruz_turnos[0].extend(extraer_seguro(disp_b, 8 - len(cruz_turnos[0])))
-            
-    # 3. Si aún así faltan huecos, metemos HUECO LIBRE
-    for i in range(2):
-        while len(cruz_turnos[i]) < 8:
+        cruz_turnos[0].extend(extraer_seguro(disp_b, 8 - len(cruz_turnos[0]))) 
+        cruz_turnos[1].extend(extraer_seguro(disp_c, 8 - len(cruz_turnos[1]))) 
+        cruz_turnos[2].extend(extraer_seguro(disp_b, 8 - len(cruz_turnos[2])))
+
+    for i in range(3):
+        while len(cruz_turnos[i]) < 8: 
             cruz_turnos[i].append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
 
     # ==========================================
-    # DISTRIBUCIÓN AVANZADA: ALTURA + HOMBRO (FASES 1, 2 Y 3)
+    # DISTRIBUCIÓN AVANZADA: ALTURA + HOMBRO
     # ==========================================
     def distribuir_trono(personas):
         varas = ["Izquierda", "Centro", "Derecha"]
@@ -64,7 +81,6 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
         reales = [p for p in personas if p.get('altura', 0) > 0]
         huecos = [p for p in personas if p.get('altura', 0) == 0]
         
-        # 1. ZIGZAG INICIAL (Centro -> Derecha -> Izquierda)
         reales.sort(key=lambda x: (x.get('altura',0)==0, -x.get('altura',0)))
         para_delante = reales[:18]
         para_detras = reales[18:]
@@ -83,7 +99,6 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
                 elif huecos: res[v]["Detras"].append(huecos.pop(0))
                 else: res[v]["Detras"].append({"nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1})
 
-        # 2. FILTRO INTELIGENTE DE HOMBROS
         def can_go_to(p2, target_vara):
             pref2 = str(p2.get('pref_hombro', '')).lower().strip()
             if not pref2 or "indiferente" in pref2 or "ambos" in pref2: return True
@@ -91,7 +106,6 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
             if target_vara == "Derecha" and "izquierd" in pref2: return True
             return False
 
-        # FASES 1 y 2: Arreglar los extremos (Izquierda y Derecha)
         for v_nom in ["Izquierda", "Derecha"]:
             for sec in ["Delante", "Detras"]:
                 for i in range(6):
@@ -108,7 +122,6 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
                         swapped = False
                         opp_vara = "Derecha" if v_nom == "Izquierda" else "Izquierda"
                         
-                        # Fase 1
                         for sec2 in ["Delante", "Detras"]:
                             if swapped: break
                             for j in range(6):
@@ -119,7 +132,6 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
                                         swapped = True
                                         break
                         
-                        # Fase 2
                         if not swapped:
                             for sec2 in ["Delante", "Detras"]:
                                 if swapped: break
@@ -131,7 +143,6 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
                                             swapped = True
                                             break
 
-        # FASE 3: Limpiar el Centro de preferencias estrictas
         for sec in ["Delante", "Detras"]:
             for i in range(6):
                 p_centro = res["Centro"][sec][i]
@@ -195,16 +206,17 @@ def generar_cuadrillas_miercoles(costaleros, es_par=True):
             for v in varas: res[v]["Detras"].append(asig[v])
         return res
 
-    # Incorporamos el "Sello" de procesión al generar desde cero
     return {
         "tipo_procesion": "miercoles_santo",
         "Trono": {
-            "Turno A": distribuir_trono(turno_a_personas),
-            "Turno B": distribuir_trono(turno_b_personas)
+            "Turno A": distribuir_trono(turno_a),
+            "Turno B": distribuir_trono(turno_b),
+            "Turno C": distribuir_trono(turno_c)
         },
         "Cruz": {
             "Turno 1": distribuir_cruz(cruz_turnos[0]),
-            "Turno 2": distribuir_cruz(cruz_turnos[1])
+            "Turno 2": distribuir_cruz(cruz_turnos[1]),
+            "Turno 3": distribuir_cruz(cruz_turnos[2])
         }
     }
 
@@ -221,11 +233,15 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
         censo_completo = "[]"
 
     if es_par:
-        tramos_trono_a = [2]; tramos_trono_b = [1]
-        txt_trono_1 = "Turno B"; txt_trono_2 = "Turno A"
+        tramos_trono_a = [2]
+        tramos_trono_b = [1]
+        tramos_trono_c = [3]
+        txt_trono_1 = "Turno B"; txt_trono_2 = "Turno A"; txt_trono_3 = "Turno C"
     else:
-        tramos_trono_a = [1]; tramos_trono_b = [2]
-        txt_trono_1 = "Turno A"; txt_trono_2 = "Turno B"
+        tramos_trono_a = [3]
+        tramos_trono_b = [2]
+        tramos_trono_c = [1]
+        txt_trono_1 = "Turno C"; txt_trono_2 = "Turno B"; txt_trono_3 = "Turno A"
 
     html = f"""
     <!DOCTYPE html>
@@ -291,10 +307,10 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             .sug-item {{ padding: 6px; cursor: pointer; border-bottom: 1px solid #eee; color: #e8d08c; font-size: 11px; text-align: left; }}
             .sug-item:hover {{ background: #3d0c2e; color: #fff; font-weight: bold; }}
             
-            /* CSS arreglado para que los textos no rompan la caja */
-            textarea.indicaciones-input {{ width: 100%; height: 70px; background: #0c0209; color: #d4af37; border: 1px solid #3d0c2e; border-radius: 5px; padding: 10px; font-family: inherit; margin-bottom: 15px; outline: none; resize: vertical; box-sizing: border-box; }}
+            textarea.indicaciones-input {{ width: 100%; height: 50px; background: #0c0209; color: #d4af37; border: 1px solid #3d0c2e; border-radius: 5px; padding: 10px; font-family: inherit; margin-bottom: 15px; outline: none; resize: vertical; box-sizing: border-box; }}
             textarea.indicaciones-input:focus {{ border-color: #d4af37; }}
             .texto-indicaciones {{ font-size: 13px; color: #f8f0f5; white-space: pre-wrap; font-family: inherit; line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }}
+            
             /* PANEL LATERAL CENSO */
             #sidebar-toggle {{
                 position: fixed; right: 0; top: 50%; transform: translateY(-50%);
@@ -367,18 +383,21 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
         </div>
 
         <div id="modal-indicaciones" class="modal-overlay" onclick="cerrarModalIndicaciones(event)">
-            <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-content" style="max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
                 <button class="modal-close" onclick="cerrarModalIndicaciones()">✖</button>
                 <h3 style="color:#d4af37; margin-top:0; border-bottom:1px solid #3d0c2e; padding-bottom:10px;">📝 Editar Indicaciones y Normativa</h3>
                 
-                <label style="color:#e8d08c; font-size:13px; font-weight:bold;">⚠️ Tramo 1 (S. Francisco ➔ Gasolinera):</label>
+                <label style="color:#e8d08c; font-size:13px; font-weight:bold;">⚠️ Tramo 1 (S. Fco ➔ M. Rogel):</label>
                 <textarea id="text-tramo1" class="indicaciones-input" placeholder="Escribe aquí las indicaciones para el primer tramo..."></textarea>
                 
-                <label style="color:#e8d08c; font-size:13px; font-weight:bold;">⚠️ Tramo 2 (Gasolinera ➔ Monserrate):</label>
+                <label style="color:#e8d08c; font-size:13px; font-weight:bold;">⚠️ Tramo 2 (M. Rogel ➔ Capuchinos):</label>
                 <textarea id="text-tramo2" class="indicaciones-input" placeholder="Escribe aquí las indicaciones para el segundo tramo..."></textarea>
                 
+                <label style="color:#e8d08c; font-size:13px; font-weight:bold;">⚠️ Tramo 3 (Capuchinos ➔ Monserrate):</label>
+                <textarea id="text-tramo3" class="indicaciones-input" placeholder="Escribe aquí las indicaciones para el tercer tramo..."></textarea>
+                
                 <label style="color:#e8d08c; font-size:13px; font-weight:bold;">📜 Normativa de la Cuadrilla:</label>
-                <textarea id="text-normativa" class="indicaciones-input" style="height: 120px;" placeholder="Escribe aquí las normas generales o avisos del Capataz..."></textarea>
+                <textarea id="text-normativa" class="indicaciones-input" style="height: 100px;" placeholder="Escribe aquí las normas generales o avisos del Capataz..."></textarea>
                 
                 <button onclick="guardarIndicaciones()" style="width:100%; background:#d4af37; color:#000; font-weight:bold; font-size: 14px; padding:12px; border:none; border-radius:5px; cursor:pointer; margin-top:5px; text-transform: uppercase;">💾 Guardar Notas en el Cuadrante</button>
             </div>
@@ -392,8 +411,8 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
         <div style="background:#23061b; padding:15px; border-left:5px solid #d4af37; margin:20px 0; border-radius:4px;">
             <h3 style="margin:0; color:#d4af37;">📅 AÑO {anio} ({'PAR' if es_par else 'IMPAR'})</h3>
             <p style="margin: 8px 0 0 0; font-size: 13px; color: #e8d08c; line-height: 1.6;">
-                📍 <b>TRONO:</b> Sale <b>{txt_trono_1}</b> (S. Francisco ➔ Gasolinera) | Releva <b>{txt_trono_2}</b> (Gasolinera ➔ Monserrate)<br>
-                ✝️ <b>CRUZ:</b> Sale <b>Turno 1</b> (S. Francisco ➔ Gasolinera) | Releva <b>Turno 2</b> (Gasolinera ➔ Monserrate)
+                📍 <b>TRONO:</b> Sale <b>{txt_trono_1}</b> (S. Fco ➔ M. Rogel) | Releva <b>{txt_trono_2}</b> (M. Rogel ➔ Capuchinos) | Releva <b>{txt_trono_3}</b> (Capuchinos ➔ Monserrate)<br>
+                ✝️ <b>CRUZ:</b> Sale <b>Turno 1</b> (S. Fco ➔ M. Rogel) | Releva <b>Turno 2</b> (M. Rogel ➔ Capuchinos) | Releva <b>Turno 3</b> (Capuchinos ➔ Monserrate)
             </p>
         </div>
 
@@ -405,7 +424,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
         
         <div style="margin-top:10px; padding:15px; border:1px dashed #3d0c2e; font-size:13px; background:#160311;">
             <b style="color:#e8d08c;">LEYENDA AUTOMÁTICA:</b><br><br>
-            <span style="color:#ffd700; margin-right:20px; font-weight:bold;">■ Amarillo: Dobla Trono (Turno A + B)</span>
+            <span style="color:#ffd700; margin-right:20px; font-weight:bold;">■ Amarillo: Repite Trono (Hace varios turnos)</span>
             <span style="color:#00d2ff; margin-right:20px; font-weight:bold;">■ Azul: Carga Alterna (Trono y Cruz)</span>
             <span style="color:#ffffff; background:#b30000; padding:2px 5px; font-weight:bold; border:1px dashed white;">■ ROJO PARPADEANTE: Imposible / Baja Censo / No Sale</span>
         </div>
@@ -430,8 +449,8 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             let heatmapActivo = false;
             
             const TRAMOS = {{
-                "Trono": {{ "Turno A": {tramos_trono_a}, "Turno B": {tramos_trono_b} }},
-                "Cruz": {{ "Turno 1": [1], "Turno 2": [2] }}
+                "Trono": {{ "Turno A": {tramos_trono_a}, "Turno B": {tramos_trono_b}, "Turno C": {tramos_trono_c} }},
+                "Cruz": {{ "Turno 1": [1], "Turno 2": [2], "Turno 3": [3] }}
             }};
 
             function init() {{
@@ -445,10 +464,9 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                     localStorage.setItem('miercoles_santo_datos', JSON.stringify(datos));
                 }}
                 
-                // Aseguramos el sello y las indicaciones
                 datos.tipo_procesion = "miercoles_santo";
                 if(!datos.indicaciones) {{
-                    datos.indicaciones = {{ tramo1: "", tramo2: "", normativa: "" }};
+                    datos.indicaciones = {{ tramo1: "", tramo2: "", tramo3: "", normativa: "" }};
                 }}
                 
                 render();
@@ -519,17 +537,12 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                             alert("❌ ERROR: Este archivo pertenece a otra procesión. No puedes cargarlo aquí.");
                             event.target.value = '';
                             return;
-                        }} else if (!loadedData.tipo_procesion && loadedData.Trono && loadedData.Trono["Turno C"]) {{
-                            alert("❌ ERROR: Este archivo pertenece al Viernes Santo. No puedes cargarlo aquí.");
-                            event.target.value = '';
-                            return;
                         }}
 
                         if(loadedData.Trono && loadedData.Cruz) {{
                             let msgBorrados = [];
                             let msgNoSalen = [];
 
-                            // AUDITORÍA DEL CENSO
                             for (let tipo of ["Trono", "Cruz"]) {{
                                 if (!loadedData[tipo]) continue;
                                 for (let t of Object.keys(loadedData[tipo])) {{
@@ -540,16 +553,11 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                                                 if (p.id && p.id !== -1) {{
                                                     let personaCenso = CENSO_COMPLETO.find(c => c.id === p.id);
                                                     if (!personaCenso) {{
-                                                        // NO EXISTE EN EL CENSO
                                                         msgBorrados.push(`- ${{p.nombre}}`);
-                                                        // DESTRUCCIÓN Y SUSTITUCIÓN POR HUECO LIBRE
                                                         loadedData[tipo][t][v][sec][i] = {{ "nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1 }};
                                                     }} else {{
-                                                        // SÍ EXISTE: Actualizamos altura y hombro por si hubo cambios
                                                         p.altura = personaCenso.altura;
                                                         p.pref_hombro = personaCenso.pref_hombro;
-                                                        
-                                                        // AVISO SI SE DESMARCÓ DEL DÍA
                                                         if (!personaCenso[DIA_PROCESION]) {{
                                                             msgNoSalen.push(`- ${{p.nombre}}`);
                                                         }}
@@ -577,7 +585,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
 
                             datos = loadedData;
                             datos.tipo_procesion = "miercoles_santo";
-                            if(!datos.indicaciones) datos.indicaciones = {{ tramo1: "", tramo2: "", normativa: "" }};
+                            if(!datos.indicaciones) datos.indicaciones = {{ tramo1: "", tramo2: "", tramo3: "", normativa: "" }};
                             
                             guardarMemoria();
                             render();
@@ -671,9 +679,10 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             // LÓGICA DE NOTAS E INDICACIONES
             // ==========================================
             function abrirModalIndicaciones() {{
-                if(!datos.indicaciones) datos.indicaciones = {{ tramo1: "", tramo2: "", normativa: "" }};
+                if(!datos.indicaciones) datos.indicaciones = {{ tramo1: "", tramo2: "", tramo3: "", normativa: "" }};
                 document.getElementById('text-tramo1').value = datos.indicaciones.tramo1 || "";
                 document.getElementById('text-tramo2').value = datos.indicaciones.tramo2 || "";
+                document.getElementById('text-tramo3').value = datos.indicaciones.tramo3 || "";
                 document.getElementById('text-normativa').value = datos.indicaciones.normativa || "";
                 document.getElementById('modal-indicaciones').style.display = 'flex';
             }}
@@ -688,6 +697,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 if(!datos.indicaciones) datos.indicaciones = {{}};
                 datos.indicaciones.tramo1 = document.getElementById('text-tramo1').value;
                 datos.indicaciones.tramo2 = document.getElementById('text-tramo2').value;
+                datos.indicaciones.tramo3 = document.getElementById('text-tramo3').value;
                 datos.indicaciones.normativa = document.getElementById('text-normativa').value;
                 
                 guardarMemoria();
@@ -696,7 +706,7 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
             }}
 
             function renderIndicaciones() {{
-                if(!datos.indicaciones) datos.indicaciones = {{ tramo1: "", tramo2: "", normativa: "" }};
+                if(!datos.indicaciones) datos.indicaciones = {{ tramo1: "", tramo2: "", tramo3: "", normativa: "" }};
                 
                 let container = document.getElementById('indicaciones-container');
                 container.innerHTML = `
@@ -705,14 +715,18 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                             <h2 style="margin:0; border:none; padding:0; color:#d4af37; text-transform: uppercase; letter-spacing: 2px;">📝 INDICACIONES Y NORMATIVA</h2>
                             <button class="btn-control" onclick="abrirModalIndicaciones()" style="background:#5c164e; border-color:#d4af37; color:#fff;">✏️ EDITAR TEXTOS</button>
                         </div>
-                        <div style="display:flex; gap: 20px; flex-wrap: wrap;">
-                            <div style="flex:1; min-width:300px; background:#160311; padding:15px; border-radius:8px; border-left:4px solid #d4af37;">
-                                <h4 style="color:#e8d08c; margin-top:0;">⚠️ Tramo 1 (S. Francisco ➔ Gasolinera)</h4>
-                                <p class="texto-indicaciones">${{datos.indicaciones.tramo1 || "<i style='color:#a37c95;'>(Sin indicaciones para este tramo)</i>"}}</p>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                            <div style="background:#160311; padding:15px; border-radius:8px; border-left:4px solid #d4af37;">
+                                <h4 style="color:#e8d08c; margin-top:0;">⚠️ Tramo 1 (S. Fco ➔ M. Rogel)</h4>
+                                <p class="texto-indicaciones">${{datos.indicaciones.tramo1 || "<i style='color:#a37c95;'>(Sin indicaciones)</i>"}}</p>
                             </div>
-                            <div style="flex:1; min-width:300px; background:#160311; padding:15px; border-radius:8px; border-left:4px solid #d4af37;">
-                                <h4 style="color:#e8d08c; margin-top:0;">⚠️ Tramo 2 (Gasolinera ➔ Monserrate)</h4>
-                                <p class="texto-indicaciones">${{datos.indicaciones.tramo2 || "<i style='color:#a37c95;'>(Sin indicaciones para este tramo)</i>"}}</p>
+                            <div style="background:#160311; padding:15px; border-radius:8px; border-left:4px solid #d4af37;">
+                                <h4 style="color:#e8d08c; margin-top:0;">⚠️ Tramo 2 (M. Rogel ➔ Capuchinos)</h4>
+                                <p class="texto-indicaciones">${{datos.indicaciones.tramo2 || "<i style='color:#a37c95;'>(Sin indicaciones)</i>"}}</p>
+                            </div>
+                            <div style="background:#160311; padding:15px; border-radius:8px; border-left:4px solid #d4af37;">
+                                <h4 style="color:#e8d08c; margin-top:0;">⚠️ Tramo 3 (Capuchinos ➔ Monserrate)</h4>
+                                <p class="texto-indicaciones">${{datos.indicaciones.tramo3 || "<i style='color:#a37c95;'>(Sin indicaciones)</i>"}}</p>
                             </div>
                         </div>
                         <div style="background:#160311; padding:15px; border-radius:8px; border-left:4px solid #5c164e; margin-top:15px;">
@@ -723,7 +737,6 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 `;
             }}
 
-            // Resto de la lógica de vistas
             function abrirInfoModal(id) {{
                 let st = estadoGlobal[id];
                 if (!st) return;
@@ -731,8 +744,9 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 let html = `<h4 style="color:#d4af37; margin-top:0; margin-bottom:15px; font-size:18px;">📋 Hoja de Ruta de: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
                 html += `<div class="bloque-ruta"><h5>PROCESIÓN</h5><ul>`;
                 [
-                    {{ num: 1, txt: "1. S.Francisco ➔ Gasolinera" }},
-                    {{ num: 2, txt: "2. Gasolinera ➔ Monserrate" }}
+                    {{ num: 1, txt: "1. S. Fco ➔ M. Rogel" }},
+                    {{ num: 2, txt: "2. M. Rogel ➔ Capuchinos" }},
+                    {{ num: 3, txt: "3. Capuchinos ➔ Monserrate" }}
                 ].forEach(tr => {{ html += generarFilaTramo(tr, st, tOcupados); }});
                 html += `</ul></div>`;
                 document.getElementById('modal-body').innerHTML = html;
@@ -765,8 +779,9 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                     let html = `<h4 style="color:#d4af37; margin-bottom:10px; font-size:16px;">📋 Hoja de Ruta Viva: ${{st.nombre.replace(" (R)","").replace(" (C)","").replace(" (C-Doble)","")}}</h4>`;
                     html += `<div class="bloque-ruta"><h5>🌟 PROCESIÓN DE IDA</h5><ul>`;
                     [
-                        {{ num: 1, txt: "1. S.Francisco ➔ Gasolinera" }},
-                        {{ num: 2, txt: "2. Gasolinera ➔ Monserrate" }}
+                        {{ num: 1, txt: "1. S. Fco ➔ M. Rogel" }},
+                        {{ num: 2, txt: "2. M. Rogel ➔ Capuchinos" }},
+                        {{ num: 3, txt: "3. Capuchinos ➔ Monserrate" }}
                     ].forEach(tr => {{ html += generarFilaTramo(tr, st, tOcupados); }});
                     html += `</ul></div>`;
                     resDiv.innerHTML = html;
@@ -922,7 +937,6 @@ def generar_html_miercoles(datos_cuadrillas, master_list, anio, es_par, peso_tro
                 const sugDiv = document.getElementById(`sug-${{tipo}}-${{t}}-${{v}}-${{s}}-${{i}}`);
                 if(val.length < 2) {{ sugDiv.style.display = 'none'; return; }}
                 
-                // Búsqueda ampliada: Nombre o Altura
                 const matches = MASTER_LIST.filter(p => 
                     normalizar(p.nombre).includes(val) || 
                     (p.altura && p.altura.toString().includes(val))

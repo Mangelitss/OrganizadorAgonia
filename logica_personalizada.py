@@ -307,7 +307,7 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
             <button class="btn-control btn-danger" onclick="vaciarTodo()">🗑️ VACIAR TODO</button>
             <button class="btn-control" onclick="abrirModalHojaRuta()">📋 RUTA DE COSTALERO</button>
             <button class="btn-control" onclick="document.getElementById('file-input').click()">📂 CARGAR</button>
-            <button class="btn-control btn-export" onclick="descargarDatos()">💾 JSON</button>
+            <button class="btn-control btn-export" onclick="descargarDatos()">💾 GUARDAR</button>
             <button class="btn-control" style="background:#5c164e; border-color:#d4af37;" onclick="exportarPDF()">📤 EXPORTAR A PDF</button>
         </div>
     </div>
@@ -335,8 +335,8 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
         <div class="titulo-bloque"><h2>🎨 LEYENDA</h2></div>
         <div class="leyenda">
             <div class="ley-item"><div class="ley-dot" style="background:#3d0c2e; border:1px solid #571342;"></div><span>Normal</span></div>
-            <div class="ley-item"><div class="ley-dot" style="background:#3d0c2e; border:1px solid #ffd700; box-shadow:inset 0 0 6px rgba(255,215,0,.3);"></div><span style="color:#ffd700;">Sale en 2 turnos</span></div>
-            <div class="ley-item"><div class="ley-dot" style="background:#3d0c2e; border:1px solid #00d2ff; box-shadow:inset 0 0 6px rgba(0,210,255,.3);"></div><span style="color:#00d2ff;">Trono + Cruz</span></div>
+            <div class="ley-item"><div class="ley-dot" style="background:#3d0c2e; border:1px solid #ffd700; box-shadow:inset 0 0 6px rgba(255,215,0,.3);"></div><span style="color:#ffd700;">Repiten B y C</span></div>
+            <div class="ley-item"><div class="ley-dot" style="background:#3d0c2e; border:1px solid #00d2ff; box-shadow:inset 0 0 6px rgba(0,210,255,.3);"></div><span style="color:#00d2ff;">Repiten En Cruz</span></div>
             <div class="ley-item"><div class="ley-dot" style="background:#4a0000; border:2px dashed #ff0000;"></div><span style="color:#ff0000;">⚠️ CRÍTICO: 2 posiciones o Cruz/Trono en mismo tramo</span></div>
         </div>
     </div>
@@ -919,8 +919,8 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
 
         const badges = {{
             critico:    `<span style="background:#4a0000;border:2px dashed #ff0000;color:#fff;padding:4px 12px;border-radius:4px;animation:parpadeo 1s infinite;display:inline-block; font-size:11px; font-weight:bold;">⚠️ CRÍTICO — Conflicto de turnos</span>`,
-            cruzYTrono: `<span style="background:#0a2a3d;border:1px solid #00d2ff;color:#00d2ff;padding:4px 12px;border-radius:4px; font-size:11px; font-weight:bold;">🔵 Lleva Trono y Cruz</span>`,
-            dosTurnos:  `<span style="background:#2a2000;border:1px solid #ffd700;color:#ffd700;padding:4px 12px;border-radius:4px; font-size:11px; font-weight:bold;">🟡 Sale en 2 turnos</span>`,
+            cruzYTrono: `<span style="background:#0a2a3d;border:1px solid #00d2ff;color:#00d2ff;padding:4px 12px;border-radius:4px; font-size:11px; font-weight:bold;">🔵 Repite En Cruz</span>`,
+            dosTurnos:  `<span style="background:#2a2000;border:1px solid #ffd700;color:#ffd700;padding:4px 12px;border-radius:4px; font-size:11px; font-weight:bold;">🟡 Repite En Turnos B y C</span>`,
             normal:     `<span style="color:#a37c95;font-size:12px;">✅ Carga óptima (Sin alertas)</span>`,
         }};
         let badge = e ? (badges[e.estadoStr] || '') : '';
