@@ -29,7 +29,7 @@ def generar_cuadrillas_viernes(costaleros, es_par=True):
         while len(turno_c) < 36:
             if idx_rep < len(repetidores_b):
                 p_rep = repetidores_b[idx_rep].copy()
-                p_rep["nombre"] = p_rep.get("nombre", "") + " (R)"
+                p_rep["nombre"] = p_rep.get("nombre")
                 turno_c.append(p_rep)
                 idx_rep += 1
             else:
@@ -419,8 +419,8 @@ def generar_html_viernes(datos_completos, master_list, anio, es_par, peso_trono,
         
         <div style="margin-top:10px; padding:15px; border:1px dashed #3d0c2e; font-size:13px; background:#160311;">
             <b style="color:#e8d08c;">LEYENDA AUTOMÁTICA:</b><br><br>
-            <span style="color:#ffd700; margin-right:20px; font-weight:bold;">■ Amarillo: Repite Cristo (Turno B + C)</span>
-            <span style="color:#00d2ff; margin-right:20px; font-weight:bold;">■ Azul: Carga Alterna (Trono y Cruz)</span>
+            <span style="color:#ffd700; margin-right:20px; font-weight:bold;">■ Amarillo: Repite Trono (B y C)</span>
+            <span style="color:#00d2ff; margin-right:20px; font-weight:bold;">■ Azul: Repite Cruz (Trono y Cruz)</span>
             <span style="color:#ffffff; background:#b30000; padding:2px 5px; font-weight:bold; border:1px dashed white;">■ ROJO PARPADEANTE: Imposible / Baja Censo / No Sale</span>
         </div>
 
