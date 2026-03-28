@@ -570,7 +570,7 @@
         "viernes_santo": false
     },
     {
-        "altura": 143,
+        "altura": 139,
         "id": 59,
         "miercoles_santo": true,
         "nombre": "Jose Ramón Escobedo Medina",
@@ -607,7 +607,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "telefono": "",
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "altura": 142,
@@ -1197,7 +1197,7 @@
         "pref_hombro": "Derecho",
         "puede_repetir": true,
         "telefono": "",
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "altura": 141,
