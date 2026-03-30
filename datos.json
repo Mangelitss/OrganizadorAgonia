@@ -10,7 +10,7 @@
         "viernes_santo": false
     },
     {
-        "altura": 152,
+        "altura": 151,
         "id": 2,
         "miercoles_santo": true,
         "nombre": "Abraham Sarmiento Marín",
@@ -187,7 +187,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "telefono": "",
-        "viernes_santo": false
+        "viernes_santo": true
     },
     {
         "altura": 131,
@@ -234,7 +234,7 @@
         "id": 24,
         "miercoles_santo": true,
         "nombre": "Ariadna Martínez Martí",
-        "pref_hombro": "",
+        "pref_hombro": "Derecho",
         "puede_repetir": true,
         "telefono": "",
         "viernes_santo": true
@@ -570,7 +570,7 @@
         "viernes_santo": false
     },
     {
-        "altura": 139,
+        "altura": 143,
         "id": 59,
         "miercoles_santo": true,
         "nombre": "Jose Ramón Escobedo Medina",
@@ -600,7 +600,7 @@
         "viernes_santo": true
     },
     {
-        "altura": 145,
+        "altura": 143,
         "id": 62,
         "miercoles_santo": true,
         "nombre": "Laura Rodríguez Cerezo",
@@ -634,7 +634,7 @@
         "id": 65,
         "miercoles_santo": true,
         "nombre": "Lola Bas Martí",
-        "pref_hombro": "",
+        "pref_hombro": "Derecho",
         "puede_repetir": true,
         "telefono": "",
         "viernes_santo": true
@@ -933,8 +933,8 @@
         "altura": 142,
         "id": 96,
         "miercoles_santo": true,
-        "nombre": "Mireia Larrósa Gómez",
-        "pref_hombro": "",
+        "nombre": "Mireia Larrosa Gómez",
+        "pref_hombro": "Derecho",
         "puede_repetir": true,
         "telefono": "",
         "viernes_santo": true
@@ -1077,7 +1077,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "telefono": "",
-        "viernes_santo": false
+        "viernes_santo": true
     },
     {
         "altura": 142,
@@ -1197,7 +1197,7 @@
         "pref_hombro": "Derecho",
         "puede_repetir": true,
         "telefono": "",
-        "viernes_santo": false
+        "viernes_santo": true
     },
     {
         "altura": 141,
