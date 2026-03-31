@@ -110,7 +110,7 @@
         "viernes_santo": true
     },
     {
-        "altura": 144,
+        "altura": 143,
         "id": 12,
         "miercoles_santo": true,
         "nombre": "Ana Isabel Martínez Javaloyes",
@@ -310,7 +310,7 @@
         "viernes_santo": false
     },
     {
-        "altura": 138,
+        "altura": 139,
         "id": 33,
         "miercoles_santo": true,
         "nombre": "Carlota Marcos Belmonte",
@@ -830,7 +830,7 @@
         "viernes_santo": true
     },
     {
-        "altura": 143,
+        "altura": 144,
         "id": 86,
         "miercoles_santo": true,
         "nombre": "M Jose Hernandez Hernandez",
@@ -1270,7 +1270,7 @@
         "viernes_santo": true
     },
     {
-        "altura": 139,
+        "altura": 138,
         "id": 132,
         "miercoles_santo": true,
         "nombre": "Irene Nortes Valero",
