@@ -397,7 +397,6 @@ def crear_html_informe(tipo, archivo_json, anio):
             <div class="leyenda">
                 <div class="leyenda-item"><span class="caja bg-amarillo"></span> Repite Trono (B y C)</div>
                 <div class="leyenda-item"><span class="caja bg-azul"></span> Repite Cruz (Trono y Cruz)</div>
-                <div class="leyenda-item"><span class="caja bg-rojo"></span> Alerta Crítica (Imposible)</div>
             </div>
     """
 
