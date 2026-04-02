@@ -2,6 +2,7 @@ import json
 import datetime
 import base64
 import os
+from tkinter import font
 
 def crear_html_informe(tipo, archivo_json, anio):
     try:
@@ -307,20 +308,20 @@ def crear_html_informe(tipo, archivo_json, anio):
             .varal:last-child {{ border-right: none; }}
             .varal-title {{ text-align: center; color: #5c164e; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin-top: 0; font-size: 12px; font-weight: 800; text-transform: uppercase; }}
             
-            .seccion-top {{ font-size: 10px; color: #5c164e; text-align: center; margin: 10px 0 5px 0; font-weight: bold; background: #eee; padding: 4px; border-radius: 3px; letter-spacing: 1px; }}
-            .seccion-mid {{ font-size: 10px; color: #fff; text-align: center; margin: 8px 0; font-weight: bold; background: #5c164e; padding: 4px; border-radius: 3px; letter-spacing: 2px; }}
-            .seccion-bot {{ font-size: 10px; color: #5c164e; text-align: center; margin: 5px 0 10px 0; font-weight: bold; background: #eee; padding: 4px; border-radius: 3px; letter-spacing: 1px; }}
-            
-            .lista-costaleros {{ list-style: none; padding: 0; margin: 0; font-size: 11px; }}
-            .costalero-cell {{ padding: 5px 8px; margin-bottom: 3px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; background: #fff; }}
-            .hueco-libre {{ padding: 5px 8px; margin-bottom: 3px; border-radius: 4px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; background: #fafafa; color: #aaa; font-style: italic; }}
-            
+            .seccion-top {{ font-size: 9px; color: #5c164e; text-align: center; margin: 6px 0 3px 0; font-weight: bold; background: #eee; padding: 3px; border-radius: 3px; letter-spacing: 1px; }}
+            .seccion-mid {{ font-size: 9px; color: #fff; text-align: center; margin: 4px 0; font-weight: bold; background: #5c164e; padding: 3px; border-radius: 3px; letter-spacing: 2px; }}
+            .seccion-bot {{ font-size: 9px; color: #5c164e; text-align: center; margin: 3px 0 6px 0; font-weight: bold; background: #eee; padding: 3px; border-radius: 3px; letter-spacing: 1px; }}
+        
+            .lista-costaleros {{ list-style: none; padding: 0; margin: 0; font-size: 10px; }}
+            .costalero-cell {{ padding: 4px 6px; margin-bottom: 2px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; background: #fff; }}
+            .hueco-libre {{ padding: 4px 6px; margin-bottom: 2px; border-radius: 4px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; background: #fafafa; color: #aaa; font-style: italic; }}
+        
             .bg-amarillo {{ background-color: #fff9c4 !important; border-color: #fbc02d !important; color: #000 !important; }}
             .bg-azul {{ background-color: #e1f5fe !important; border-color: #4fc3f7 !important; color: #000 !important; }}
             .bg-rojo {{ background-color: #ffebee !important; border-color: #ef9a9a !important; color: #000 !important; }}
-            
+        
             .c-info {{ display: flex; align-items: center; gap: 5px; }}
-            .nombre {{ font-weight: 600; font-size: 11px; }}
+            .nombre {{ font-weight: 600; font-size: 10px; }}
             .meta {{ font-size: 9px; opacity: 0.7; font-weight: bold; }}
             .btn-info {{ background: none; border: none; color: #007bff; cursor: pointer; padding: 0; font-size: 14px; line-height: 1; margin-top:-2px; }}
             .btn-info:hover {{ transform: scale(1.1); }}

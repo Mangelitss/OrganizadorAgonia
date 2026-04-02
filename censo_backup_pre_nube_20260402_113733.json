@@ -10,7 +10,7 @@
         "viernes_santo": false
     },
     {
-        "altura": 151,
+        "altura": 152,
         "id": 2,
         "miercoles_santo": true,
         "nombre": "Abraham Sarmiento Marín",
@@ -110,7 +110,7 @@
         "viernes_santo": true
     },
     {
-        "altura": 143,
+        "altura": 144,
         "id": 12,
         "miercoles_santo": true,
         "nombre": "Ana Isabel Martínez Javaloyes",
@@ -187,7 +187,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "telefono": "",
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "altura": 131,
@@ -234,7 +234,7 @@
         "id": 24,
         "miercoles_santo": true,
         "nombre": "Ariadna Martínez Martí",
-        "pref_hombro": "Derecho",
+        "pref_hombro": "",
         "puede_repetir": true,
         "telefono": "",
         "viernes_santo": true
@@ -290,7 +290,7 @@
         "viernes_santo": true
     },
     {
-        "altura": 139,
+        "altura": 138,
         "id": 31,
         "miercoles_santo": true,
         "nombre": "Carla Fernández Ballesta",
@@ -310,7 +310,7 @@
         "viernes_santo": false
     },
     {
-        "altura": 139,
+        "altura": 138,
         "id": 33,
         "miercoles_santo": true,
         "nombre": "Carlota Marcos Belmonte",
@@ -440,7 +440,7 @@
         "viernes_santo": true
     },
     {
-        "altura": 131,
+        "altura": 129,
         "id": 46,
         "miercoles_santo": true,
         "nombre": "Erika Navarro Zaragoza",
@@ -600,7 +600,7 @@
         "viernes_santo": true
     },
     {
-        "altura": 143,
+        "altura": 145,
         "id": 62,
         "miercoles_santo": true,
         "nombre": "Laura Rodríguez Cerezo",
@@ -634,7 +634,7 @@
         "id": 65,
         "miercoles_santo": true,
         "nombre": "Lola Bas Martí",
-        "pref_hombro": "Derecho",
+        "pref_hombro": "",
         "puede_repetir": true,
         "telefono": "",
         "viernes_santo": true
@@ -830,7 +830,7 @@
         "viernes_santo": true
     },
     {
-        "altura": 144,
+        "altura": 143,
         "id": 86,
         "miercoles_santo": true,
         "nombre": "M Jose Hernandez Hernandez",
@@ -933,8 +933,8 @@
         "altura": 142,
         "id": 96,
         "miercoles_santo": true,
-        "nombre": "Mireia Larrosa Gómez",
-        "pref_hombro": "Derecho",
+        "nombre": "Mireia Larrósa Gómez",
+        "pref_hombro": "",
         "puede_repetir": true,
         "telefono": "",
         "viernes_santo": true
@@ -1077,7 +1077,7 @@
         "pref_hombro": "",
         "puede_repetir": true,
         "telefono": "",
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "altura": 142,
@@ -1197,7 +1197,7 @@
         "pref_hombro": "Derecho",
         "puede_repetir": true,
         "telefono": "",
-        "viernes_santo": true
+        "viernes_santo": false
     },
     {
         "altura": 141,
@@ -1270,7 +1270,7 @@
         "viernes_santo": true
     },
     {
-        "altura": 138,
+        "altura": 139,
         "id": 132,
         "miercoles_santo": true,
         "nombre": "Irene Nortes Valero",

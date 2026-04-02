@@ -395,29 +395,105 @@ def generar_html_personalizado(datos_gen, master_list, lleva_cruz):
     }}
 
     /* ── CARGAR JSON ── */
-    window.cargarJSON = function(event) {{
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {{
-            try {{
-                let loaded = JSON.parse(e.target.result);
-                if (loaded.Trono && loaded.Mapping) {{
-                    datos = loaded;
-                    guardarMemoria();
-                    render();
-                    if (sidebarAbierto) renderSidebar();
-                    alert("✅ Cuadrante cargado correctamente.");
-                }} else {{
-                    alert("❌ El archivo JSON no tiene la estructura correcta para esta procesión personalizada.");
-                }}
-            }} catch(err) {{
-                alert("❌ Error al leer el archivo JSON.");
-            }}
-        }};
-        reader.readAsText(file);
-        event.target.value = '';
-    }};
+    /* ── LÓGICA DE CARGA JSON (CON COMPROBACIÓN DE CENSO) ── */
+            /* ── LÓGICA DE CARGA JSON (CON COMPROBACIÓN DE CENSO) ── */
+            window.cargarJSON = function(event) {{
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {{
+                    try {{
+                        const loadedData = JSON.parse(e.target.result);
+                        if (loadedData.tipo_procesion && loadedData.tipo_procesion !== "personalizada") {{
+                            alert("❌ ERROR: Este archivo pertenece a otra procesión. No puedes cargarlo aquí.");
+                            event.target.value = '';
+                            return;
+                        }}
+
+                        // --- REVISIÓN DE CENSO USANDO 'MASTER_LIST' ---
+                        let msgBorrados = [];
+                        let msgModificados = [];
+
+                        for (let tipo of ["Trono", "Cruz"]) {{
+                            if (!loadedData[tipo]) continue;
+                            for (let t in loadedData[tipo]) {{
+                                for (let sec in loadedData[tipo][t]) {{
+                                    for (let v in loadedData[tipo][t][sec]) {{
+                                        for (let i = 0; i < loadedData[tipo][t][sec][v].length; i++) {{
+                                            let p = loadedData[tipo][t][sec][v][i];
+                                            
+                                            if (p.id && p.id !== -1) {{
+                                                // AQUÍ ESTABA EL ERROR: Usamos MASTER_LIST que es el censo real
+                                                let personaCenso = MASTER_LIST.find(c => c.id === p.id);
+                                                
+                                                if (!personaCenso) {{
+                                                    // Ya no existe en el censo
+                                                    msgBorrados.push(`- ${{p.nombre}} (ID: ${{p.id}})`);
+                                                    loadedData[tipo][t][sec][v][i] = {{ "nombre": "HUECO LIBRE", "altura": 0, "peso": 0, "id": -1, "bloqueado": false }};
+                                                }} else {{
+                                                    // Comprobar si hay cambios
+                                                    let cambios = [];
+                                                    if (p.altura !== personaCenso.altura) cambios.push(`Altura: ${{p.altura}} ➔ ${{personaCenso.altura}}`);
+                                                    if (p.nombre !== personaCenso.nombre) cambios.push(`Nombre: ${{p.nombre}} ➔ ${{personaCenso.nombre}}`);
+                                                    
+                                                    let oldPref = (p.pref_hombro || "Indiferente").toLowerCase();
+                                                    let newPref = (personaCenso.pref_hombro || "Indiferente").toLowerCase();
+                                                    if (oldPref !== newPref) cambios.push(`Hombro: ${{oldPref}} ➔ ${{newPref}}`);
+
+                                                    let oldDias = (p.miercoles_santo ? "M" : "") + (p.viernes_santo ? "V" : "");
+                                                    let newDias = (personaCenso.miercoles_santo ? "M" : "") + (personaCenso.viernes_santo ? "V" : "");
+                                                    if (oldDias !== newDias) cambios.push(`Días: ${{oldDias||'Ninguno'}} ➔ ${{newDias||'Ninguno'}}`);
+
+                                                    if (cambios.length > 0) {{
+                                                        msgModificados.push(`- ${{personaCenso.nombre}}: ${{cambios.join(", ")}}`);
+                                                        // Actualizamos los datos en la memoria del archivo cargado
+                                                        p.altura = personaCenso.altura;
+                                                        p.nombre = personaCenso.nombre;
+                                                        p.pref_hombro = personaCenso.pref_hombro;
+                                                        p.miercoles_santo = personaCenso.miercoles_santo;
+                                                        p.viernes_santo = personaCenso.viernes_santo;
+                                                    }}
+                                                }}
+                                            }}
+                                        }}
+                                    }}
+                                }}
+                            }}
+                        }}
+
+                        let alertaFinal = "";
+                        if (msgBorrados.length > 0) {{
+                            alertaFinal += "⚠️ COSTALEROS BORRADOS DEL CENSO (Se han vaciado sus huecos):\\n" + msgBorrados.join("\\n") + "\\n\\n";
+                        }}
+                        if (msgModificados.length > 0) {{
+                            alertaFinal += "🔄 DATOS ACTUALIZADOS SEGÚN EL CENSO:\\n" + msgModificados.join("\\n") + "\\n\\n";
+                        }}
+
+                        if (alertaFinal !== "") {{
+                            alert(alertaFinal);
+                        }} else {{
+                            alert("✅ Archivo cargado correctamente. Todo el personal está al día con el censo.");
+                        }}
+                        // --- FIN DEL NUEVO CÓDIGO ---
+
+                        datos = loadedData;
+                        datos.tipo_procesion = "personalizada";
+                        
+                        // Si no tiene mapping (archivo antiguo), usamos el por defecto inicial
+                        if (!datos.Mapping) datos.Mapping = DATOS_INIC.Mapping || {{}};
+                        if (!datos.Indicaciones) datos.Indicaciones = DATOS_INIC.Indicaciones || {{}};
+                        
+                        guardarMemoria();
+                        render();
+                        if (typeof sidebarAbierto !== 'undefined' && sidebarAbierto) renderSidebar();
+                        
+                    }} catch (error) {{
+                        alert("❌ Error al leer el archivo JSON.\\n" + error);
+                    }}
+                    event.target.value = '';
+                }};
+                reader.readAsText(file);
+            }};
 
     /* ── COPIAR Y PEGAR TURNO ── */
     window.copiarTurno = function(tipo, turno) {{

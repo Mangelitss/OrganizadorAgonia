@@ -1130,15 +1130,129 @@ class GestorCofradeAPP:
                     with open(archivo, 'r', encoding='utf-8') as f:
                         datos = json.load(f)
                     
+                    t_proc = datos.get("tipo_procesion", "")
+                    objetivo = var_tipo.get() # Lo que el usuario ha marcado (Viernes o Miércoles)
+                    
+                    # --- EL TRADUCTOR MÁGICO CON VENTANA DE TEXTOS ---
+                    if t_proc == "personalizada":
+                        max_trono = 3
+                        max_cruz = 3 if objetivo == "Miércoles Santo" else 4
+                        num_trono = len(datos.get("Trono", {}))
+                        num_cruz = len(datos.get("Cruz", {}))
+                        
+                        # 1. Regla de seguridad
+                        if num_trono > max_trono or num_cruz > max_cruz:
+                            messagebox.showerror("Error de Conversión", 
+                                f"Para convertir a {objetivo} no puedes tener más de {max_trono} turnos de Trono y {max_cruz} de Cruz.\n\n"
+                                f"Tu archivo personalizado tiene {num_trono} de Trono y {num_cruz} de Cruz.")
+                            return
+                            
+                        if not messagebox.askyesno("Convertir Cuadrante", f"Has cargado un cuadrante Personalizado.\n¿Quieres adaptarlo automáticamente al formato oficial de {objetivo}?"):
+                            return
+                            
+                        # 2. POP-UP OBLIGATORIO PARA TEXTOS Y NORMATIVA
+                        conversion_state = {"status": "cancelled", "textos": {}}
+                        
+                        top = tk.Toplevel(self.root)
+                        top.title(f"Indicaciones - {objetivo}")
+                        top.geometry("550x650")
+                        top.configure(bg=C_BLANCO)
+                        top.transient(self.root)
+                        top.grab_set() # Bloquea el resto del programa
+                        
+                        tk.Label(top, text=f"📝 Textos Oficiales - {objetivo}", font=("Segoe UI", 16, "bold"), bg=C_BLANCO, fg=C_MORADO).pack(pady=15)
+                        tk.Label(top, text="Rellena las indicaciones. Si lo dejas en blanco, no aparecerá nada en el PDF.", font=("Segoe UI", 10, "italic"), bg=C_BLANCO, fg="#666").pack(pady=(0, 15))
+                        
+                        frame_scroll = tk.Frame(top, bg=C_BLANCO)
+                        frame_scroll.pack(fill=tk.BOTH, expand=True, padx=30)
+                        
+                        txt_widgets = {}
+                        
+                        # Generación dinámica de cajas según el día
+                        if objetivo == "Viernes Santo":
+                            tramos = [
+                                ("tramo1", "⚠️ Tramo 1 (Monserrate ➔ Ayto):"),
+                                ("tramo2", "⚠️ Tramo 2 (Ayto ➔ As de Oros):"),
+                                ("tramo3", "⚠️ Tramo 3 (As Oros ➔ Glorieta):"),
+                                ("tramo4", "⚠️ Tramo 4 y Regreso:")
+                            ]
+                        else:
+                            tramos = [
+                                ("tramo1", "⚠️ Tramo 1 (S. Fco ➔ M. Rogel):"),
+                                ("tramo2", "⚠️ Tramo 2 (M. Rogel ➔ Capuchinos):"),
+                                ("tramo3", "⚠️ Tramo 3 (Capuchinos ➔ Monserrate):")
+                            ]
+                            
+                        for key, label_text in tramos:
+                            tk.Label(frame_scroll, text=label_text, font=("Segoe UI", 10, "bold"), bg=C_BLANCO, fg="#b5952f").pack(anchor="w", pady=(5,0))
+                            t = tk.Text(frame_scroll, font=("Segoe UI", 10), height=3, relief="solid", bd=1)
+                            t.pack(fill=tk.X, pady=(0, 5))
+                            txt_widgets[key] = t
+                            
+                        tk.Label(frame_scroll, text="📜 Normativa de la Cuadrilla:", font=("Segoe UI", 10, "bold"), bg=C_BLANCO, fg="#b5952f").pack(anchor="w", pady=(10,0))
+                        t_norm = tk.Text(frame_scroll, font=("Segoe UI", 10), height=5, relief="solid", bd=1)
+                        t_norm.pack(fill=tk.X, pady=(0, 10))
+                        txt_widgets["normativa"] = t_norm
+                        
+                        def guardar_textos():
+                            conversion_state["status"] = "saved"
+                            for k, w in txt_widgets.items():
+                                conversion_state["textos"][k] = w.get("1.0", "end-1c").strip()
+                            top.destroy()
+                            
+                        btn_guardar = tk.Button(top, text="💾 GUARDAR TEXTOS Y CONTINUAR", bg=C_MORADO, fg=C_BLANCO, font=("Segoe UI", 11, "bold"), cursor="hand2", command=guardar_textos)
+                        btn_guardar.pack(fill=tk.X, padx=30, pady=15, ipady=8)
+                        
+                        # Pausa la ejecución hasta que se cierre la ventana
+                        self.root.wait_window(top)
+                        
+                        # Si el usuario cerró en la 'X' o no guardó, abortamos TODO
+                        if conversion_state["status"] == "cancelled":
+                            return
+                            
+                        # 3. CONVERSIÓN CON LOS TEXTOS APLICADOS
+                        datos_convertidos = {
+                            "tipo_procesion": "miercoles_santo" if objetivo == "Miércoles Santo" else "viernes_santo",
+                            "Trono": {},
+                            "Cruz": {},
+                            "indicaciones": {
+                                "tramo1": conversion_state["textos"].get("tramo1", ""),
+                                "tramo2": conversion_state["textos"].get("tramo2", ""),
+                                "tramo3": conversion_state["textos"].get("tramo3", ""),
+                                "tramo4": conversion_state["textos"].get("tramo4", ""),
+                                "normativa": conversion_state["textos"].get("normativa", "")
+                            }
+                        }
+                        
+                        # 4. Darle la vuelta a la estructura (De [Delante][Vara] a [Vara][Delante])
+                        for categoria in ["Trono", "Cruz"]:
+                            if categoria in datos:
+                                for turno_nom, secciones in datos[categoria].items():
+                                    datos_convertidos[categoria][turno_nom] = {}
+                                    for sec_nom, varas in secciones.items(): # sec_nom = "Delante" o "Detras"
+                                        for vara_nom, personas in varas.items():
+                                            if vara_nom not in datos_convertidos[categoria][turno_nom]:
+                                                datos_convertidos[categoria][turno_nom][vara_nom] = {"Delante": [], "Detras": []}
+                                            datos_convertidos[categoria][turno_nom][vara_nom][sec_nom] = personas
+                                            
+                        datos = datos_convertidos
+                        
+                        archivo = "temp_publicar_convertido.json"
+                        with open(archivo, 'w', encoding='utf-8') as f:
+                            json.dump(datos, f, indent=4, ensure_ascii=False)
+                            
+                        messagebox.showinfo("Éxito", f"Cuadrante adaptado a {objetivo} correctamente.\nLas indicaciones se han guardado y el archivo está listo para revisar o publicar.")
+                        
+                    else:
+                        # Comprobaciones normales si ya era un archivo oficial
+                        if objetivo == "Viernes Santo" and t_proc != "viernes_santo":
+                            messagebox.showwarning("Atención", "Has marcado Viernes Santo pero has cargado un archivo del Miércoles Santo.\nEl PDF podría generarse mal.")
+                        elif objetivo == "Miércoles Santo" and t_proc != "miercoles_santo":
+                            messagebox.showwarning("Atención", "Has marcado Miércoles Santo pero has cargado un archivo del Viernes Santo.\nEl PDF podría generarse mal.")
+                    
                     estado_exportacion["archivo_ruta"] = archivo
                     estado_exportacion["datos_json"] = datos
                     estado_exportacion["revisado"] = False
-                    
-                    t_proc = datos.get("tipo_procesion", "")
-                    if var_tipo.get() == "Viernes Santo" and t_proc != "viernes_santo":
-                        messagebox.showwarning("Atención", "Has marcado Viernes Santo pero has cargado un archivo del Miércoles Santo.\nEl PDF podría generarse mal.")
-                    elif var_tipo.get() == "Miércoles Santo" and t_proc != "miercoles_santo":
-                        messagebox.showwarning("Atención", "Has marcado Miércoles Santo pero has cargado un archivo del Viernes Santo.\nEl PDF podría generarse mal.")
                     
                     btn_publicar.config(state="disabled") 
                     lbl_info_archivo.config(text=f"✅ Archivo cargado y listo:\n{os.path.basename(archivo)}")
