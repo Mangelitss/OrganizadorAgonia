@@ -389,17 +389,6 @@
                 ],
                 "Detras": [
                     {
-                        "altura": 140,
-                        "id": 13,
-                        "miercoles_santo": true,
-                        "nombre": "Ana M Rodríguez Lorente",
-                        "pref_hombro": "",
-                        "puede_repetir": true,
-                        "telefono": "",
-                        "viernes_santo": true,
-                        "bloqueado": false
-                    },
-                    {
                         "altura": 141,
                         "id": 23,
                         "miercoles_santo": true,
@@ -416,6 +405,17 @@
                         "miercoles_santo": true,
                         "nombre": "Ana Isabel Martínez Javaloyes",
                         "pref_hombro": "Izquierdo",
+                        "puede_repetir": true,
+                        "telefono": "",
+                        "viernes_santo": true,
+                        "bloqueado": false
+                    },
+                    {
+                        "altura": 143,
+                        "id": 128,
+                        "miercoles_santo": true,
+                        "nombre": "Noel Lopez Garcia",
+                        "pref_hombro": "",
                         "puede_repetir": true,
                         "telefono": "",
                         "viernes_santo": true,
@@ -698,7 +698,7 @@
                         "bloqueado": false
                     },
                     {
-                        "altura": 137,
+                        "altura": 138,
                         "id": 19,
                         "miercoles_santo": true,
                         "nombre": "Ángela Fernández Zaragoza",
@@ -710,6 +710,17 @@
                     }
                 ],
                 "Detras": [
+                    {
+                        "altura": 132,
+                        "id": 30,
+                        "miercoles_santo": true,
+                        "nombre": "Carla del Moral Fernández",
+                        "pref_hombro": "",
+                        "puede_repetir": true,
+                        "telefono": "",
+                        "viernes_santo": true,
+                        "bloqueado": false
+                    },
                     {
                         "altura": 133,
                         "id": 75,
@@ -748,17 +759,6 @@
                         "id": 110,
                         "miercoles_santo": true,
                         "nombre": "Paula Marco Ruíz",
-                        "pref_hombro": "",
-                        "puede_repetir": true,
-                        "telefono": "",
-                        "viernes_santo": true,
-                        "bloqueado": false
-                    },
-                    {
-                        "altura": 136,
-                        "id": 111,
-                        "miercoles_santo": true,
-                        "nombre": "Paula Martinez Casanova",
                         "pref_hombro": "",
                         "puede_repetir": true,
                         "telefono": "",
@@ -872,10 +872,10 @@
                 "Detras": [
                     {
                         "altura": 132,
-                        "id": 30,
+                        "id": 85,
                         "miercoles_santo": true,
-                        "nombre": "Carla del Moral Fernández",
-                        "pref_hombro": "",
+                        "nombre": "Manoli Martínez Lizón",
+                        "pref_hombro": "Izquierdo",
                         "puede_repetir": true,
                         "telefono": "",
                         "viernes_santo": true,
@@ -999,10 +999,10 @@
                     },
                     {
                         "altura": 136,
-                        "id": 70,
+                        "id": 28,
                         "miercoles_santo": true,
-                        "nombre": "Lydia Espinosa Fenoll",
-                        "pref_hombro": "",
+                        "nombre": "Blanca Rosa Medina Oltra",
+                        "pref_hombro": "Derecho",
                         "puede_repetir": true,
                         "telefono": "",
                         "viernes_santo": true,
@@ -1067,9 +1067,9 @@
                     },
                     {
                         "altura": 131,
-                        "id": 34,
+                        "id": 24,
                         "miercoles_santo": true,
-                        "nombre": "Carmen Bas Martí",
+                        "nombre": "Ariadna Martínez Martí",
                         "pref_hombro": "Derecho",
                         "puede_repetir": true,
                         "telefono": "",
@@ -1078,9 +1078,9 @@
                     },
                     {
                         "altura": 131,
-                        "id": 24,
+                        "id": 34,
                         "miercoles_santo": true,
-                        "nombre": "Ariadna Martínez Martí",
+                        "nombre": "Carmen Bas Martí",
                         "pref_hombro": "Derecho",
                         "puede_repetir": true,
                         "telefono": "",
@@ -1147,7 +1147,7 @@
                         "bloqueado": false
                     },
                     {
-                        "altura": 137,
+                        "altura": 138,
                         "id": 19,
                         "miercoles_santo": true,
                         "nombre": "Ángela Fernández Zaragoza",
@@ -1170,9 +1170,9 @@
                     },
                     {
                         "altura": 136,
-                        "id": 111,
+                        "id": 70,
                         "miercoles_santo": true,
-                        "nombre": "Paula Martinez Casanova",
+                        "nombre": "Lydia Espinosa Fenoll",
                         "pref_hombro": "",
                         "puede_repetir": true,
                         "telefono": "",
@@ -1439,9 +1439,9 @@
                 "Delante": [
                     {
                         "altura": 141,
-                        "id": 79,
+                        "id": 123,
                         "miercoles_santo": true,
-                        "nombre": "M Jesús Aledo Beltrán",
+                        "nombre": "Verónica Rabasco Ferrández",
                         "pref_hombro": "Derecho",
                         "puede_repetir": true,
                         "telefono": "",
@@ -1450,9 +1450,9 @@
                     },
                     {
                         "altura": 141,
-                        "id": 123,
+                        "id": 79,
                         "miercoles_santo": true,
-                        "nombre": "Verónica Rabasco Ferrández",
+                        "nombre": "M Jesús Aledo Beltrán",
                         "pref_hombro": "Derecho",
                         "puede_repetir": true,
                         "telefono": "",
@@ -1512,10 +1512,10 @@
                 ],
                 "Detras": [
                     {
-                        "altura": 138,
-                        "id": 8,
+                        "altura": 139,
+                        "id": 9,
                         "miercoles_santo": true,
-                        "nombre": "Alicia Murcia Ros",
+                        "nombre": "Alicia Ruíz Cerezo",
                         "pref_hombro": "",
                         "puede_repetir": true,
                         "telefono": "",
@@ -1590,14 +1590,9 @@
             "Derecha": {
                 "Delante": [
                     {
-                        "altura": 132,
-                        "id": 85,
-                        "miercoles_santo": true,
-                        "nombre": "Manoli Martínez Lizón",
-                        "pref_hombro": "Izquierdo",
-                        "puede_repetir": true,
-                        "telefono": "",
-                        "viernes_santo": true,
+                        "nombre": "HUECO LIBRE",
+                        "altura": 0,
+                        "id": -1,
                         "bloqueado": false
                     },
                     {
@@ -1848,6 +1843,6 @@
         "tramo2": "",
         "tramo3": "",
         "tramo4": "",
-        "normativa": "Disciplina y Silencio: Durante la estación de penitencia, el costalero mantendrá un silencio absoluto y una actitud de máxima solemnidad. Queda estrictamente prohibido hablar, saludar o interactuar con el público, así como el reparto de caramelos o cualquier otro objeto (Art. 91 y 93).\n\nUniformidad Impecable: El hábito debe presentarse limpio, perfectamente planchado y con el cíngulo correctamente anudado. Se prohíbe el uso de joyas visibles o adornos ajenos a la uniformidad oficial de la Mayordomía (Art. 89).\n\nDecoro Público: Está terminantemente prohibido el acceso a bares, cafeterías o lugares de ocio vistiendo la túnica. El comportamiento en la vía pública debe ser ejemplar desde que el hermano se reviste hasta que se despoja del hábito (Art. 92).\n\nEl incumplimiento de estas normas será motivo de sanción por parte del Consejo (Art. 102)."
+        "normativa": ""
     }
 }
